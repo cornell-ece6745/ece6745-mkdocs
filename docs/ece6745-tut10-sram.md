@@ -1105,7 +1105,7 @@ create_rc_corner -name typical \
 
 create_library_set -name libs_typical \
    -timing [list "$env(ECE6745_STDCELLS)/stdcells.lib" \
-                 "../openram-mc/SRAM_32x128_1rw.lib"]
+                 "../00-openram-memgen/SRAM_32x128_1rw.lib"]
 
 create_delay_corner -name delay_default \
    -library_set libs_typical \

@@ -27,7 +27,7 @@ directory for the project.
 % source setup-ece6745.sh
 % mkdir $HOME/ece6745
 % cd $HOME/ece6745
-% git clone git@github.com:cornell-ece6745/ece6745-tut12-spice tut12
+% git clone git@github.com:cornell-ece6745/ece6745-tut12-spice-sim tut12
 % cd tut12
 % TOPDIR=$PWD
 ```
