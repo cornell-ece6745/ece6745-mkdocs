@@ -326,7 +326,7 @@ simulation using ngspice like this:
 
 ```bash
 % cd $TOPDIR/sim
-% nsgpice nand3-test.sp
+% ngspice nand3-test.sp
 ```
 
 Note that if we use ngspice to display plots, then it is a Linux GUI
