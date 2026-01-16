@@ -33,7 +33,7 @@ graphical user interface.
 --------------------------------------------------------------------------
 
 It is important to keep in mind that we will use `ecelinux` as shorthand
-for the entire cluster of 25 servers. These servers are named as follows:
+for the entire cluster of 20 servers. These servers are named as follows:
 
  - `ecelinux-01.ece.cornell.edu` _(avoid using this server!)_
  - `ecelinux-02.ece.cornell.edu`
@@ -418,7 +418,7 @@ command in the command palette:
 Another thing to try is to delete the `.vscode-server` directory on the
 sever. Of course, how can you delete this directory if you cannot use VS
 Code to access the `ecelinux` servers? You can use PowerShell or Mac
-Terminal to log into the `ecelinux` servers (see Section 2).
+Terminal to log into the `ecelinux` servers (see Section 3).
 
 Once you have gained access to the Linux command line on the
 `ecelinux` servers using either PowerShell or Mac Terminal, then you
@@ -430,6 +430,11 @@ can delete the `.vscode-server` directory like this:
 
 Be very careful with the `rm` command since it can permanently delete
 files!
+
+Note that using the `Remote-SSH: Add new SSH host...` option does not
+always seem to work on Microsoft Windows OS laptops/workstations. This is
+why we recommend just using `Remote-SSH: Connect Current Window to
+Host...` directly.
 
 VS Code can sometimes "cache" your `.bashrc`. This means if you modfiy
 your `.bashrc`, log out, and log back in the changes to your `.bashrc`
@@ -447,7 +452,7 @@ the menubar. On Mac OS X, choose _Code > Preferences > Settings_ from the
 menubar. Click on _Text Editor_ and then _Formatting_. Make sure _Format
 On Save_ is not checked.
 
-6. Remote Access via Microsoft Remote Desktop
+5. Remote Access via Microsoft Remote Desktop
 --------------------------------------------------------------------------
 
 We will primarily use VS Code for working at the terminal, developing our
@@ -458,7 +463,7 @@ Desktop application to log into the `ecelinux` servers to provide us a
 "virtual desktop" which we can then use to interact with Linux GUI
 applications.
 
-### 6.1. Installing Microsoft Remote Desktop on Your Laptop/Workstation
+### 5.1. Installing Microsoft Remote Desktop on Your Laptop/Workstation
 
 Start by installing the Microsoft Remote Desktop application. On Windows,
 simply use the _Start Menu_ to search for _Microsoft Remote Desktop_. On
@@ -466,7 +471,7 @@ Mac OS X, download Microsoft Remote Desktop from the App Store:
 
  - <https://apps.apple.com/us/app/windows-app/id1295203466>
 
-### 6.2. Starting and Configuring Microsoft Remote Desktop from Windows
+### 5.2. Starting and Configuring Microsoft Remote Desktop from Windows
 
 Start Microsoft Remote Desktop. **For the _Computer_ you must choose the
 same `ecelinux` server you selected in Section 1; do _not_ just use
@@ -486,7 +491,7 @@ If you see this message then take the following steps:
 This should launch a "virtual desktop" on `ecelinux`. You will need to
 enter your NetID and password in the xrdp login.
 
-### 6.2. Starting and Configuring Microsoft Remote Desktop from Mac OS X
+### 5.2. Starting and Configuring Microsoft Remote Desktop from Mac OS X
 
 Start Microsoft Remote Desktop and _Connections > Add PC_ from the menu.
 **For the hostname you must choose the same `ecelinux` server you
@@ -519,7 +524,7 @@ If you see this message then take the following steps:
 
 This should launch a "virtual desktop" on `ecelinux`.
 
-### 6.3. Using Microsoft Remote Desktop
+### 5.3. Using Microsoft Remote Desktop
 
 To use Linux GUI Applications you need to source another setup script in
 your VS Code terminal like this:
@@ -545,7 +550,7 @@ the analog clock window.
 
 ![](img/tut00-xrdp.png)
 
-7. Sourcing Course Setup Script with Auto Setup
+6. Sourcing Course Setup Script with Auto Setup
 --------------------------------------------------------------------------
 
 The previous sections have demonstrated how to remotely access the
