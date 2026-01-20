@@ -2,16 +2,16 @@
 Tutorial 0: ECE Linux Server Remote Access
 ==========================================================================
 
-All of the laboratory assignments for this course will be completed by
-remotely logging into a cluster of `ecelinux` servers. The `ecelinux`
-servers all run the Red Hat Enterprise Linux 8 operating system, and they
-all use an identical setup. You do not need to do anything special to
-create an `ecelinux` account. You will be using your NetID and Cornell
-password to login, and an `ecelinux` account will be automatically
-created for you when you first login. Any student enrolled in any ECE
-class should automatically be granted access to the `ecelinux` servers.
-Having said this, if you cannot log into the `ecelinux` servers please
-reach out to the course staff for assistance.
+All of the projects for this course will be completed by remotely logging
+into a cluster of `ecelinux` servers. The `ecelinux` servers all run the
+Red Hat Enterprise Linux 8 operating system, and they all use an
+identical setup. You do not need to do anything special to create an
+`ecelinux` account. You will be using your NetID and Cornell password to
+login, and an `ecelinux` account will be automatically created for you
+when you first login. Any student enrolled in any ECE class should
+automatically be granted access to the `ecelinux` servers. Having said
+this, if you cannot log into the `ecelinux` servers please reach out to
+the course staff for assistance.
 
 Later tutorials will discuss how to use the Linux development environment
 and the Git distributed version control system. In this tutorial, we
@@ -35,7 +35,7 @@ graphical user interface.
 It is important to keep in mind that we will use `ecelinux` as shorthand
 for the entire cluster of 20 servers. These servers are named as follows:
 
- - `ecelinux-01.ece.cornell.edu` _(avoid using this server!)_
+ - `ecelinux-01.ece.cornell.edu`
  - `ecelinux-02.ece.cornell.edu`
  - `ecelinux-03.ece.cornell.edu`
  - ...
@@ -44,11 +44,9 @@ for the entire cluster of 20 servers. These servers are named as follows:
  - `ecelinux-20.ece.cornell.edu`
 
 At the beginning of the semester, **select a server and always use that
-same server.** Do not just log into `ecelinux.ece.cornell.edu`. Avoid
-using `ecelinux-01` since many students use this server by default and it
-can become overloaded. Continue to always use the same server unless you
-have trouble logging in in which case you can try switching to a
-different server.
+same server.** Do not just log into `ecelinux.ece.cornell.edu`. Continue
+to always use the same server unless you have trouble logging in in which
+case you can try switching to a different server.
 
 All of the `ecelinux` servers are identical. Every tool is available on
 every `ecelinux` server. All of your files are available on every
@@ -139,8 +137,8 @@ please contact the course staff.
 Once you have opened a terminal, the very first thing you need to do
 after logging into the `ecelinux` servers is source the course setup
 script. This will ensure your environment is setup with everything you
-need for working on the laboratory/programming assignments. Enter the
-following command on the command line:
+need for working on the projects. Enter the following command on the
+command line:
 
 ```bash
 % source setup-ece6745.sh
@@ -365,8 +363,7 @@ try connecting with VS Code again.
 The very first thing you need to do after logging into the `ecelinux`
 servers is source the setup script for this course. This will ensure your
 environment is setup with everything you need for working on the
-laboratory/programming assignments. Enter the following command on the
-command line:
+projects. Enter the following command on the command line:
 
 ```bash
 % source setup-ece6745.sh
@@ -401,7 +398,40 @@ editing files and the Linux command line at the same time.
 
 ![](img/tut00-vscode-connected.png)
 
-### 4.5. Troubleshooting Remote Access via VS Code
+We highly recommend turnning on auto save so you don't forget to save
+your work. You can do this by choosing _File > Auto Save_ from the
+menubar.
+
+### 4.5. Turning off Microsoft Copilot
+
+This course uses an "AI as TA" policy, which means students can use AI
+for similar questions they might ask a TA. Microsoft Copilot enables AI
+to write code automatically for students. Since a student would never ask
+a TA to write code for them, using Microsoft Copilot is a violation of
+the Academic Integrity Policy and prohibited in this course. Students
+will not have access to AI during the prelim/final exams nor the Verilog
+exam, so students which violate this policy are unlikely to succeed in
+these assessments.
+
+There are two steps turning off AI functionality in VS Code:
+
+ - If you have already installed the Copilot extensions, you need to
+   first uninstall the Copilot and Copilot Chat extensions
+
+ - Choose _View > Command Palette_ from the menubar. Enter the following
+   command in the command palette:
+
+    Chat: Hide AI Features
+
+If this does not work, you may need to uninstall VS Code and resinstall
+it from scratch. More information can be found here:
+
+ - <https://code.visualstudio.com/docs/supporting/FAQ#_can-i-disable-ai-functionality-in-vs-code>
+
+You should also of course uninstall any other AI extensions such as
+Cline, Roo Code, etc.
+
+### 4.6. Troubleshooting Remote Access via VS Code
 
 There may be issues where sometimes VS Code just keeps asking you for
 your password or VS Code just hangs when you try and connect to the
@@ -409,27 +439,37 @@ your password or VS Code just hangs when you try and connect to the
 definitely ask the course staff to help, but you can also try to fix it
 on your own.
 
-One thing to try is to kill the VS Code server on the host.
-Choose _View > Command Palette_ from the menubar. Enter the following
-command in the command palette:
+You might be out of space on `ecelinux`. Student home directories have a
+quota of 10G so you might need to delete some files to free up some
+space. How can you delete this directory if you cannot use VS Code to
+access the `ecelinux` servers? You can use PowerShell or Mac Terminal to
+log into the `ecelinux` servers (see Section 3). Then use `quota` to see
+how much space you are using and you can also use `du -sh *` to see how
+much space each directory is taking up. If you are over 10G you will need
+to free up some space. You might need to delete the `tmp/trash`
+directory.
+
+Another thing to try is to kill the VS Code server on the host. Choose
+_View > Command Palette_ from the menubar. Enter the following command in
+the command palette:
 
     Remote-SSH: Kill VS Code Server on Host...
 
-Another thing to try is to delete the `.vscode-server` directory on the
-sever. Of course, how can you delete this directory if you cannot use VS
-Code to access the `ecelinux` servers? You can use PowerShell or Mac
-Terminal to log into the `ecelinux` servers (see Section 3).
+You can also try (especially if the `code` command is not working for
+you) deleting the `.vscode-server` directory on the sever. Again, how can
+you delete this directory if you cannot use VS Code to access the
+`ecelinux` servers? You can use PowerShell or Mac Terminal to log into
+the `ecelinux` servers (see Section 3).
 
-Once you have gained access to the Linux command line on the
-`ecelinux` servers using either PowerShell or Mac Terminal, then you
-can delete the `.vscode-server` directory like this:
+Once you have gained access to the Linux command line on the `ecelinux`
+servers using either PowerShell or Mac Terminal, then you can delete the
+`.vscode-server` directory like this:
 
 ```bash
 % rm -rf .vscode-server
 ```
 
-Be very careful with the `rm` command since it can permanently delete
-files!
+Be very careful with the `rm` command since it deletes files permanently!
 
 Note that using the `Remote-SSH: Add new SSH host...` option does not
 always seem to work on Microsoft Windows OS laptops/workstations. This is
@@ -491,21 +531,22 @@ If you see this message then take the following steps:
 This should launch a "virtual desktop" on `ecelinux`. You will need to
 enter your NetID and password in the xrdp login.
 
-### 5.2. Starting and Configuring Microsoft Remote Desktop from Mac OS X
+### 5.3. Starting and Configuring Microsoft Remote Desktop from Mac OS X
 
 Start Microsoft Remote Desktop and _Connections > Add PC_ from the menu.
-**For the hostname you must choose the same `ecelinux` server you
-selected in Section 1; do _not_ just use `ecelinux.ece.cornell.edu`.**
-Then user the following setup
+**For the PC name or hostname you must choose the same `ecelinux` server
+you selected in Section 1; do _not_ just use
+`ecelinux.ece.cornell.edu`.** Then use the following setup:
 
- - Click the _User Account_ drop down and choose _Add User Account_
-    + Username: `netid@cornell.edu` (must have `@cornell.edu` at end!)
+ - Click the _Credential_ or _User Account_ drop down and choose _Add Credentials_ or _Add User Account_
+    + Username: _netid@cornell.edu_ (must have _@cornell.edu_ at end!)
     + Password: NetID password
+    + Friendly name: _ecelinux_
  - _Display_ tab
     + Uncheck _Start session in full screen_
  - _Devices & Audio_ tab
     + Uncheck _Printers_ and _Smart cards_
- - Click _Save_
+ - Click _Add_
 
 To log into `ecelinux` double click on the corresponding entry in
 Microsoft Remote Desktop. You may see a message like this:
@@ -524,7 +565,7 @@ If you see this message then take the following steps:
 
 This should launch a "virtual desktop" on `ecelinux`.
 
-### 5.3. Using Microsoft Remote Desktop
+### 5.4. Using Microsoft Remote Desktop
 
 To use Linux GUI Applications you need to source another setup script in
 your VS Code terminal like this:
@@ -558,7 +599,7 @@ The previous sections have demonstrated how to remotely access the
 setup script. *Again, you must source the course setup script before
 doing any work related to this course!* The course setup script
 configures everything so you have the right environment to work on the
-laboratory/programming assignments.
+projects.
 
 Since it can be tedious to always remember to source the course setup
 script, you can also use auto setup which will automatically source the
@@ -594,6 +635,6 @@ auto setup you can use the following command:
 
 Again, if for any reason running the setup script prevents you from using
 tools for another course, you cannot use the auto setup. You will need to
-run the setup script manually every time you want to work on a
-laboratory/programming assignment for this course.
+run the setup script manually every time you want to work on a project
+for this course.
 
