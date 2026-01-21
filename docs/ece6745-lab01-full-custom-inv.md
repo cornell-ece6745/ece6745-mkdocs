@@ -21,7 +21,7 @@ open your remote desktop GUI as well.
 % source setup-gui.sh
 % mkdir -p $HOME/ece6745
 % cd $HOME/ece6745
-% git clone https://github.com/cornell-ece6745/ece6745-lab1 lab01
+% git clone git@github.com:cornell-ece6745/ece6745-lab1.git lab01
 % cd lab01
 % TOPDIR=$PWD
 ```
@@ -68,6 +68,9 @@ draw (`inv/inv.gds`)
 A new GUI window should open in your remote desktop window:
 
 ![](img/lab01-klayout-blank.png)
+
+There will be a pop-up the first time you open KLayout asking about whether to
+use full-hierarchy mode - agree to this setting.
 
 Take a minute to become familiar with the user interface (some items are omitted
 as they are not used for our class):
@@ -196,8 +199,8 @@ Open up the blank reference spice file for your inverter (`inv/inv.sp`). Add a
 line for each device (transistor) in your inverter circuit inside the
 sub-circuit using the following format:
 
- - PMOS: `M_P <D> <G> <S> <B> L=<length>U W=<width>U`
- - NMOS: `M_N <D> <G> <S> <B> L=<length>U W=<width>U` 
+ - For the PMOS: `M_P <D> <G> <S> <B> PMOS L=<length>U W=<width>U`
+ - For the NMOS: `M_N <D> <G> <S> <B> NMOS L=<length>U W=<width>U`
 
 where D, G, S, and B represent the drain, gate, source, and base connections for
 the transistor, respectively. You should replace these with the correct pin name
