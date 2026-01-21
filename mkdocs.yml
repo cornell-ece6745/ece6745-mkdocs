@@ -97,3 +97,5 @@ nav:
 #    - 'Section 4: TinyRV2 Accelerator RTL Design': ece6745-sec04-xcel-rtl.md
 #    - 'Section 5: SRAM Generators': ece6745-sec05-sram.md
 
+  - 'Labs':
+    - 'Lab 1: Full-Custom Inverter Design': ece6745-lab01-full-custom-inv.md
