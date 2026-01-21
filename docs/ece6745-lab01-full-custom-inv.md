@@ -32,19 +32,23 @@ Take a minute to look through the included files:
 .
 └── lab01/
     ├── buf/
-    │   ├── buf-characterize.sp (buffer characterization script template - TODO FOR YOU)
-    │   ├── buf.gds (blank buffer layout file - TODO FOR YOU)
-    │   └── buf.sp (reference buffer spice file template - TODO FOR YOU)
+    │   ├── buf-characterize.sp (inverter characterization script template - TODO FOR YOU)
+    │   ├── buf.gds (blank inverter layout file - TODO FOR YOU)
+    │   └── buf.sp (reference inverter spice file template - TODO FOR YOU)
     ├── inv/
     │   ├── inv-characterize.sp (inverter characterization script template - TODO FOR YOU)
     │   ├── inv.gds (blank inverter layout file - TODO FOR YOU)
     │   └── inv.sp (reference inverter spice file template - TODO FOR YOU)
     └── pdk/
+        ├── d25/
+        │   └── tinyflow-180nm.lyd25 (script for viewing your layout in a more 3-dimensional way)
+        ├── drc/
+        │   └── tinyflow-180nm.lydrc (DRC script for ensuring all design rules are followed for your layout)
+        ├── lvs/
+        │   └── tinyflow-180nm.lylvs (LVS script for ensuring your layout matches the reference spice schematic)
         ├── klayoutrc (setup file for KLayout with all necessary settings - sourced automatically by setup script)
-        ├── tiny180.lyd25 (script for viewing your layout in a more 3-dimensional way)
-        ├── tiny180.lydrc (DRC script for ensuring all design rules are followed for your layout)
-        ├── tiny180.lylvs (LVS script for ensuring your layout matches the reference spice schematic)
-        └── tiny180.lyp (layer information for the tiny180 process)
+        ├── tinyflow-180nm.lyp (layer information for the tinyflow-180nm process)
+        └── tinyflow-180nm.lyt (technology manager information for the tinyflow-180nm process)
 ```
 
 1. KLayout Introduction
@@ -56,21 +60,58 @@ design-rules checking, layout vs. schematic checking, and RC extraction among
 other features. In this lab, we will be using all of these features so that you
 can become familiar with making your own custom circuits!
 
-First, open KLayout in edit mode (`-e`) with the provided layer properties file
-(`-l pdk/tiny180.lyp`) and the blank canvas for the inverter your are going to
-draw (`inv/inv.gds`)
+KLayout can be opened either on the ECELinux server via remote desktop, or
+locally on the Upson workstation/your laptop (you will need to install the
+[latest KLayout version](https://www.klayout.de/build.html) for your OS).
+
+There will be a pop-up the first time you open KLayout asking about whether to
+use full-hierarchy mode - agree to this setting and select "Do not show again"
+if present.
+
+**Option 1: Open KLayout on ECELinux (RECOMMENDED)**
+
+To open on the ECELinux server, first open KLayout in edit mode (`-e`) with the
+blank canvas for the inverter your are going to draw (`inv/inv.gds`)
 
 ```bash
 % cd $TOPDIR
-% klayout -e -l pdk/tiny180.lyp inv/inv.gds
+% klayout -e inv/inv.gds
 ```
 
-A new GUI window should open in your remote desktop window:
+**Option 2: Open KLayout on Upson Workstation/Your Laptop**
+
+Note that when using this option, you must push your layout changes to the repo
+and pull on the ECELinux side so that you can run the Ngspice simulation on the
+server in step 5.
+
+To open on the Upson workstation/your laptop, first clone the repo as above on
+your machine. Navigate to the install directory for KLayout (typically
+`C:\Users\<USERNMAE>\KLayout\` for Windows and `~/.klayout/` on Mac/Linux) and
+replace the existing `klayoutrc` file with the file provided in the cloned repo
+(`pdk/klayoutrc`).
+
+Now open the "KLayout (Editor)" application. Go to Tools -> Manage Technologies
+(select "Do not show again" for the pop-up):
+
+![](img/lab01-klayout-open-tech-mngr.png)
+
+Right-click on the white box under "Technologies" and select "Import
+Technology":
+
+![](img/lab01-klayout-import-tech.png)
+
+Navigate to the cloned lab01 repo and open the `pdk/tinyflow-180nm.lyt` file,
+then select OK in the bottom-right corner. Now select the dropdown for the Tech
+button in the top toolbar of the main KLayout window (to the right of the
+Partial button), and select "tinyflow-180nm".
+
+![](img/lab01-klayout-select-tech.png)
+
+**For both Option 1 and Option 2 (continue here)**
+
+The KLayout GUI should now look like this:
 
 ![](img/lab01-klayout-blank.png)
-
-There will be a pop-up the first time you open KLayout asking about whether to
-use full-hierarchy mode - agree to this setting.
 
 Take a minute to become familiar with the user interface (some items are omitted
 as they are not used for our class):
@@ -89,16 +130,15 @@ as they are not used for our class):
    it and other layers - **this is very useful accurately and quickly editing
    layouts!**
 
-If the `klayoutrc` file is properly sourced by the setup script, you should be
-able to scroll in on the main layout window and see a grid of lines (as in the
-image above), this represents the **lambda grid**, where the side length of each
-such box is 1 lambda (0.09um in our case). This represents the minimum unit on
-which you can draw a feature. If you scroll out, the lines should disappear and
-a grid of dots should be present instead. **When drawing a feature with a
-specific dimension of lambda, be sure that you are counting on the boxes
-contained within the lines, not the dots!** If this is not the case for you,
-copy the `pdk/klayoutrc` file to `~/.klayout/klayoutrc`, making the directory if
-it does not already exist, and reopening KLayout.
+You should be able to scroll in on the main layout window and see a grid of
+dotted lines (as in the image above), this represents the **lambda grid**, where
+the side length of each such box is 1 lambda (0.09um in our case). This
+represents the minimum unit on which you can draw a feature. If you scroll out,
+the lines should disappear and a grid of interspersed dots only on the
+intersection of these boxes should be present instead. **When drawing a feature
+with a specific dimension of lambda, be sure that you are counting on the boxes
+contained within the dotted lines, not the interspered dots on the
+intersections!** The intersection of the two solid lines represents the origin.
 
 2. Laying Out and Performing DRC on an PMOS
 --------------------------------------------------------------------------
@@ -112,7 +152,7 @@ test their design for a wide variety of parameters, including modifying this
 width to achieve their design goals of power, performance, or area.
 
 Take some time now to draw the following inverter **as shown exactly** in your
-`inv.gds` file. To draw a new feature, select the layer from the Layers window,
+`inv/inv.gds` file. To draw a new feature, select the layer from the Layers window,
 and then click the Box tool from the upper toolbar, click to set one corner, and
 then click again to set the opposite corner. **Notice how the width of the
 transistor is 8-lambda (boxes) as we mentioned above, and the gate width is
@@ -131,15 +171,17 @@ to Tools -> DRC -> Edit DRC Script.
 
 Click the white import icon in the window the pops up
 ![](img/lab01-klayout-drc-import.png) in the top-left corner, and then select
-the `pdk/tiny180.lydrc` in the file browser. Take a minute to browse the DRC
-file and see how the code (written in Ruby) matches up to the rules in the DRM.
-When you are ready to run it, click the green play button with the exclamation
-mark through it ![](img/lab01-klayout-drc-run.png) in the top toolbar. If it
-asks you about saving a macro, click Yes. A new window should open with the DRC
-results, the left side shows all the performed DRC checks, with the numbers
-corresponding to the associated rules in the DRM. If your design is DRC-clean,
-then all the numbers should be green. If you see any red ones, cross-reference
-the rule number with the DRM, and edit your layout to fix the DRC *violation*.
+the `pdk/drc/tinyflow-180nm.lydrc` in the file browser. Double-click on the file
+that has been added to the left-side file browser to open it in the viewer. Take
+a minute to browse the DRC file and see how the code (written in Ruby) matches
+up to the rules in the DRM. When you are ready to run it, click the green play
+button with the exclamation mark through it ![](img/lab01-klayout-drc-run.png)
+in the top toolbar. If it asks you about saving a macro, click Yes. A new window
+should open with the DRC results, the left side shows all the performed DRC
+checks, with the numbers corresponding to the associated rules in the DRM. If
+your design is DRC-clean, then all the numbers should be green. If you see any
+red ones, cross-reference the rule number with the DRM, and edit your layout to
+fix the DRC *violation*.
 
 ![alt text](img/lab01-klayout-drc-browser.png)
 
@@ -173,7 +215,7 @@ DO CTRL+S AS IT BREAKS THE VIEW!**
 
 You can also view your inverter in a semi-three-dimensional view called 2.5D. To
 do this, go to Tools -> 2.5d View -> Edit 2.5d Script (similarly to DRC). Import
-the `pdk/tiny180.lyd25` into KLayout using the white button again,
+the `pdk/d25/tinyflow-180nm.lyd25` into KLayout using the white button again,
 double-clicking the new file in the left-side file window to ensure the script
 is open in the editor. Click the green play button with exclamation mark to run
 the script. A new window should pop up with a 2.5D viewer which you can use the
@@ -217,11 +259,12 @@ Make sure your desired cell to check via LVS is active in the viewer (important
 if multiple such cells are in the same layout file as will happen in later
 projects and labs). Open the LVS tool in your KLayout window similarly to DRC,
 but now selecting LVS from the Tools menu instead of DRC. Select the white
-import button again and then load in the `pdk/tiny180.lylvs` file. Double-click
-the imported lylvs file so it is visible in the viewer. Take a minute to browse
-the contents of the file and see how we first extract the schematic (to
-`inv/inv-rcx.sp`) and then perform the actual comparison. Press the green play
-button with the exclamation mark through it to run the LVS script.
+import button again and then load in the `pdk/lvs/tinyflow-180nm.lylvs` file.
+Double-click the imported lylvs file so it is visible in the viewer. Take a
+minute to browse the contents of the file and see how we first extract the
+schematic (to `inv/inv-rcx.sp`) and then perform the actual comparison. Press
+the green play button with the exclamation mark through it to run the LVS
+script.
 
 After running the script, and if LVS passes, you should see all green in the
 window that pops up:
