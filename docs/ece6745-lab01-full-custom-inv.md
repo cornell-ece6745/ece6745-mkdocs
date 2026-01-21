@@ -71,19 +71,20 @@ A new GUI window should open in your remote desktop window:
 
 Take a minute to become familiar with the user interface (some items are omitted
 as they are not used for our class):
-- Toolbar (upper) - includes back/forward (undo/redo) buttons, as well as
-  buttons for selecting various tools such as selecting a feature, moving a
-  feature, drawing a feature, measuring a feature (ruler), etc.
-- Cells window (upper left) - displays names of all the cells in the current
-  layout file that is open. In this case, we only have one cell in our layout
-  file, but we will have more cells in future labs/projects which constitute an
-  entire *library* of cells! Right click -> Show As New Top to select the cell
-  to view in the main window
-- Layers window (middle right) - displays all available layers which elements
-  can be placed on, take a minute to correlate these names with what you have
-  seen in lecture. You can right click on a layer to set visibility options for
-  it and other layers - **this is very useful accurately and quickly editing
-  layouts!**
+
+ - Toolbar (upper) - includes back/forward (undo/redo) buttons, as well as
+   buttons for selecting various tools such as selecting a feature, moving a
+   feature, drawing a feature, measuring a feature (ruler), etc.
+ - Cells window (upper left) - displays names of all the cells in the current
+   layout file that is open. In this case, we only have one cell in our layout
+   file, but we will have more cells in future labs/projects which constitute an
+   entire *library* of cells! Right click -> Show As New Top to select the cell
+   to view in the main window
+ - Layers window (middle right) - displays all available layers which elements
+   can be placed on, take a minute to correlate these names with what you have
+   seen in lecture. You can right click on a layer to set visibility options for
+   it and other layers - **this is very useful accurately and quickly editing
+   layouts!**
 
 If the `klayoutrc` file is properly sourced by the setup script, you should be
 able to scroll in on the main layout window and see a grid of lines (as in the
@@ -156,10 +157,11 @@ Once your layout is finished, add the pin labels on the `metal1 label` layer by
 selecting the layer and then selecting the Text tool from the toolbar. Once the
 label is placed on appropriate metal1 net, double-click it to edit the name. The
 pin names should be as follows:
-- A (input connecting to the gates of both transistors)
-- Y (output from the drains of both transistors)
-- VDD (positive voltage power rail)
-- VSS (negative voltage power rail)
+
+ - A (input connecting to the gates of both transistors)
+ - Y (output from the drains of both transistors)
+ - VDD (positive voltage power rail)
+ - VSS (negative voltage power rail)
 
 After the pin labels are added, run DRC as before to ensure your design passes
 all design rule checks. **Ensure your design is DRC-clean before moving onto the
@@ -193,8 +195,9 @@ extracted Spice schematic with the reference one.
 Open up the blank reference spice file for your inverter (`inv/inv.sp`). Add a
 line for each device (transistor) in your inverter circuit inside the
 sub-circuit using the following format:
-- PMOS: `M_P <D> <G> <S> <B> L=<length>U W=<width>U`
-- NMOS: `M_N <D> <G> <S> <B> L=<length>U W=<width>U` 
+
+ - PMOS: `M_P <D> <G> <S> <B> L=<length>U W=<width>U`
+ - NMOS: `M_N <D> <G> <S> <B> L=<length>U W=<width>U` 
 
 where D, G, S, and B represent the drain, gate, source, and base connections for
 the transistor, respectively. You should replace these with the correct pin name
@@ -243,17 +246,18 @@ use this acronym in your job interviews to show how well you know ASIC design!).
 In this section, we wish to characterize the performance of the cell by
 measuring the **propagation delay** through it. We have a series of measurements
 we wish to perform on the cell:
-- **falling propagation delay (tpdf)** - measures the time it takes from a
-  rising input to produce a falling output (as per expected behavior of the
-  inverter) by triggering when the input reaches 50% of the VDD rail and
-  targeting when the output reaches 50% of the VDD rail
-- **rising propagation delay (tpdr)** - same as tpdf, but measures a rising A to
-  a falling Y
-- **rise time (t_rise)** - measures how long it takes for the output to be able
-  to complete a 20% to 80% VDD rail transition - this is a measure of how well
-  the circuit can "drive" a subsequent stage
-- **fall time (t_fall)** - same as t_rise but for a falling output instead of a
-  rising output
+
+ - **falling propagation delay (tpdf)** - measures the time it takes from a
+   rising input to produce a falling output (as per expected behavior of the
+   inverter) by triggering when the input reaches 50% of the VDD rail and
+   targeting when the output reaches 50% of the VDD rail
+ - **rising propagation delay (tpdr)** - same as tpdf, but measures a rising A to
+   a falling Y
+ - **rise time (t_rise)** - measures how long it takes for the output to be able
+   to complete a 20% to 80% VDD rail transition - this is a measure of how well
+   the circuit can "drive" a subsequent stage
+ - **fall time (t_fall)** - same as t_rise but for a falling output instead of a
+   rising output
 
 The above measurements are made for a specific value of `Cload`, or the amount
 of capacitance present on the output. When we characterize a cell, we wish to
@@ -273,9 +277,10 @@ are being made.
 **Additionally, we need to make the following changes to the pasted Spice
 circuit to ensure it is compatible with the transistor models we will be
 using:**
-- Replace the `PMOS` identifier with `sky130_fd_pr__pfet_01v8`
-- Replace the `NMOS` identifier with `sky130_fd_pr__nfet_01v8`
-- Replace the `M$1` identifier with `XM$1`, and the `M$2` identifier with `XM$2`
+
+ - Replace the `PMOS` identifier with `sky130_fd_pr__pfet_01v8`
+ - Replace the `NMOS` identifier with `sky130_fd_pr__nfet_01v8`
+ - Replace the `M$1` identifier with `XM$1`, and the `M$2` identifier with `XM$2`
 
 To allow the simulation to work, we need to provide pre-characterized device
 models for the transistors, and we use the open-source
