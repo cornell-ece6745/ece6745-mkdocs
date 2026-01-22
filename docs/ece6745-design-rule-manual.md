@@ -1,12 +1,10 @@
-TinyFlow Design Rule Manual
+TinyFlow Design Rule Manual (v0.1)
 ==========================================================================
 
-https://www.southampton.ac.uk/~bim/notes/ice/DesignRules/scmos-main.html#tech-codes
-
-SCN6M DEEP
+Adapted from  MOSIS Scalable CMOS (SCMOS) Revision 8.0 (Technology: SCN6M DEEP) (https://www.southampton.ac.uk/~bim/notes/ice/DesignRules/scmos-main.html#tech-codes)
 
 
-well
+nwell
 --------------------------------------------------------------------------
 
 | Rule     | Description                                                                | $\lambda$ |
@@ -98,13 +96,6 @@ metal1
 
 ![Metal1](img/0-klayout-drm-metal1.png)
 
-via12
+via12 & above
 --------------------------------------------------------------------------
-
-| Rule | Description                                                                                                   | DEEP (3+ Metal) |
-|------|---------------------------------------------------------------------------------------------------------------|-----------------|
-| 8.1  | Exact size                                                                                                    | 3×3             |
-| 8.2  | Minimum via1 spacing                                                                                          | 3               |
-| 8.3  | Minimum overlap by metal1                                                                                     | 1               |
-
-
+coming in v1
