@@ -32,11 +32,11 @@ Take a minute to look through the included files:
 .
 └── lab01/
     ├── buf/
-    │   ├── buf-characterize.sp (inverter characterization script template - TODO FOR YOU)
-    │   ├── buf.gds (blank inverter layout file - TODO FOR YOU)
-    │   └── buf.sp (reference inverter spice file template - TODO FOR YOU)
+    │   ├── buf-sim.sp (buffer simulation script template - TODO FOR YOU)
+    │   ├── buf.gds (blank buffer layout file - TODO FOR YOU)
+    │   └── buf.sp (reference buffer spice file template - TODO FOR YOU)
     ├── inv/
-    │   ├── inv-characterize.sp (inverter characterization script template - TODO FOR YOU)
+    │   ├── inv-sim.sp (inverter simulation script template - TODO FOR YOU)
     │   ├── inv.gds (blank inverter layout file - TODO FOR YOU)
     │   └── inv.sp (reference inverter spice file template - TODO FOR YOU)
     └── pdk/
@@ -54,7 +54,7 @@ Take a minute to look through the included files:
 1. KLayout Introduction
 --------------------------------------------------------------------------
 
-[KLayout](https://www.klayout.de/) is an powerful, open-source layout tool that
+[KLayout](https://www.klayout.de/) is a powerful, open-source layout tool that
 allows users to both view and edit layout files. Additionally, it can perform
 design-rules checking, layout vs. schematic checking, and RC extraction among
 other features. In this lab, we will be using all of these features so that you
@@ -100,8 +100,13 @@ represents the minimum unit on which you can draw a feature. If you scroll out,
 the lines should disappear and a grid of interspersed dots only on the
 intersection of these boxes should be present instead. **When drawing a feature
 with a specific dimension of lambda, be sure that you are counting on the boxes
-contained within the dotted lines, not the interspered dots on the
+contained within the dotted lines, not the interspersed dots on the
 intersections!** The intersection of the two solid lines represents the origin.
+
+!!! question "Activity 1: Open KLayout"
+
+    Use the information in this section and the above images to open KLayout
+    in editor mode on the blank `inv/inv.gds` layout canvas.
 
 2. Laying Out and Performing DRC on a PMOS
 --------------------------------------------------------------------------
@@ -122,14 +127,16 @@ transistor is 8-lambda (boxes) as we mentioned above, and the gate width is
 2-lambda. Lambda rules define the gate-width as 2-lambda, so this matches our
 expectations!**
 
+Compare the relative spacing and widths of the various features to what is shown
+in the [design rules manual (DRM)](ece6745-design-rule-manual.md). We can see
+how all such spacings and widths are at least the minimum requirement for the
+associated rule in the DRM.
+
 ![](img/lab01-klayout-pmos.png)
 
-Compare the relative spacing and widths of the various features to what is shown
-in the design rules manual (DRM) (TODO: add link). We can see how all such
-spacings and widths are at least the minimum requirement for the associated rule
-in the DRM. Let's go ahead and run DRC to ensure these requirements are met, go
-to Tools -> DRC -> select the `tinyflow-180nm.lydrc` file from the list (it
-should be the only file listed under "Edit DRC Script").
+Let's go ahead and run DRC to ensure these requirements are met, go to Tools ->
+DRC -> select the `tinyflow-180nm.lydrc` file from the list (it should be the
+only file listed under "Edit DRC Script").
 
 ![](img/lab01-klayout-enter-drc.png)
 
@@ -140,6 +147,12 @@ you see any red ones, cross-reference the rule number with the DRM, and edit
 your layout to fix the DRC *violation*.
 
 ![alt text](img/lab01-klayout-drc-browser.png)
+
+!!! question "Activity 2b: Perform DRC on the PMOS"
+
+    Use the information in this section and the above images to perform DRC on 
+    the PMOS.
+
 
 3. Laying Out the Full Inverter
 --------------------------------------------------------------------------
@@ -164,6 +177,11 @@ pin names should be as follows:
  - VDD (positive voltage power rail)
  - VSS (negative voltage power rail)
 
+!!! question "Activity 3a: Lay out the full inverter"
+
+    Use the information in this section and the above images to lay out the
+    full inverter.
+
 After the pin labels are added, run DRC as before to ensure your design passes
 all design rule checks. **Ensure your design is DRC-clean before moving onto the
 next step! Be sure to save the layout as well by going to File -> Save, DO NOT
@@ -176,6 +194,11 @@ you can use the mouse to scroll around and view the inverter from different
 angles!
 
 ![alt text](img/lab01-klayout-25d.png)
+
+!!! question "Activity 3b: Perform DRC on the inverter"
+
+    Use the information in this section and the above images to perform DRC on 
+    the inverter, as well as view it in 2.5D.
 
 4. Performing LVS on the Full Inverter
 --------------------------------------------------------------------------
@@ -230,44 +253,25 @@ output from the LVS tool in `inv/inv-rcx.sp`. This file looks similar to the
 reference Spice file, except that it includes additional information for RC
 parasitics in the parameters AS, AD, PS, and PD.
 
-5. Characterizing the Inverter with Ngspice
+!!! question "Activity 4: Perform LVS on the inverter"
+
+    Use the information in this section and the above images to write the 
+    reference Spice circuit and perform LVS on the inverter. View the extracted 
+    Spice netlist once LVS has passed.
+
+5. Simulating the Inverter with Ngspice
 --------------------------------------------------------------------------
 
 Congratulations! You now have a fully DRC and LVS-clean inverter cell! At this
-point, we know that the cell matches our high-level functionality expectations,
-but we do not know how well it *performs*. In circuit design, we often measure
-"goodness" of a design in terms of power, performance, and area (PPA for short -
-use this acronym in your job interviews to show how well you know ASIC design!).
-In this section, we wish to characterize the performance of the cell by
-measuring the **propagation delay** through it. We have a series of measurements
-we wish to perform on the cell:
+point, we know that the cell matches our high-level physical expectations, but
+we need to make sure that it actually *functions* correctly.
 
- - **falling propagation delay (tpdf)** - measures the time it takes from a
-   rising input to produce a falling output (as per expected behavior of the
-   inverter) by triggering when the input reaches 50% of the VDD rail and
-   targeting when the output reaches 50% of the VDD rail
- - **rising propagation delay (tpdr)** - same as tpdf, but measures a rising A to
-   a falling Y
- - **rise time (t_rise)** - measures how long it takes for the output to be able
-   to complete a 20% to 80% VDD rail transition - this is a measure of how well
-   the circuit can "drive" a subsequent stage
- - **fall time (t_fall)** - same as t_rise but for a falling output instead of a
-   rising output
-
-The above measurements are made for a specific value of `Cload`, or the amount
-of capacitance present on the output. When we characterize a cell, we wish to
-find the *load-delay-curve*, which defines delay as a function of the output
-capacitance. Ideally, we obtain a linear fit for this data, which is then used
-in subsequent stages of ASIC design to ensure our design can meet timing
-requirements for a given clock period.
-
-To perform the above measurements, we provide a *Spice deck*, or testbench for
-our extracted Spice circuit, which will measure such values. We run the
-simulation using an open-source tool called
+To check this functionality, we provide a **Spice deck**, or testbench for our
+extracted Spice circuit, which will simulate the circuit given specific input
+stimuli. We run the simulation using an open-source tool called
 [Ngspice](https://ngspice.sourceforge.io/). Go ahead and paste in your extracted
-Spice circuit into the `inv/inv-characterize.sp` file where it says to. Take a
-minute to browse the testbench as well and understand how the above measurements
-are being made.
+Spice circuit into the `inv/inv-sim.sp` file where it says to. Take a minute to
+browse the testbench as well and understand how it works.
 
 **Additionally, we need to make the following changes to the pasted Spice
 circuit to ensure it is compatible with the transistor models we will be
@@ -287,33 +291,35 @@ We are now ready to run our simulation. Execute the following in your terminal
 
 ```bash
 % cd $TOPDIR
-% ngspice inv/inv-characterize.sp
+% ngspice inv/inv-sim.sp
 ```
 
-You should get a printed output showing the above four measurements (use the
-values before the "targ=" identifier).
+The simulation will open a new plot window in your remote desktop viewer,
+plotting both the input voltage (at A) vs. time as well as the output voltage
+(at Y) vs. time.
 
-To find your load-delay curve, sweep the value of `Cload` in the testbench by
-modifying the 50f value in the line `Cl Y 0 50f`. For each `Cload` value, take
-the worst of the t_pdf and t_pdr values to use for the data point. Create a plot
-with the delay on the Y-axis and the `Cload` value on the X-axis, and find the
-equation for a linear fit for this data. This is your load-delay curve! The
-y-intercept represents the *parasitic delay*, or the delay through the unloaded
-inverter. The slope represents the *load-delay factor*, which helps characterize
-the performance of the cell.
+!!! question "Activity 5: Simulate the inverter"
 
-5. (Optional Extension) Laying Out and Characterizing a CMOS Buffer
+    Use the information in this section and the above images to simulate the
+    inverter using Ngspice. View the output plot and save a picture of it.
+    Does the behavior of the inverter look correct? Think about it's
+    high-level functionality.
+
+6. (Optional Extension) Laying Out and Characterizing a CMOS Buffer
 --------------------------------------------------------------------------
 
 Many students wonder why we can't just make a buffer by "flipping" the NMOS and
 PMOS in the inverter. Let's go ahead and do just that! Do everything that you
 did for the inverter but for a buffer (in the `buf` directory) by laying it out,
-performing DRC and LVS, and then running the characterization script. 
+performing DRC and LVS, and then running the characterization script. **Do not
+copy and paste the `inv.gds` file and just rename the topcell name - LVS does
+not work if you do this.**
 
 **When laying out the buffer, keep the base of the NMOS tied to VSS and the base
 of the PMOS tied to VDD.**
 
-The characterization script will actually open a plot in your remote desktop
-window instead of printing an output on the console (don't worry about a warning
-for missing charsets), what do you see happening in that plot? Why is it doing
-this?
+!!! question "Activity 6: Lay out, perform DRC and LVS, and simulate the buffer"
+
+    Use the information in this section and the above images to lay out, perform
+    drc and lvs, and simulate a CMOS buffer. Take a look at the plot from the
+    simulation, what is happening here and why? Save a picture of the plot.
