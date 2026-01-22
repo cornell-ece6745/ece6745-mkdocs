@@ -76,6 +76,9 @@ extra_javascript:
 
 nav:
 
+  - 'Design Rules Manual':
+    - 'Tinyflow 180nm Design Rules Manual': ece6745-design-rule-manual.md
+
   - 'Tutorials':
     - 'Tutorial 0: ECE Linux Server Remote Access': ece6745-tut00-remote-access.md
     - 'Tutorial 1: Linux Development Environment': ece6745-tut01-linux.md
