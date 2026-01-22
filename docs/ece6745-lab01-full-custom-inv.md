@@ -119,13 +119,13 @@ design requirement we are providing to you, but custom-circuit designers will
 test their design for a wide variety of parameters, including modifying this
 width to achieve their design goals of power, performance, or area.
 
-Take some time now to draw the following inverter **as shown exactly** in your
-`inv/inv.gds` file. To draw a new feature, select the layer from the Layers window,
-and then click the Box tool from the upper toolbar, click to set one corner, and
-then click again to set the opposite corner. **Notice how the width of the
-transistor is 8-lambda (boxes) as we mentioned above, and the gate width is
-2-lambda. Lambda rules define the gate-width as 2-lambda, so this matches our
-expectations!**
+Take some time now to draw the inverter in the following image **as shown
+exactly** in your `inv/inv.gds` file. To draw a new feature, select the layer
+from the Layers window, and then click the Box tool from the upper toolbar,
+click to set one corner, and then click again to set the opposite corner.
+**Notice how the width of the transistor is 8-lambda (boxes) as we mentioned
+above, and the gate width is 2-lambda. Lambda rules define the gate-width as
+2-lambda, so this matches our expectations!**
 
 Compare the relative spacing and widths of the various features to what is shown
 in the [design rules manual (DRM)](ece6745-design-rule-manual.md). We can see
@@ -134,12 +134,16 @@ associated rule in the DRM.
 
 ![](img/lab01-klayout-pmos.png)
 
+!!! question "Activity 2a: Lay out the PMOS"
+
+    Use the information in this section and the above images to lay out the
+    PMOS.
+
 Let's go ahead and run DRC to ensure these requirements are met, go to Tools ->
 DRC -> select the `tinyflow-180nm.lydrc` file from the list (it should be the
 only file listed under "Edit DRC Script").
 
 ![](img/lab01-klayout-enter-drc.png)
-
 A new window should open with the DRC results, the left side shows all the
 performed DRC checks, with the numbers corresponding to the associated rules in
 the DRM. If your design is DRC-clean, then all the numbers should be green. If
