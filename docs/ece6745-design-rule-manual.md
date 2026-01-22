@@ -54,8 +54,6 @@ pselect and nselect
 | 4.3  | Minimum select overlap of contact                                                     | 2         |
 | 4.4  | Minimum select width and spacing (P and N-select may coincident, but must not overlap)| 4         |
 
-\* rule 4.3 is rounded up from 1.5 $\lambda$ to 2 $\lambda$
-
 ![Implant](img/0-klayout-drm-select.png)
 
 contact to poly
