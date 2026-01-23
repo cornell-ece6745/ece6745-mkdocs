@@ -77,7 +77,6 @@ contact to active
 | 6.3      | Minimum contact spacing                                                    | 4         |
 | 6.4      | Minimum spacing to gate of transistor                                      | 2         |
 
-\* rule 6.2 is rounded up from 1.5 $\lambda$ to 2 $\lambda$
 
 ![Contact to active](img/0-klayout-drm-contact-to-active.png)
 
