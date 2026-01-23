@@ -108,6 +108,9 @@ with a specific dimension of lambda, be sure that you are counting on the boxes
 contained within the dotted lines, not the interspersed dots on the
 intersections!** The intersection of the two solid lines represents the origin.
 
+**When saving your layout go to File -> Save, DO NOT DO CTRL+S AS IT BREAKS THE
+VIEW!**
+
 !!! question "Activity 1: Open KLayout"
 
     Use the information in this section and the above images to open KLayout
@@ -147,8 +150,7 @@ our conversion factor of 1 lambda = 0.09um (the U suffix on the end of the
 values denotes that the numerical value should be interpreted in micro-units).
 Save the file.
 
-!!! question "Activity 2a: Write the reference Spice schematic for your
-inverter"
+!!! question "Activity 2a: Write the reference Spice schematic for your inverter"
 
     Use the information in this section to fill in the blank Spice schematic 
     in `inv/inv.sp`.
@@ -274,8 +276,7 @@ pin names should be as follows:
 
 After the pin labels are added, run DRC as before to ensure your design passes
 all design rule checks. **Ensure your design is DRC-clean before moving onto the
-next step! Be sure to save the layout as well by going to File -> Save, DO NOT
-DO CTRL+S AS IT BREAKS THE VIEW!**
+next step! Be sure to save the layout as well.**
 
 You can also view your inverter in a semi-three-dimensional view called 2.5D.
 **First, make sure your layout is fully-visible in the layout viewer.** Then, go
@@ -360,10 +361,10 @@ plotting both the input voltage (at A) vs. time as well as the output voltage
 !!! question "Activity 6: Simulate the inverter"
 
     Use the information in this section and the above images to simulate the
-    extracted inverter in Ngspice. How does this plot compare to the 
-    pre-extracted simulation? Qualitatively, how does the rise time of the 
-    output compare to the fall time qualitatively (compare this to your 
-    lecture notes)?
+    extracted inverter in Ngspice. Qualitatively, how does the rise time of the 
+    output compare to the fall time (compare this to your lecture notes)? Do you
+    see any minor changes between the extracted Spice plot vs the pre-extracted
+    Spice plot?
 
 7. Writing a Schematic, Laying Out, and Simulating a CMOS Buffer
 --------------------------------------------------------------------------
@@ -373,17 +374,18 @@ PMOS in the inverter. Let's go ahead and do just that! Do everything that you
 did for the inverter but for a buffer (in the `buf` directory) by writing the
 reference schematic and simulating it, laying it out, performing DRC and LVS,
 and then re-running the simulation script for the extracted Spice. When doing
-layout, you can start by copying-and-pasting your layout from the layout viewer
-in `inv/inv.gds` to the blank layout in `buf/buf.gds` and redesigning it.
+layout, you can start by copying-and-pasting your `inv/inv.gds` file to
+overwrite the `buf/buf.gds` file, and then changing the topcell name in the
+`buf/buf.gds` file from "INV" to "BUF". You can also choose to redo the layout
+from scratch if you wish.
 
 **When laying out the buffer, keep the base of the NMOS tied to VSS and the base
 of the PMOS tied to VDD.**
 
-!!! question "Activity 7: For the buffer, write the reference schematic and
-simulate, lay out, perform DRC and LVS, and re-simulate the extracted Spice"
+!!! question "Activity 7: For the buffer, write the reference schematic and simulate, lay out, perform DRC and LVS, and re-simulate the extracted Spice"
 
     Use the information in this section and the above images to write the 
     reference schematic and simulate, lay out, perform drc and lvs, and 
     re-simulate the extracted version of a CMOS buffer. Take a look at the 
     plots from the simulation, what is happening here and why? Save a picture 
-    of the plot.
+    of the plots.
