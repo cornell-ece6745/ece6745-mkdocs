@@ -307,14 +307,19 @@ but now selecting LVS from the Tools menu instead of DRC and selecting the
 `tinyflow-180nm.lylvs` file to run the LVS script.
 
 After running the script, and if LVS passes, you should see all green in the
-window that pops up:
+window that pops up. You can click through the dropdowns under Objects to see
+the comparison between the layout and reference schematic for pins, nets, and
+devices (transistors).
 
 ![alt text](img/lab01-klayout-lvs-browser.png)
 
 If you see any red stop signs, this means LVS failed. You can view the
 violations by clicking the drop-down arrows under Objects in the Cross Reference
-window to see what is failing the check. Edit your layout and/or reference Spice
-file to fix the violations.
+window to see what is failing the check. If you have mismatched or missing pins,
+these errors will show up in the Log tab next to the Cross Reference tab. Edit
+your layout and/or reference Spice file to fix the violations.
+
+![alt text](img/lab01-klayout-lvs-vio.png)
 
 Once all violations are resolved, take a minute to view the extracted Spice
 output from the LVS tool in `inv/inv-rcx.sp`. This file looks similar to the
