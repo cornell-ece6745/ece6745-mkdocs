@@ -339,9 +339,10 @@ To open on the ECELinux server, first open KLayout in edit mode (`-e`).
 % klayout -e &
 ```
 
-There will be a pop-up the first time you open KLayout asking about
-whether to use full-hierarchy mode. Select _Don't show this window again_
-and then click _Yes_.
+Do not worry about libGL errors when starting KLayout. There will be a
+pop-up the first time you open KLayout asking about whether to use
+full-hierarchy mode. Select _Don't show this window again_ and then click
+_Yes_.
 
 Choose _File > New Layout_ from the menubar and click _OK_. The KLayout
 window should look as follows.
@@ -381,10 +382,12 @@ specific dimension of lambda, be sure that you are not zoomed out so far
 that you cannot see the lambda grid anymore. The intersection of the two
 solid lines represents the origin.
 
-!!! warning "Saving layouts"
+!!! warning "Do not use Ctrl+S to save layouts!"
 
     When saving your layout use _File > Save_ from the menubar. **DO NOT
-    DO CTRL+S AS IT BREAKS THE VIEW!**
+    DO CTRL+S AS IT BREAKS THE VIEW!** If you do use Ctrl+S then try
+    clicking the back arrow many times and you might be able to get your
+    layout back.
 
 Let's now go ahead and draw an NMOS transistor step-by-step. First, draw
 two boxes on the _active_ layer. Each box should be 8 lambda tall and 7
@@ -440,6 +443,10 @@ the active we have already drawn.
 
 ![](img/lab01-klayout4.png)
 
+You can hide and show layers by double-clicking on the layer name in the
+_Layer Panel_. This can be useful to understand how different layers
+overlap.
+
 Once you have finish drawing your NMOS transistor let's make sure it
 follows all of the rules in the _TinyFlow 180nm Design-Rule Manual_
 (DRM):
@@ -476,6 +483,10 @@ erase part of a box:
    layer you want to erase
 
 ![](img/lab01-klayout6.png)
+
+Once you have finish using the _Erase_ tool don't forget to set it back
+to the _Add_ tool otherwise you won't be able to draw new boxes in the
+future.
 
 Now rerun DRC. You should now have a DRC violation for DRC Rule 3.3. If
 you click on the violation in the DRC browser KLayout will highlight
@@ -546,7 +557,11 @@ deck using VS Code.
 
 Take a minute to browse the testbench as well and understand how it works
 at a high level. Copy-and-paste your Spice circuit from `inv/inv.sp` into
-the `inv/inv-sim.sp` file where it says to. **Additionally, we need to
+the `inv/inv-sim.sp` file where it says to. You need to copy the entire
+subcircuit definition (i.e., you must include the `.SUBCKT` and `.ENDS`
+lines).
+
+**Additionally, we need to
 make the following changes to the pasted Spice circuit to ensure it is
 compatible with the transistor models we will be using:**
 
@@ -572,6 +587,22 @@ terminal to run the simulation (it should take a few seconds to run):
 The simulation will open a new plot window in the virtual desktop,
 plotting both the input voltage (at A) vs. time as well as the output
 voltage (at Y) vs. time.
+
+!!! warning "Be sure to change both `inv.sp` and `inv-sim.sp`!"
+
+    If you make any fixes to your transistor-level schematic
+    `inv-sim.sp`, be sure to make the same changes in `inv.sp` otherwise
+    later steps will not work.
+
+!!! warning "Do not use Ctrl-C to exit Ngspice!"
+
+    To exit Ngspice type `exit` at the Ngspice prompt. If you try to use
+    Ctr-C to exit Ngspice it will break your terminal. You might be able
+    to fix your terminal by typing `clear` and then press enter, then
+    typing `reset` and then press enter. You might not be able to see the
+    letters when you type `clear` and `reset` but it still might work.
+    You might need to use `source setup-gui.sh` again. Worst case you
+    will need to close the terminal and open a new terminal.
 
 !!! question "Critical Thinking Questions"
 
@@ -652,7 +683,23 @@ If you see any red stop signs, this means LVS failed. You can view the
 violations by clicking the drop-down arrows under _Cross Reference >
 Objects_ to see what is failing the check. If you have mismatched or
 missing pins, these errors will show up in the _Log_ tab. Edit your
-layout and/or reference Spice file to fix the violations.
+layout and/or reference Spice file to fix the violations. Here are some
+examples of what might cause LVS violations.
+
+  - The width of the transistors in the reference schematic do not match
+    the layout.
+
+  - The pins are not on the _metal1 label_ layer (pins must be on _metal1
+    label_ not _metal1_).
+
+  - Make sure you are using `PMOS` and `NMOS` in your `inv.sp` file not
+    `sky130_fd_pr__pfet_01v8` and `sky130_fd_pr__nfet_01v8`. The
+    `sky130_fd_pr__pfet_01v8` and `sky130_fd_pr__nfet_01v8` versions are
+    only for simulation, so they should only be in the `inv-sim.sp`.
+
+  - Make sure your transistors in the layout are really transistors
+    (i.e., make sure you are really using the _nselect_ and _pselect_
+    layers correctly).
 
 Let's go ahead and force an LVS violation. Close the LVS dialog box and
 swap the names of the A and Y pins. Then rerun LVS and you should be able
