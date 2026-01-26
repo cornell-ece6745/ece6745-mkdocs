@@ -1,8 +1,11 @@
-TinyFlow Design Rule Manual (v0.1)
+TinyFlow Design Rule Manual (v0.2)
 ==========================================================================
 
 Adapted from  MOSIS Scalable CMOS (SCMOS) Revision 8.0 (Technology: SCN6M DEEP) (https://www.southampton.ac.uk/~bim/notes/ice/DesignRules/scmos-main.html#tech-codes)
 
+Authors: Vayun Tiwari
+
+Date: January 26th, 2026
 
 nwell
 --------------------------------------------------------------------------
