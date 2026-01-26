@@ -95,6 +95,18 @@ metal1
 
 ![Metal1](img/0-klayout-drm-metal1.png)
 
+metal1 label
+--------------------------------------------------------------------------
+
+| Rule     | Description                                                                | $\lambda$               |
+|----------|----------------------------------------------------------------------------|-------------------------|
+| label.1  | Track alignment                                                            | -                       |
+| label.2  | Minimum metal1 overlap                                                  | 4 $\times$ 4                        |
+
+
+
+![Metal1](img/0-klayout-drm-metal1label.png)
+
 via12 & above
 --------------------------------------------------------------------------
 coming in v1
