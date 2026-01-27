@@ -44,7 +44,7 @@ poly
 
 ![Poly](img/0-klayout-drm-poly.png)
 
-pselect and nselect
+pselect & nselect
 --------------------------------------------------------------------------
 
 | Rule     | Description                                                                       | $\lambda$ |
@@ -113,7 +113,7 @@ prboundary
 | prboundary.2  | Minimum spacing to metal1 (does not apply to metal1 VDD/VSS rails)    | 2                  |
 | prboundary.3  | Minimum spacing to poly                                               | 2                  |
 
-*these rules ensure DRC-clean abutment between adjacent standard cells.
+*these rules ensure DRC-clean abutment between adjacent standard cells during place & route
 
 ![Metal1 label](img/0-klayout-drm-prboundary.png)
 
