@@ -5,7 +5,7 @@ Adapted from  MOSIS Scalable CMOS (SCMOS) Revision 8.0 (Technology: SCN6M DEEP) 
 
 Authors: Vayun Tiwari
 
-Date: January 26th, 2026
+Last updated: January 27th, 2026
 
 nwell
 --------------------------------------------------------------------------
@@ -15,7 +15,7 @@ nwell
 | 1.1      | Minimum width                                                              | 12        |
 | 1.3      | Minimum spacing between wells at same potential                            | 6         |
 
-![Wells](img/0-klayout-drm-well.png)
+![Well](img/0-klayout-drm-well.png)
 
 active
 --------------------------------------------------------------------------
@@ -41,7 +41,6 @@ poly
 | 3.3      | Minimum gate extension of active                                           | 3         |
 | 3.4      | Minimum active extension of poly                                           | 4         |
 | 3.5      | Minimum field poly to active                                               | 1         |
-
 
 ![Poly](img/0-klayout-drm-poly.png)
 
@@ -69,7 +68,6 @@ contact to poly
 
 ![Contact to poly](img/0-klayout-drm-contact-to-poly.png)
 
-
 contact to active
 --------------------------------------------------------------------------
 
@@ -79,7 +77,6 @@ contact to active
 | 6.2      | Minimum active overlap                                                     | 2         |
 | 6.3      | Minimum contact spacing                                                    | 4         |
 | 6.4      | Minimum spacing to gate of transistor                                      | 2         |
-
 
 ![Contact to active](img/0-klayout-drm-contact-to-active.png)
 
@@ -95,7 +92,6 @@ metal1
 | 7.4      | Minimum spacing when either metal line is wider than 10 lambda             | 6                       |
 | 7.5      | Minimum area                                                               | 25 $\lambda$<sup>2</sup>|
 
-
 ![Metal1](img/0-klayout-drm-metal1.png)
 
 metal1 label
@@ -106,9 +102,20 @@ metal1 label
 | label.1  | Track alignment                                                            | -                       |
 | label.2  | Minimum metal1 overlap                                                  | 4 $\times$ 4                        |
 
+![Metal1 label](img/0-klayout-drm-metal1label.png)
 
+prboundary
+--------------------------------------------------------------------------
 
-![Metal1](img/0-klayout-drm-metal1label.png)
+| Rule          | Description                                                           | $\lambda$          |
+|---------------|-----------------------------------------------------------------------|--------------------|
+| prboundary.1  | Minimum spacing to active (does not apply to well-tap active)         | 2                  |
+| prboundary.2  | Minimum spacing to metal1 (does not apply to metal1 VDD/VSS rails)    | 2                  |
+| prboundary.3  | Minimum spacing to poly                                               | 2                  |
+
+*these rules ensure DRC-clean abutment between adjacent standard cells.
+
+![Metal1 label](img/0-klayout-drm-prboundary.png)
 
 via12 & above
 --------------------------------------------------------------------------
