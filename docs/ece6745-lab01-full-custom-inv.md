@@ -561,9 +561,9 @@ the `inv/inv-sim.sp` file where it says to. You need to copy the entire
 subcircuit definition (i.e., you must include the `.SUBCKT` and `.ENDS`
 lines).
 
-**Additionally, we need to
-make the following changes to the pasted Spice circuit to ensure it is
-compatible with the transistor models we will be using:**
+**Additionally, we need to make the following changes to the pasted Spice
+circuit to ensure it is compatible with the transistor models we will be
+using:**
 
  - Replace the `PMOS` identifier with `sky130_fd_pr__pfet_01v8`
  - Replace the `NMOS` identifier with `sky130_fd_pr__nfet_01v8`
@@ -577,13 +577,14 @@ changes modify the Spice to work with these models.
 
 We run the simulation using an open-source tool called
 [Ngspice](https://ngspice.sourceforge.io). Execute the following in your
-terminal to run the simulation (it should take a few seconds to run):
+terminal to run the simulation:
 
 ```bash
 % cd ${HOME}/lab01
 % ngspice inv/inv-sim.sp
 ```
 
+Please be patient as it can take 30-45 seconds to finish the simulation.
 The simulation will open a new plot window in the virtual desktop,
 plotting both the input voltage (at A) vs. time as well as the output
 voltage (at Y) vs. time.
