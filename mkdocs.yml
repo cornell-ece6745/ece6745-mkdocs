@@ -36,6 +36,7 @@ theme:
 markdown_extensions:
   - admonition
   - attr_list
+  - pymdownx.extra
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
@@ -76,9 +77,6 @@ extra_javascript:
 
 nav:
 
-  - 'Design Rules Manual':
-    - 'Tinyflow 180nm Design Rules Manual': ece6745-design-rule-manual.md
-
   - 'Tutorials':
     - 'Tutorial 0: ECE Linux Server Remote Access': ece6745-tut00-remote-access.md
     - 'Tutorial 1: Linux Development Environment': ece6745-tut01-linux.md
@@ -101,4 +99,12 @@ nav:
 #    - 'Section 5: SRAM Generators': ece6745-sec05-sram.md
 
   - 'Labs':
-    - 'Lab 1: Full-Custom Inverter Design': ece6745-lab01-full-custom-inv.md
+    - 'Lab 1: Full-Custom Inverter': ece6745-lab01-full-custom-inv.md
+    - 'Lab 2: Standard-Cell Inverter': ece6745-lab02-stdcell-inv.md
+
+  - 'Projects':
+    - 'Project 1: TinyFlow Tape-Out':
+      - "Part A: TinyFlow Standard Cells": ece6745-project1-partA.md
+
+  - 'Misc':
+    - 'Tinyflow 180nm Design Rules Manual': ece6745-design-rule-manual.md

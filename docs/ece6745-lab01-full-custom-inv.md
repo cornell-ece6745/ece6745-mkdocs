@@ -1,5 +1,5 @@
 
-ECE 6745 Lab 1: Full-Custom Inverter Design
+ECE 6745 Lab 1: Full-Custom Inverter
 ==========================================================================
 
 In this lab, we will first make sure we can access the Linux development
@@ -11,15 +11,18 @@ lecture using the following TinyFlow full-custom design flow.
 
 ![](img/lab01-flow.png)
 
-We will by writing a transistor-level schematic, simulating the this
-schematic using Ngspice to verify its functionality, using the KLayout
-design editor to create the layout, perform a design-rules check (DRC),
-perform a layout vs. schematic check (LVS), and generating an extracted
-transistor-level schematic. Finally we will re-simulate the extracted
+We will write a transistor-level schematic, simulate the this schematic
+using Ngspice to verify its functionality, use the KLayout design editor
+to create the layout, perform a design-rules check (DRC), perform a
+layout vs. schematic check (LVS), and generate an extracted
+transistor-level schematic. Finally, we will re-simulate the extracted
 transistor-level schematic to characterize the timing. We will also be
 implementing a CMOS buffer to verify our intuition that NMOS transistors
 should only be used in the pull-down network and PMOS transistors should
 only be used in the pull-up network.
+
+To get started, find a free workstation and log into the workstation
+using your NetID and standard NetID password.
 
 1. Linux Development Environment
 --------------------------------------------------------------------------
@@ -41,12 +44,6 @@ use for today's lab. We will start by making sure we can access the
 `ecelinux` servers using PowerShell, then we will use VS Code, and
 finally we will setup MS Remote Desktop for running GUI Applications on
 `ecelinux`. We will also make sure our GitHub account is setup correctly.
-
-!!! warning "Do not use your own laptops for today's lab!"
-
-    As discussed in Tutorial 0, you can access `ecelinux` from your own
-    laptops. However, in today's lab we will be using the workstations in
-    225 Upson Hall. Do not use your own laptops.
 
 ### 1.1. Remote Access via PowerShell
 
