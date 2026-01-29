@@ -93,9 +93,6 @@ cells:
  - **AOI21X1:** Three-input AND-OR-INV gate implementing logic function
      $Y = \overline{AB + C}$, should have same drive strength as INVX1
 
- - **FILL:** One-track wide filler cell, used to fill in blank space
-     between standard cells
-
  - **TIEHI:** Tie high cell, connects output to logic one, should use a
      weak PMOS to pull-up the output to VDD, gate of weak PMOS should be
      connected to a diode-connected NMOS
@@ -103,6 +100,9 @@ cells:
  - **TIELO:** Tie low cell, connects output to logic zero, should use a
      weak NMOS to pull-down the output to ground, gate of weak NMOS
      should be connected to a diode-connected PMOS
+
+ - **FILL:** One-track wide filler cell, used to fill in blank space
+     between standard cells
 
 For each standard cell we must create the following six views:
 

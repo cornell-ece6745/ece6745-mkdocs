@@ -42,7 +42,7 @@ Ngspice to characterize the propagation delay for different load
 capacitances in order to create a linear delay model. Finally, we will
 write the front-end and back-end views for our standard-cell inverter in
 two YAML files. We will also implement three _auxillary standard cells_
-(i.e., FILL, TIEHI, TIELO).
+(i.e., TIEHI, TIELO, FILL).
 
 1. Logging Into `ecelinux` with VS Code
 --------------------------------------------------------------------------
@@ -147,27 +147,18 @@ inverter must also follow all of the rules which make standard cells
  - explain the YAML format including units!
  - explain where to get the information from
 
-3. Standard-Cell FILL
+3. Standard-Cell TIEHI
 --------------------------------------------------------------------------
 
- - do we need all views for FILL?
+ - include the schematic and layout from lecture
 
-### 3.1. Behavioral View
-### 3.2. Schematic View
-### 3.3. Layout View
-### 3.4. Extracted Schematic View
-### 3.5. Front-End View
-### 3.6. Back-End View
-
-4. Standard-Cell TIEHI, TIELO
+4. Standard-Cell TIELO
 --------------------------------------------------------------------------
 
- - do we need all views for TIEHI, TIELO?
+ - include the schematic and layout from lecture
 
-### 4.1. Behavioral View
-### 4.2. Schematic View
-### 4.3. Layout View
-### 4.4. Extracted Schematic View
-### 4.5. Front-End View
-### 4.6. Back-End View
+5. Standard-Cell FILL
+--------------------------------------------------------------------------
+
+ - just layout view?
 
