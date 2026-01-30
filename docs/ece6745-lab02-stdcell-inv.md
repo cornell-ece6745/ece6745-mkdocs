@@ -317,6 +317,11 @@ specified. Each of these subdirectories will contain the following:
 Look at the results and verify functionality of the schematic view for
 your INVX1 standard cell. Look at the text output and the waveform plot.
 
+```bash
+% cd ${HOME}/ece6745/lab02/stdcells/build
+% code ngspice-results/INVX1-50f-stdcells-A_0_1_0/INVX1-50f-stdcells-A_0_1_0.png
+```
+
 ### 2.3. Layout View
 
 We can now move on to drawing the layout view for our INVX1 standard
