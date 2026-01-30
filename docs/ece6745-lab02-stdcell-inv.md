@@ -76,7 +76,7 @@ today's lab.
 % xclock &
 % mkdir -p ${HOME}/ece6745
 % cd ${HOME}/ece6745
-% git clone git@github.com:cornell-ece6745/ece6745-lab2.git lab02
+% git clone git@github.com:cornell-ece6745/ece6745-lab2 lab02
 % cd lab02
 % tree
 ```
