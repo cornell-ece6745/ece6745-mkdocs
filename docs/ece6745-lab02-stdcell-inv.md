@@ -76,7 +76,7 @@ today's lab.
 % xclock &
 % mkdir -p ${HOME}/ece6745
 % cd ${HOME}/ece6745
-% git clone git@github.com:cornell-ece6745/ece6745-lab02 lab02
+% git clone git@github.com:cornell-ece6745/ece6745-lab2.git lab02
 % cd lab02
 % tree
 ```
@@ -151,7 +151,7 @@ simulations.
 ### 2.1. Behavioral View
 
 We will begin by defining our inverter standard cell in a behavioral way,
-in other words, what is its_*logical_ functionality? To do this, we use
+in other words, what is its _*logical_ functionality? To do this, we use
 Verilog by writing a module definition for our cell in `stdcells.v` and
 testing the standard cell module with a Verilog testbench (provided in
 `stdcells/verilog-test/INVX1-test.v`). Use VS Code to implement the
