@@ -328,7 +328,22 @@ standard cell we have given you is 64 lambda wide (8 horizontal tracks). When
 drawing your layout, implement the above inverter all the way on the left side
 of your provided template. You will then need to "trim" the template from the
 right side by performing the following actions to achieve a minimum-width:
-  - TODO: VAYUN
+
+First, erase extra htrack and vtrack shapes, then erase the prboundary so that it is aligned with the new right most track.
+
+![](img/lab02-klayout-shrink-cells-tracksprboundary.png)
+
+Next, erase the nwell so that it extends beyond the prboundary by 3 lambda (symmetrical with the left edge of the cell)
+
+![](img/lab02-klayout-shrink-cells-nwell.png)
+
+Next, erase the nselect and pselect so that it extends beyond the prboundary by 2 lambda (symmetrical with the left edge of the cell).
+
+![](img/lab02-klayout-shrink-cells-select.png)
+
+Finally, erase the well-tap structure (active + metal1 + contacts) so that it is aligned with the prboundary.
+
+![](img/lab02-klayout-shrink-cells-taps.png)
 
 As in lab 1, be sure to run DRC and LVS to ensure your design adheres to all
 design rules and matches your Spice schematic, and also 2.5D! Also be sure to
