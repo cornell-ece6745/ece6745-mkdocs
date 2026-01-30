@@ -69,10 +69,26 @@ updates before working on your lab assignment.
 % tree
 ```
 
-where `XX` should be replaced with your group number. Your repo contains
-the following files:
+where `XX` should be replaced with your group number. Your repo contains the
+following files for the views and simulation scripts for each standard cell:
 
- - list files and brief description here
+```
+.
+└── stdcells/
+    ├── verilog-sim/
+    │   ├── AOI21X1-sim.v
+    │   ├── INVX1-sim.v
+    │   ├── NAND2X1-sim.v
+    │   ├── NOR2X1-sim.v
+    │   ├── TIEHI-sim.v
+    │   └── TIELO-sim.v
+    ├── stdcells-be.yml
+    ├── stdcells-fe.yml
+    ├── stdcells-rcx.yml
+    ├── stdcells.gds
+    ├── stdcells.sp
+    └── stdcells.v
+```
 
 1. Standard-Cell Library
 --------------------------------------------------------------------------
@@ -143,19 +159,65 @@ capacitances in order to create a linear delay model. Finally, we will
 write the front-end and back-end views for our standard-cells in
 two YAML files.
 
-We recommend implementing all six views for one standard cell before
-moving on to the next standard cell. Consider having each student
-implement all six views for different standard cells.
+We recommend implementing all six views for one standard cell before moving on
+to the next standard cell. Consider having each student implement all six views
+for different standard cells. Follow the same steps as in lab 2 to implement
+each standard cell.
 
 ### 2.1. Behavioral View
+
+Think critically about the truth table for each standard cell. Are you testing
+all possible inputs? 
+
 ### 2.2. Schematic View
+
+Think critically about transistor sizing. You should aim to create balanced
+cells that have equivalent drive as the canonical minimum-sized 2:1 inverter.
+You should aim to have roughly equal rise and fall propagation delays.
+
 ### 2.3. Layout View
+
+Draw stick diagrams for your layouts before drawing on KLayout. Try to route
+connections to minimize the number of sites your standard cell takes up, and
+then shrink it to the minimum number of sites. 
+
 ### 2.4. Extracted Schematic View
+
+Ensure your propagation delay measurements are reasonable. You should be
+anywhere from 10s of ps to 100s of ps. Be sure to double-check your extracted
+schematic by re-simulating it. **For multi-input cells, `tinyflow-ngspice` will
+print out multiple input->output rising and falling transition times, you will
+want to pick the maximum out of all of these times to use for the delay value
+for the given load capacitance.**
+
 ### 2.5. Front-End View
+
+Think critically about the INV-NAND patterns for each cell. There may be
+multiple!
+
 ### 2.6. Back-End View
+
+Be sure to update pin locations here if you change anything in your layout.
 
 3. Project Submissions
 --------------------------------------------------------------------------
 
- - what commands will we use to test?
+We will be running various commands to test each aspect of your standard cells:
 
+ - Behavioral view testbenches: ensure all of your testbenches pass for all
+   values of your cells' corresponding truth tables
+ - Schematic view testbenches: we will run `tinyflow-ngspice` for various values
+   of `cload` between 0f and 100f for all truth table values for your cells
+   pre-extracted Spice schematics. We will also verify your Spice schematics
+   include properly-sized transistors for balanced drive
+ - Layout view: we will run DRC and LVS batch scripts to ensure all of your
+   cells are DRC and LVS-clean. We will also verify your layouts include
+   properly-sized transistors for balanced drive
+ - Extracted schematic view: we will re-simulate your extracted Spice views
+   using `tinyflow-ngspice` with all truth table values for your standard cells.
+   We will also ensure your delay values are within reason as discussed above
+   (10s to 100s of ps)
+ - Front-end view: we will check your front-end view values to ensure they are
+   reasonable and match your other views
+ - Back-end view: we will check your back-end view values to ensure they are
+   reasonable and match your other views

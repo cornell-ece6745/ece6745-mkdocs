@@ -69,6 +69,12 @@ today's lab.
 % git clone git@github.com:cornell-ece6745/ece6745-lab02-stdcell-inv lab02
 % cd lab02
 % tree
+```
+
+Your repo contains the following files for the views and simulation scripts for
+each standard cell:
+
+```
 .
 └── stdcells/
     ├── verilog-sim/
