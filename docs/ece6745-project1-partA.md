@@ -179,9 +179,11 @@ You should aim to have roughly equal rise and fall propagation delays.
 
 Draw stick diagrams for your layouts before drawing on KLayout. Try to route
 connections to minimize the number of sites your standard cell takes up, and
-then shrink it to the minimum number of sites. **Be sure to reference the lab 2
-handout to learn how to run batch DRC and LVS scripts for all of your standard
-cells without having to open the KLayout GUI!**
+then shrink it to the minimum number of sites. When switching to a new cell in
+the KLayout GUI, make sure to right-click it from the "Cells" window on the left
+and select "Show As New Top" as discussed in the lab 2 handout. **Be sure to
+reference the lab 2 handout to learn how to run batch DRC and LVS scripts for
+all of your standard cells without having to open the KLayout GUI!**
 
 ### 2.4. Extracted Schematic View
 
