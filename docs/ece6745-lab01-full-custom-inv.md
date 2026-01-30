@@ -304,18 +304,23 @@ today's lab.
 % git clone git@github.com:cornell-ece6745/ece6745-lab1.git lab01
 % cd lab01
 % tree
+```
+
+Your repo contains the following files for modeling and simulating both
+the inverter and buffer.
+
+```
 .
-└── lab01/
-    ├── buf/
-    │   ├── buf-rcx-sim.sp
-    │   ├── buf-sim.sp
-    │   ├── buf.gds
-    │   └── buf.sp
-    └── inv/
-        ├── inv-rcx-sim.sp
-        ├── inv-sim.sp
-        ├── inv.gds
-        └── inv.sp
+├── buf/
+│   ├── buf-rcx-sim.sp
+│   ├── buf-sim.sp
+│   ├── buf.gds
+│   └── buf.sp
+└── inv/
+    ├── inv-rcx-sim.sp
+    ├── inv-sim.sp
+    ├── inv.gds
+    └── inv.sp
 ```
 
 2. KLayout Tutorial

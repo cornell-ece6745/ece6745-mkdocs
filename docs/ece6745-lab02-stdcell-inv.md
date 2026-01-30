@@ -29,7 +29,7 @@ front-end, and back-end views.
 
 We will be using the following TinyFlow standard-cell design flow.
 
-![](img/lab02-flow.png)
+![](img/T02-flow.png)
 
 We will by begin by writing the behavioral view in Verilog and verifying
 its functionality using a Verilog test bench and Icarus Verilog. We will
@@ -132,11 +132,11 @@ inverter must also follow all of the rules which make standard cells
 
 ### 2.1. Behavioral View
 
-We will begin by defining our inverter standard cell in a *behavioral way*, in
-other words, what is its *logical* functionality? To do this, we use Verilog by
-writing a module definition for our cell (in `stdcells/stdcells.v`) and testing
-the standard cell module with a Verilog testbench (in
-`stdcells/verilog-sim/INVX1-sim.v`).
+We will begin by defining our inverter standard cell in a behavioral way,
+in other words, what is its_*logical_ functionality? To do this, we use
+Verilog by writing a module definition for our cell (in
+`stdcells/stdcells.v`) and testing the standard cell module with a
+Verilog testbench (in `stdcells/verilog-sim/INVX1-sim.v`).
 
 First, modify the `stdcells/stdcells.v` file by changing the code in the
 `LAB/PROJECT TASK` block for the inverter to match its proper Verilog
@@ -147,9 +147,9 @@ Next, we will test the inverter. Navigate to the `stdcells/verilog-sim`
 directory and create a new build directory:
 
 ```bash
-cd stdcells/verilog-sim/
-mkdir -p build
-cd build
+% cd stdcells
+% mkdir -p build
+% cd build
 ```
 Open the `INVX1-sim.v` file. Modify the stimulus definition inside the
 `LAB/PROJECT TASK` block by adding more 0's and 1's to the array definition
