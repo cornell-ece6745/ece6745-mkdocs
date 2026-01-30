@@ -577,4 +577,6 @@ tinyflow-batch-lvs
 ```
 
 These two scripts will alert you if there are any DRC/LVS errors in any of your
-cells, all without needing to open the KLayout GUI!
+cells, all without needing to open the KLayout GUI! Output files from these
+scripts will be generated to `drc_results`, `lvs_results`, and `rcx-results`
+subdirectories within the `build` directory.
