@@ -175,6 +175,10 @@ Think critically about transistor sizing. You should aim to create balanced
 cells that have equivalent drive as the canonical minimum-sized 2:1 inverter.
 You should aim to have roughly equal rise and fall propagation delays.
 
+For standard cells with more than one NMOS and PMOS. You will need to add a
+value after the M_N and M_P identifiers in your Spice, e.g. M_N1, M_N2, M_P1,
+M_P2. Each transistor should have a unique identifier.
+
 ### 2.3. Layout View
 
 Draw stick diagrams for your layouts before drawing on KLayout. Try to route
