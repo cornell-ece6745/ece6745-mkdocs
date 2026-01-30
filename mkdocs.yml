@@ -99,12 +99,12 @@ nav:
 #    - 'Section 5: SRAM Generators': ece6745-sec05-sram.md
 
   - 'Labs':
-    - 'Lab 1: Full-Custom Inverter': ece6745-lab01-full-custom-inv.md
-    - 'Lab 2: Standard-Cell Inverter': ece6745-lab02-stdcell-inv.md
+    - 'Lab 1: Full-Custom Inverter': ece6745-lab1.md
+    - 'Lab 2: Standard-Cell Inverter': ece6745-lab2.md
 
   - 'Projects':
     - 'Project 1: TinyFlow Tape-Out':
-      - "Part A: TinyFlow Standard Cells": ece6745-project1-partA.md
+      - "Part A: TinyFlow Standard Cells": ece6745-proj1-partA.md
 
   - 'Misc':
-    - 'Tinyflow 180nm Design Rules Manual': ece6745-design-rule-manual.md
+    - 'Tinyflow 180nm Design Rules Manual': ece6745-tinyflow-180nm-drm.md
