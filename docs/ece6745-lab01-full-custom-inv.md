@@ -301,7 +301,7 @@ today's lab.
 ```bash
 % mkdir -p $HOME/ece6745
 % cd $HOME/ece6745
-% git clone git@github.com:cornell-ece6745/ece6745-lab1.git lab01
+% git clone git@github.com:cornell-ece6745/ece6745-lab1 lab01
 % cd lab01
 % tree
 ```
