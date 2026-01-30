@@ -514,10 +514,10 @@ For input pins, you will need to specify a value for the gate capacitance
 capacitance is as follows:
 
 ```
-Cgate = 1.067 * (total gate width in lambda) * 0.09
+Cgate = 1.67 * (total gate width in lambda) * 0.09
 ```
 
-The value of 1.067 fF/um is a reasonable value for a generic 180nm
+The value of 1.67 fF/um is a reasonable value for a generic 180nm
 process. You need to convert it to just units of fF by multiplying by the
 total gate width in um associated with the given input pin. You will need
 to find this total gate width in units of lambda by looking at your
