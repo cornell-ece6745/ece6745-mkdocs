@@ -221,7 +221,7 @@ We recommend implementing all six views for one standard cell before
 moving on to the next standard cell. Consider having each student
 implement all six views for different standard cells.
 
-### 2.1. Behavioral View
+### 1.1. Behavioral View
 
 Start by working out the truth table for a standard cell. Once you have
 your truth table, then implement the logic equation which corresponds to
@@ -318,7 +318,7 @@ your truth table. You can run a test bench as follows.
 % ./INVX1-test
 ```
 
-### 2.2. Schematic View
+### 1.2. Schematic View
 
 Start by drawing the schematic view and then sizing the transistors
 appropriately based on whether you are targetting equal rise and fall
@@ -414,7 +414,7 @@ each standard cell. Look at the text output and the waveform plot.
 % cd ${HOME}/ece6745/lab2/stdcells/build
 % code ngspice-results/INVX1-50f-stdcells-A_0_1_0_1_0/INVX1-50f-stdcells-A_0_1_0_1_0.png
 ```
-### 2.3. Layout View
+### 1.3. Layout View
 
 Start by drawing a stick diagram for your layout to make a plan for how
 you want to place your transitors and use polysilicon and metal 1 to
@@ -435,7 +435,7 @@ the width of your standard cell; when you are done you can shrink it to
 take the minimum number of _sites_ (i.e., vertical routing tracks). Use
 DRC and LVS to complete physical verification of your layout.
 
-### 2.4. Extracted Schematic View
+### 1.4. Extracted Schematic View
 
 The extracted schematic view is generated automatically when you run LVS.
 You will need to copy the contents of the generated SPICE file into
@@ -498,7 +498,7 @@ maximum or at least very close to the maximum across all rows. We will
 use this parasitic delay and load delay factor for the linear delay model
 of the standard cell.
 
-### 2.5. Front-End View
+### 1.5. Front-End View
 
 The front-end view is stored in the `stdcells-fe.yml` file. This YAML
 file will use much of the information we have obtained in previous steps,
@@ -578,7 +578,7 @@ Finally, you will need to specify a list of patterns **using only INV()
 and NAND2() logical gates** that matches the functionality of your gate
 for all of its inputs.
 
-### 2.6. Back-End View
+### 1.6. Back-End View
 
 The back-end view is stored in the `stdcells-be.yml` file. This YAML file
 will use much of the information we have obtained in previous steps, and
@@ -611,7 +611,7 @@ your layout, and get the X and Y location of the pin marker for each pin
 relative to the lower-left track intersection. These values should once
 again be in units of lambda.
 
-3. Optional Extensions
+2. Optional Extensions
 --------------------------------------------------------------------------
 
 Students are welcome to add another standard cell to their standard cell
@@ -629,7 +629,7 @@ Some ideas include:
 
 Students will need to add this new gate to all six views.
 
-4. Project Submissions
+3. Project Submission
 --------------------------------------------------------------------------
 
 To submit your code you simply push your code to GitHub. You can push
