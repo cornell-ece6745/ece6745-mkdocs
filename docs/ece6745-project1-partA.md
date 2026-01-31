@@ -40,7 +40,7 @@ to find your project group).
     students must take turns using their own account so both students
     have representative Git commits. Students should create commits after
     finishing each step of the project, so their contribution is clear in
-    the Git commit log. **A student's whose contribution is limited as
+    the Git commit log. **A student whose contribution is limited as
     represented by the Git commit log will receive a significant
     deduction to their project score.**
 
@@ -122,15 +122,15 @@ cells.
 The INVX1 and NAND2X1 standard cells should be sized to have roughly
 equal rise and fall times assuming the effective resistance of PNMOS
 transistor is twice the effective resistance of an NMOS transistor with
-the same width. The NAND2X1 standard cell should be size to have roughly
+the same width. The NAND2X1 standard cell should be sized to have roughly
 the same drive strength (i.e., effective resistance) as the INVX1
 standard cell.
 
-For NOR2X1 and AOI21X1 standard cells, students can choose to one of two
+For NOR2X1 and AOI21X1 standard cells, students can choose one of two
 options.
 
  - Option 1: Size these gates such that they have roughly equal rise and
-   fall times and roughly the sae drive strength (i.e., effective
+   fall times and roughly the same drive strength (i.e., effective
    resistance) as the INVX1 standard cell; this will require using
    fingers.
 
@@ -146,7 +146,7 @@ TIELO standard cell should use a weak NMOS to pull-down the output to
 ground, gate of weak NMOS should be connected to a diode-connected PMOS.
 
 The FILL cell should be a one-track wide filler cell with a vertical
-strip of polysilcon to meet poly density design rules.
+strip of polysilicon to meet poly density design rules.
 
 Our standard cell library will include the following six views:
 
@@ -202,19 +202,19 @@ We will be using the following TinyFlow standard-cell design flow.
 
 ![](img/T02-flow.png)
 
-We will by begin by writing the behavioral view in Verilog and verifying
+We will begin by writing the behavioral view in Verilog and verifying
 its functionality using a Verilog test bench and Icarus Verilog. We will
 then write the schematic view in SPICE and verify its functionality using
 a SPICE test bench and TinyFlow-Ngspice. Instead of using Ngspice
 directly, we will use our TinyFlow-Ngspice wrapper script which makes it
-much easier to run SPICE simulatoins. We will then use the KLayout design
+much easier to run SPICE simulations. We will then use the KLayout design
 editor to create the layout, perform a design-rules check (DRC), perform
 a layout vs. schematic check (LVS), and generate an extracted schematic.
 We will re-simulate the extracted transistor-level schematic using
 TinyFlow-Ngspice to characterize the propagation delay for different load
 capacitances in order to create a linear delay model. Finally, we will
 write the front-end and back-end views for our standard-cell inverter in
-two YAML files. We will also implement three _auxillary standard cells_
+two YAML files. We will also implement three _auxiliary standard cells_
 (i.e., TIEHI, TIELO, FILL).
 
 We recommend implementing all six views for one standard cell before
@@ -308,7 +308,7 @@ endmodule
 
 The `check` task is used to set the inputs and check that the output is
 as expected. We provide you a single check for each standard cell. You
-are reponsible for adding additional checks to ensure you have
+are responsible for adding additional checks to ensure you have
 exhaustively tested all inputs, i.e., you need one check for every row in
 your truth table. You can run a test bench as follows.
 
@@ -386,7 +386,7 @@ Use TinyFlow-Ngspice to simulate the INVX1 standard cell with a 0fF load
 and an input toggling between zero and one.
 
 ```bash
-% cd ${HOME}/ece6745/lab2/stdcells/build
+% cd ${HOME}/ece6745/project1-groupXX/stdcells/build
 % tinyflow-ngspice --spice=../stdcells.sp --cell=INVX1 --cload=0f \
     --inputs="A:0-1-0-1-0"
 ```
@@ -411,19 +411,20 @@ Use TinyFlow-Ngspice to verify functionality of the schematic view for
 each standard cell. Look at the text output and the waveform plot.
 
 ```bash
-% cd ${HOME}/ece6745/lab2/stdcells/build
+% cd ${HOME}/ece6745/project1-groupXX/stdcells/build
 % code ngspice-results/INVX1-50f-stdcells-A_0_1_0_1_0/INVX1-50f-stdcells-A_0_1_0_1_0.png
 ```
+
 ### 1.3. Layout View
 
 Start by drawing a stick diagram for your layout to make a plan for how
 you want to place your transitors and use polysilicon and metal 1 to
 connect these transistors together. Once you have a stick diagram you can
-check to make sure your transistors will fit in a fixed hight standard
+check to make sure your transistors will fit in a fixed height standard
 cell. If the transistors will not fit then you need to either consider
 using fingers OR supporting non-equal rise and fall times and/or reducing
 the drive strength. If you do use fingers you do _not_ need to go back
-and add fingers to the schematic view. Klayout LVS is smart enough to
+and add fingers to the schematic view. KLayout LVS is smart enough to
 know that a wide transistor in the schematic can map to fingers in the
 layout.
 
@@ -463,36 +464,37 @@ capacitance of 10fF and record what happens to the output in the table
 (i.e, does it stay at 0, stay at 1, transition from 0 to 1, transition
 from 1 to 0).
 
-If the output transitions, firt ensure the propagation delay measurements
+If the output transitions, first ensure the propagation delay measurements
 are reasonable. You should be anywhere from 10s of ps to 100s of ps. Then
 rerun the TinyFlow-Ngspice simulation with a load capacitance of 20fF and
 then 30fF. Record the propagation delay for each simulation. You now have
-three points for load capacitance and propagatoin delay. Then use a
+three points for load capacitance and propagation delay. Then use a
 spreadsheet to determine a linear regression through these three points.
 Confirm that the linear regression is a good fit, and record the
 corresponding intercept (i.e., parasitic delay in ps) and slope (i.e.,
 load delay factor in ps/fF) in the table.
 
-Here is an example for how to generate the data necessary to analyze the
-fall time of the INVX1 standard cell.
+Here is an example for how to generate the data necessary to analyze the fall
+time of the INVX1 standard cell. Note that 10f, 20f, 30f for the cload argument
+corresponds to 10fF, 20fF, and 30fF.
 
 ```bash
-% cd ${HOME}/ece6745/lab2/stdcells/build
+% cd ${HOME}/ece6745/project1-groupXX/stdcells/build
 
-% tinyflow-ngsice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=10fF \
+% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=10f \
     --inputs="A:0-1"
 
-% tinyflow-ngsice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=20fF \
+% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=20f \
     --inputs="A:0-1"
 
-% tinyflow-ngsice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=30fF \
+% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=30f \
     --inputs="A:0-1"
 ```
 
 Once you are done look at all of your data. Our goal is to create a
 single path- and value-independent linear model for the propagation delay
 (i.e., the worst case delay through the standard cell across all possible
-input transitoins). Find the row with the maximum parasitic delay and
+input transitions). Find the row with the maximum parasitic delay and
 then check that the corresponding load delay factor is either also the
 maximum or at least very close to the maximum across all rows. We will
 use this parasitic delay and load delay factor for the linear delay model
@@ -635,8 +637,8 @@ Students will need to add this new gate to all six views.
 To submit your code you simply push your code to GitHub. You can push
 your code as many times as you like before the deadline. Students are
 responsible for going to the GitHub website for your repository, browsing
-the source code, and confirming the code on GitHub is the code they want
-to submit is on GitHub. Be sure to verify your code is passing all of
+the source code, and confirming that the code they want to submit is on
+GitHub. Be sure to verify your code is passing all of
 your simulations on `ecelinux`.
 
 Here is how we will be testing your final code submission for Part A.
