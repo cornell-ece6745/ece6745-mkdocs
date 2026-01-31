@@ -9,7 +9,7 @@ the Red Hat Enterprise Linux 8 operating system, and they all use an
 identical setup. We will then design the basic CMOS inverter we saw in
 lecture using the following TinyFlow full-custom design flow.
 
-![](img/lab01-flow.png)
+![](img/lab1-flow.png)
 
 We will write a transistor-level schematic, simulate the this schematic
 using Ngspice to verify its functionality, use the KLayout design editor
@@ -301,8 +301,8 @@ today's lab.
 ```bash
 % mkdir -p $HOME/ece6745
 % cd $HOME/ece6745
-% git clone git@github.com:cornell-ece6745/ece6745-lab1 lab01
-% cd lab01
+% git clone git@github.com:cornell-ece6745/ece6745-lab1 lab1
+% cd lab1
 % tree
 ```
 
@@ -337,7 +337,7 @@ transistor before working on the complete inverter in the next section.
 To open on the ECELinux server, first open KLayout in edit mode (`-e`).
 
 ```bash
-% cd ${HOME}/ece6745/lab01
+% cd ${HOME}/ece6745/lab1
 % klayout -e &
 ```
 
@@ -349,7 +349,7 @@ _Yes_.
 Choose _File > New Layout_ from the menubar and click _OK_. The KLayout
 window should look as follows.
 
-![](img/lab01-klayout.png)
+![](img/lab1-klayout.png)
 
 Take a minute to become familiar with the user interface (some items are
 omitted as they are not used for our class):
@@ -400,7 +400,7 @@ lambda wide. To draw a box:
  - Click in the _main drawing area_ where you want the upper-left corner
  - Click in the _main drawing area_ where you want the lower-right corner
 
-![](img/lab01-klayout1.png)
+![](img/lab1-klayout1.png)
 
 Once you have drawn a box try deleting it.
 
@@ -418,7 +418,7 @@ move a box:
  - Move the mouse to drag the box to the new location
  - Click the box to place the box at the new location
 
-![](img/lab01-klayout2.png)
+![](img/lab1-klayout2.png)
 
 We now two boxes that are adjacent to each other. Let's merge them into a
 single box. To merge boxes:
@@ -430,7 +430,7 @@ single box. To merge boxes:
  - Shift click on the box, both boxes will stay highlighted
  - Choose _Edit > Selection > Merge Shapes_
 
-![](img/lab01-klayout3.png)
+![](img/lab1-klayout3.png)
 
 Now use what you have learned to draw a complete NMOS with the _active_,
 _nselect_, _poly_, and _contact_ layers. Note that in lecture we had
@@ -443,7 +443,7 @@ on the _active_ layer overlapped with a box on the _nselect_ layer. Since
 we are implementing a NMOS transistor, we draw an _nselect_ layer around
 the active we have already drawn.
 
-![](img/lab01-klayout4.png)
+![](img/lab1-klayout4.png)
 
 You can hide and show layers by double-clicking on the layer name in the
 _Layer Panel_. This can be useful to understand how different layers
@@ -468,7 +468,7 @@ associated rules in the DRM. If your design is DRC-clean, then all the
 numbers should be green and the topcell name under _By Cell_ should be
 green.
 
-![](img/lab01-klayout5.png)
+![](img/lab1-klayout5.png)
 
 If the topcell name is black, scroll down to find the rule number(s) that
 is also black and cross-reference it with the DRM. If you click on the
@@ -484,7 +484,7 @@ erase part of a box:
  - Draw a box in the _main drawing area_ around what part of the poly
    layer you want to erase
 
-![](img/lab01-klayout6.png)
+![](img/lab1-klayout6.png)
 
 Once you have finish using the _Erase_ tool don't forget to set it back
 to the _Add_ tool otherwise you won't be able to draw new boxes in the
@@ -495,7 +495,7 @@ you click on the violation in the DRC browser KLayout will highlight
 where the violation is on the layout. Edit your layout to fix the DRC
 violation and rerun DRC.
 
-![](img/lab01-klayout7.png)
+![](img/lab1-klayout7.png)
 
 Once you are done go ahead and close KLayout. You can save your layout if
 you want but it is not required.
@@ -512,14 +512,14 @@ handout.
 The first step is to implement the transistor-level schematic for our
 inverter.
 
-![](img/lab01-inv-circuit.png){ width=30% }
+![](img/lab1-inv-circuit.png){ width=30% }
 
 We will do this by writing a Spice file which is just a plain text file
 which specifies how to instantiate and connect transistors. Use VS Code
 to open the blank Spice file for our inverter:
 
 ```
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % code inv/inv.sp
 ```
 
@@ -553,7 +553,7 @@ will simulate the circuit given specific input stimuli. Open this Spice
 deck using VS Code.
 
 ```
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % code inv/inv-sim.sp
 ```
 
@@ -582,7 +582,7 @@ We run the simulation using an open-source tool called
 terminal to run the simulation:
 
 ```bash
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % ngspice inv/inv-sim.sp
 ```
 
@@ -618,13 +618,13 @@ We are now ready to draw the layout for the inverter. You can open the
 provided template in KLayout like this:
 
 ```bash
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % klayout -e inv/inv.gds &
 ```
 
 Here is the complete layout from lecture that you should use as a guide.
 
-![](img/lab01-full-inverter.png)
+![](img/lab1-full-inverter.png)
 
 **Be sure to follow the dimensions exactly! Otherwise you may fail DRC!**
 
@@ -653,7 +653,7 @@ Then, choose _Tools > 2.5d View > tinyflow-180nm.lyd25_ from the menubar.
 A new window should pop up with a 2.5D viewer which you can use the mouse
 to scroll around and view the inverter from different angles!
 
-![](img/lab01-3d-view.png)
+![](img/lab1-3d-view.png)
 
 ### 3.4. DRC with KLayout
 
@@ -680,7 +680,7 @@ the window that pops up. You can click through the dropdowns under _Cross
 Reference > Objects_ to see the comparison between the layout and
 reference schematic for pins, nets, and devices (transistors).
 
-![](img/lab01-lvs.png)
+![](img/lab1-lvs.png)
 
 If you see any red stop signs, this means LVS failed. You can view the
 violations by clicking the drop-down arrows under _Cross Reference >
@@ -708,7 +708,7 @@ Let's go ahead and force an LVS violation. Close the LVS dialog box and
 swap the names of the A and Y pins. Then rerun LVS and you should be able
 to see the LVS violations in the _Log_ tab.
 
-![](img/lab01-lvs-violation.png)
+![](img/lab1-lvs-violation.png)
 
 Now go back and fix the LVS violations and rerun LVS to verify your
 design is LVS clean.
@@ -720,7 +720,7 @@ side-effect of running LVS. Go ahead and take a look at this extracted
 transistor-level schematic.
 
 ```
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % code inv/inv-rcx.sp
 ```
 
@@ -735,7 +735,7 @@ using the extracted transistor-level schematic. Open the following Spice
 deck using VS Code.
 
 ```
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % code inv/inv-rcx-sim.sp
 ```
 
@@ -753,7 +753,7 @@ We are now ready to run our simulation. Execute the following in your
 terminal to run the simulation (it should take a few seconds to run):
 
 ```bash
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % ngspice inv/inv-rcx-sim.sp
 ```
 
@@ -775,7 +775,7 @@ the input. We might want this regenerate a signal for example. Many
 students wonder why we can't just make a buffer by "flipping" the NMOS
 and PMOS in the inverter.
 
-![](img/lab01-buf-circuit.png){ width=30% }
+![](img/lab1-buf-circuit.png){ width=30% }
 
 If the input is one then the NMOS is on and the PMOS is off and the
 output would be one. If the input is zero then the NMOS is off and the
@@ -801,19 +801,19 @@ You should use these files which are provided for you.
 
 Here is a sketch of how to implement the layout for the buffer.
 
-![](img/lab01-buf-sketch.png)
+![](img/lab1-buf-sketch.png)
 
 Start with the layout from your inverter as follows.
 
 ```bash
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % cp inv/inv.gds buf/buf.gds
 ```
 
 Then open this layout using KLayout in edit mode.
 
 ```bash
-% cd ${HOME}/lab01
+% cd ${HOME}/lab1
 % klayout -e buf/buf.gds
 ```
 

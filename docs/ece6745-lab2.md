@@ -76,8 +76,8 @@ today's lab.
 % xclock &
 % mkdir -p ${HOME}/ece6745
 % cd ${HOME}/ece6745
-% git clone git@github.com:cornell-ece6745/ece6745-lab2 lab02
-% cd lab02
+% git clone git@github.com:cornell-ece6745/ece6745-lab2 lab2
+% cd lab2
 % tree
 ```
 
@@ -144,8 +144,8 @@ To get started, create a build directory which will use for all of our
 simulations.
 
 ```bash
-% mkdir -p ${HOME}/ece6745/lab02/stdcells/build
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% mkdir -p ${HOME}/ece6745/lab2/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 ```
 
 ### 2.1. Behavioral View
@@ -158,7 +158,7 @@ testing the standard cell module with a Verilog testbench (provided in
 behavioral view for our INVX1 standard cell.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % code ../stdcells.v
 ```
 
@@ -167,7 +167,7 @@ function of the inputs. Next, we will test the inverter using the
 provided test bench.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % iverilog -Wall -g2012 -I .. -o INVX1-test ../verilog-test/INVX1-test.v
 % ./INVX1-test
 ```
@@ -189,7 +189,7 @@ Now rerun the Verilog test bench to verify the functionality of your
 standard cell behavioral view for all possible inputs.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % iverilog -Wall -g2012 -I .. -o INVX1-test ../verilog-test/INVX1-test.v
 % ./INVX1-test
 ```
@@ -208,7 +208,7 @@ The output should look like this:
 You can also view the waveforms from this simulation by using Surfer.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % code INVX1-test.vcd
 ```
 
@@ -217,7 +217,7 @@ _Scopes_ panel. Then click on A and B in the _Variables_ panel to display
 the corresponding waveforms. Verify the output for your inverter matches
 your expectations for its logical functionality before moving on.
 
-![](img/lab02-surfer-view.png)
+![](img/lab2-surfer-view.png)
 
 ### 2.2. Schematic View
 
@@ -226,17 +226,16 @@ and fully tested, we also need to define its schematic view as a SPICE
 file in `stdcells.sp`. This is the schematic for an INVX1 standard cell
 with equal rise and fall times:
 
-![](img/lab02-invx1-schem.png){ width=35% }
+![](img/lab2-invx1-schem.png){ width=35% }
 
 Use VS Code to implement the schematic view for our INVX1 standard cell.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % code ../stdcells.sp
 ```
 
-Recall from from lab 1 the SPICE syntax is as
-follows:
+Recall from from lab 1 the SPICE syntax is as follows:
 
  - PMOS: `M_P <D> <G> <S> <B> PMOS L=<length>U W=<width>U`
  - NMOS: `M_N <D> <G> <S> <B> NMOS L=<length>U W=<width>U`
@@ -284,7 +283,7 @@ Use TinyFlow-Ngspice to simulate the INVX1 standard cell with a 50fF load
 and an input going from 0 to 1 to 0:
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % tinyflow-ngspice --spice=../stdcells.sp --cell=INVX1 --cload=50f \
     --inputs="A:0-1-0"
 ```
@@ -318,7 +317,7 @@ Look at the results and verify functionality of the schematic view for
 your INVX1 standard cell. Look at the text output and the waveform plot.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % code ngspice-results/INVX1-50f-stdcells-A_0_1_0/INVX1-50f-stdcells-A_0_1_0.png
 ```
 
@@ -328,18 +327,18 @@ We can now move on to drawing the layout view for our INVX1 standard
  cell. Use Klayout to open the `stdcells.gds` file:
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % klayout -e ../stdcells.gds
 ```
 
 Make sure the inverter is your top cell view by clicking on INVX1 in the
 Cells panel and selecting "Show As New Top":
 
-![](img/lab02-show-top.png)
+![](img/lab2-show-top.png)
 
 You should see a template for a standard-cell layout as shown below:
 
-![](img/lab02-blank-layout.png)
+![](img/lab2-blank-layout.png)
 
 Because we want all our standard cells to follow out *standard*
 parameters as discussed in lecture, we have provided you with this
@@ -356,7 +355,7 @@ To implement the inverter, you will follow the reference layout below
 (notice how the pins must be on the intersecting black track lines in the
 layout):
 
-![](img/lab02-invx1-layout.png)
+![](img/lab2-invx1-layout.png)
 
 Be sure to reference the _TinyFlow 180nm Design-Rule Manual_ (DRM) when
 drawing your layout:
@@ -374,25 +373,25 @@ Use the _Erase_ tool to erase extra htrack and vtrack shapes, then use
 the _Erase_ or _Partial_ tool to move the right-hand edge of the
 prboundary so that it is aligned with the new right most track.
 
-![](img/lab02-klayout-shrink-cells-tracksprboundary.png)
+![](img/lab2-klayout-shrink-cells-tracksprboundary.png)
 
 Use the _Erase_ or _Partial_ tool to move the right-hand edge of the
 nwell so that it extends beyond the prboundary by 3 lambda (symmetrical
 with the left edge of the cell)
 
-![](img/lab02-klayout-shrink-cells-nwell.png)
+![](img/lab2-klayout-shrink-cells-nwell.png)
 
 Use the _Erase_ or _Partial_ tool to move the nselect and pselect boxes
 so that they extend beyond the prboundary by 2 lambda (symmetrical with
 the left edge of the cell).
 
-![](img/lab02-klayout-shrink-cells-select.png)
+![](img/lab2-klayout-shrink-cells-select.png)
 
 Finally, use the _Erase_ or _Partial_ tool to adjust the well-tap
 structures (active + metal1 + contacts) at the top and bottom of the cell
 so that it is aligned with the prboundary.
 
-![](img/lab02-klayout-shrink-cells-taps.png)
+![](img/lab2-klayout-shrink-cells-taps.png)
 
 As in lab 1, be sure to run DRC and LVS to ensure your design adheres to
 all design rules and matches your SPICE schematic. Use the 2.5D tool to
@@ -413,7 +412,7 @@ Notice the only difference for this command from functionally verifying
 the schematic view is the different Spice file.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=50f \
     --inputs="A:0-1-0"
 ```
@@ -469,7 +468,7 @@ logical, and basic area information for each cell. Use VS Code to open
 the `stdcells-fe.yml` file.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % code ../stdcells-fe.yml
 ```
 
@@ -503,7 +502,7 @@ black lines indicating the horizontal and vertical tracks, and ending at
 the top-right corner at the intersection of the black lines for the
 horizontal and vertical tracks (see the red circles in the below image):
 
-![](img/lab02-invx1-area.png)
+![](img/lab2-invx1-area.png)
 
 Each cell also has pin information under the "pin" key. The pin
 information itself will be a list of data for each input and output pin,
@@ -514,10 +513,10 @@ For input pins, you will need to specify a value for the gate capacitance
 capacitance is as follows:
 
 ```
-Cgate = 1.67 * (total gate width in lambda) * 0.09
+Cgate = 1.60 * (total gate width in lambda) * 0.09
 ```
 
-The value of 1.67 fF/um is a reasonable value for a generic 180nm
+The value of 1.60 fF/um is a reasonable value for a generic 180nm
 process. You need to convert it to just units of fF by multiplying by the
 total gate width in um associated with the given input pin. You will need
 to find this total gate width in units of lambda by looking at your
@@ -558,7 +557,7 @@ including width, height, and pin locations. Use VS Code to open
 the `stdcells-fe.yml` file.
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % code ../stdcells-be.yml
 ```
 
@@ -580,12 +579,25 @@ Finally, we have the "cells" dictionary, where you will add in the
 physical information for each standard cell. Each cell is a list item as
 in the front-end with its name.
 
-Each cell also has a "size" sub-dictionary, with keys for width and
-height. Fill these values in using the same lower-left and upper-right
-track intersection points used for calculating area in the front-end
-YAML. These width and height values should therefore be in units of
-lambda.
+We give you the following template for the back-end view for your INVX1
+standard cell.
 
+```
+  - name: INVX1
+    size:
+      width:  0 # lambda
+      height: 0 # lambda
+    pins:
+      - name: A
+        loc:  (0,0) # (x,y) lambda
+      - name: Y
+        loc:  (0,0) # (x,y) lambda
+```
+
+Each cell has a "size" sub-dictionary, with keys for width and height.
+Fill these values in using the same lower-left and upper-right track
+intersection points used for calculating area in the front-end YAML.
+These width and height values should therefore be in units of lambda.
 Next is the pin list, similar again to the front-end view. In this file,
 each pin once again has a name, but also an X and Y location. Look at
 your layout, and get the X and Y location of the pin marker for each pin
@@ -599,9 +611,9 @@ To implement the TIEHI cell, you will follow the schematic and layout
 reference below (notice how the pins must be on the intersecting black
 track lines in the layout):
 
-![](img/lab02-tiehi-schem.png){ width=35% }
+![](img/lab2-tiehi-schem.png){ width=35% }
 
-![](img/lab02-tiehi-layout.png)
+![](img/lab2-tiehi-layout.png)
 
 Create the required standard cell views:
 
@@ -612,6 +624,11 @@ Create the required standard cell views:
      functional verification)
  - Front-end view
  - Back-end view
+
+Note that your schematic view might need a temporary internal wire/net.
+To create a temporary internal wire/net simply use a new name like
+`net1`; SPICE will assume this implicitly refers to a new temporary
+internal wire/net.
 
 4. Standard-Cell TIELO
 --------------------------------------------------------------------------
@@ -620,9 +637,9 @@ To implement the TIELO cell, you will follow the schematic and layout
 reference below (notice how the pins must be on the intersecting black
 track lines in the layout):
 
-![](img/lab02-tielo-schem.png){ width=35% }
+![](img/lab2-tielo-schem.png){ width=35% }
 
-![](img/lab02-tielo-layout.png)
+![](img/lab2-tielo-layout.png)
 
 Create the required standard cell views:
 
@@ -634,6 +651,11 @@ Create the required standard cell views:
  - Front-end view
  - Back-end view
 
+Note that your schematic view might need a temporary internal wire/net.
+To create a temporary internal wire/net simply use a new name like
+`net1`; SPICE will assume this implicitly refers to a new temporary
+internal wire/net.
+
 5. Standard-Cell FILL
 --------------------------------------------------------------------------
 
@@ -641,7 +663,7 @@ To implement the FILL cell, you will follow the layout reference below
 (notice how there are no pins other than VDD and VSS which are on the
 template already):
 
-![](img/lab02-fill-layout.png)
+![](img/lab2-fill-layout.png)
 
 Create the required standard cell views:
 
@@ -661,7 +683,7 @@ scripts that will perform DRC and LVS on every cell for you. To run them,
 run the following commands after completing your standard cells:
 
 ```bash
-% cd ${HOME}/ece6745/lab02/stdcells/build
+% cd ${HOME}/ece6745/lab2/stdcells/build
 % tinyflow-batch-drc
 % tinyflow-batch-lvs
 ```

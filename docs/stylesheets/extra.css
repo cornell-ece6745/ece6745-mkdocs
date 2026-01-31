@@ -87,13 +87,10 @@ img[src*="#border"] {
 .md-typeset table:not([class]) td {
     margin:  0px;
     padding: 0px;
-    border: 1px solid;
-    width: 1px;
     white-space:nowrap;
 }
 */
 
-/* tables like github tables?
 th, td {
     border: 1px solid var(--md-typeset-table-color);
     border-spacing: 0;
@@ -123,4 +120,3 @@ th, td {
 [data-md-color-scheme="slate"] .md-typeset__table tr:nth-child(2n) {
     background-color: hsla(var(--md-hue),25%,25%,1)
 }
-*/
