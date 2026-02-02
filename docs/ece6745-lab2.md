@@ -534,7 +534,7 @@ valid generic gates:
  - `NAND2`, `NOR2`, `XNOR2`
 
 So for example, here is an example tree for a more complicated
-three-input standard cell: `NAND2(INV(A),OR2(INV(B),C))`.
+three-input standard cell: `NAND2( INV(A), OR2(INV(B),C) )`.
 
 You will need to fill in your values for `load_delay_factor` and
 `parasitic_delay` as calculated in the previous step. **Note that
