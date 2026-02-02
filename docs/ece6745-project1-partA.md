@@ -474,9 +474,9 @@ Confirm that the linear regression is a good fit, and record the
 corresponding intercept (i.e., parasitic delay in ps) and slope (i.e.,
 load delay factor in ps/fF) in the table.
 
-Here is an example for how to generate the data necessary to analyze the fall
-time of the INVX1 standard cell. Note that 10f, 20f, 30f for the cload argument
-corresponds to 10fF, 20fF, and 30fF.
+Here is an example for how to generate the data necessary to analyze the
+fall time of the INVX1 standard cell. Note that 10f, 20f, 30f for the
+`cload` argument corresponds to 10fF, 20fF, and 30fF.
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/stdcells/build
@@ -494,11 +494,10 @@ corresponds to 10fF, 20fF, and 30fF.
 Once you are done look at all of your data. Our goal is to create a
 single path- and value-independent linear model for the propagation delay
 (i.e., the worst case delay through the standard cell across all possible
-input transitions). Find the row with the maximum parasitic delay and
-then check that the corresponding load delay factor is either also the
-maximum or at least very close to the maximum across all rows. We will
-use this parasitic delay and load delay factor for the linear delay model
-of the standard cell.
+paths and values). Find the maximum parasitic delay and the max load
+delay factor across all propagation delay equations. It is ok if these
+come from different rows. We will use this parasitic delay and load delay
+factor for the linear delay model of the standard cell.
 
 ### 1.5. Front-End View
 
