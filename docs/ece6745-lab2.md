@@ -135,6 +135,7 @@ inverter must also follow all of the rules which make standard cells
   - _Standard_ cell height (64 lambda)
   - _Standard_ cell width (aligned to routing grid, i.e., 8 lambda,
      16 lambda, 24 lambda, etc)
+  - _Standard_ routing (all routing must be on polysilicon or metal 1)
   - _Standard_ pin layer and locations (on "metal1 label" layer and **on
     routing grid**)
   - _Standard_ set of available drive strengths with equal rise and
