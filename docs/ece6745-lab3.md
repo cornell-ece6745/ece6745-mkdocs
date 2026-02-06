@@ -83,7 +83,7 @@ Your repo contains the following files.
     │   ├── StdCellFrontEndView.py
     │   ├── TinyFrontEndDB.py
     │   ├── TinyFrontEndGUI.py
-    │   ├── print_tree.py
+    │   ├── print.py
     │   ├── substitute.py
     │   ├── techmap_unopt.py
     │   ├── tinyv.lark
@@ -311,7 +311,7 @@ Let's write some functions to print trees and forests. Open the
 
 ```bash
 % cd ${HOME}/ece6745/lab3/tinyflow/build
-% code ../synth/print_.py
+% code ../synth/print.py
 ```
 
 Find the `print_tree` and `print_tree_h` functions.
@@ -399,6 +399,98 @@ tinyflow-synth> print_forest(db)
 
 3. Algorithm: Verilog Reader
 --------------------------------------------------------------------------
+
+The first step of our synthesis flow is reading the Verilog RTL design
+to create the forest of trees data structure. This has three steps:
+lexing, parsing, and foresting.
+
+In this part, we will be discussing the limitations of verilog we can
+write for the TinyFlow. This limitation is mainly pedagogical to simplify
+the flow as well as limitations due to our parser. First let's look at
+the full adder we will be using as the motivation example in his lab.
+
+```bash
+% cd ${HOME}/ece6745/lab3/tinyflow/build
+% code ../../rtl/FullAdder.v
+```
+
+The full adder adheres to the following rules.
+
+1. Only combinational Verilog
+2. Only single-bit signals of type `wire`
+4. Only single-bit bitwise operators (`&`, `|`, `^`, `~`)
+5. No hierarchy
+
+Take a look at the Lark grammar which captures these rules.
+
+```bash
+% cd ${HOME}/ece6745/lab3/tinyflow/build
+% code ../synth/tinyv-lab3.lark
+```
+
+The grammer is shown below.
+
+```
+start: module
+
+//------------------------------------------------------------------------
+// Module
+//------------------------------------------------------------------------
+
+module: "module" MNAME port_decl_list? ";" stmt* "endmodule"
+
+port_decl_list: "(" port_decl ("," port_decl)* ")"
+port_decl: DIR ("wire" | "logic")? SIGNAL
+DIR: "input" | "output"
+
+stmt: decl_wire | assignment
+
+//------------------------------------------------------------------------
+// Statements
+//------------------------------------------------------------------------
+
+decl_wire:  "wire" SIGNAL ("," SIGNAL)* ";"
+assignment: "assign" SIGNAL "=" expr ";"
+
+//------------------------------------------------------------------------
+// Expressions
+//------------------------------------------------------------------------
+
+?expr:
+  | expr "|" expr -> or
+  | expr "^" expr -> xor
+  | expr "&" expr -> and
+  | expr "+" expr -> sum
+  | "~" expr      -> not
+  | "(" expr ")"
+  | SIGNAL
+
+//------------------------------------------------------------------------
+// Terminals
+//------------------------------------------------------------------------
+
+SIGNAL:  /[a-zA-Z_][a-zA-Z0-9_]*/
+MNAME:   /[a-zA-Z_][a-zA-Z0-9_]*/
+```
+
+The front-end database includes a `parse_verilog` method which will
+perform lexing and parsing for a Verilog RTL design before displaying the
+AST.
+
+```python
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> db = TinyFrontEndDB(view)
+tinyflow-synth> db.parse_verilog("../../rtl/FullAdder.v")
+```
+
+Try to see how the AST corresponds to the Verilog RTL design. Now let's
+use the `read_verilog` method to do all three steps: lexing, parsing, and
+foresting. Watch the GUI update to show the parsed trees.
+
+```python
+tinyflow-synth> db.enable_gui()
+tinyflow-synth> db.read_verilog("../../rtl/FullAdder.v")
+```
 
 4. Algorithm: Unoptimized Technology Mapping
 --------------------------------------------------------------------------
