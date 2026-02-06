@@ -120,7 +120,10 @@ each line.
 As discussed in lecture, the synthesis data structure used in our basic
 front-end is a forest of trees where nodes can be generic gates, standard
 cells, or signals. The synthesis algorithms create, transform, and
-analyze this forest of trees.
+analyze this forest of trees. The forest of trees is stored in a
+front-end database which includes methods for reading files into the
+databse and writing files from the database. We provide students the
+database, and students are responsible for writing the algorithms.
 
 To get started, create a build directory and start the TinyFlow synthesis
 REPL.
@@ -147,61 +150,252 @@ tinyflow-synth>
 you to intereactively experiment with different synthesis data structures
 and algorithms. The TinyFlow synthesis REPL is basically the Python REPL
 with a few extra features so most standard Python command should work as
-well.
+well. You can use `help()` to see the available commands.
 
-### 2.1. Nodes and Trees
+### 2.1. Trees
 
-The base class for all gates is `Node`. Generic gates (AND2, OR2, NAND2,
-NOR2, XOR2, NOT, INV, BUF) are Nodes that represent logic operations.
-Standard cell gates (INVX1, NAND2X1, NOR2X1, etc.) are Nodes read in from
-your front-end view. `Signal` nodes represent inputs and wires. There are
-also special `Wildcard` nodes that we will explain later. Let's create a
-simple tree and explore it:
+The nodes in a tree can either be generic gates, standard cells, or
+signals. The base class for all nodes is `Node`.
 
-```python
-tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
-tinyflow-synth> tree = AND2(OR2(a, b), c)
-tinyflow-synth> print(tree)
-tinyflow-synth> print(tree.type)
-tinyflow-synth> print(tree.generic)
-tinyflow-synth> print(tree.children)
-tinyflow-synth> print(tree.children[0].type)
-tinyflow-synth> print(tree.children[1])
-tinyflow-synth> print(tree.eval(a=1, b=0, c=1))
-```
+ - Generic-gate nodes represent generic logic operations. There is no area
+   nor delay associated with a generic logic operation. Generic-gate
+   nodes are named without an X1 suffix (e.g., BUF, NOT, INV, AND2, OR2,
+   XOR, NAND2, NOR2, XNOR2).
 
-Each node has a `type` (the gate name), `children` (its inputs), and
-`generic` (True for generic gates, False for standard cell gates). Signal
-nodes are leaf nodes with no children. Nodes also provide helper methods:
-`is_signal()` returns `True` for Signal nodes, `is_wildcard()` returns
-`True` for Wildcard nodes, and `==`/`!=` compare nodes by type.
+ - Standard-cell nodes represent standard cells from our library. The
+   front-end view provides the list of valid standard-cell nodes and the
+   associated area and delay. Standard-cell nodes are named with an X1
+   suffix (e.g., INVX1, NAND2X1, NOR2X1, AOI21X1).
+
+ - Signal nodes represent input ports and wires. Every leaf of all every
+   tree must be a signal node.
+
+There are also special `Wildcard` nodes that we will explain later. Let's
+start by creating three signals and a simple tree with a total of five
+nodes: two generic-gate nodes and three signal nodes.
 
 ```python
-tinyflow-synth> a.is_signal()
-True
-tinyflow-synth> tree.is_signal()
-False
-tinyflow-synth> _a.is_wildcard()
-True
-tinyflow-synth> a == Signal("a")
-True
-tinyflow-synth> a == AND2(a, b)
-False
-tinyflow-synth> AND2(a, b) == AND2(c, c)
-True
-tinyflow-synth> AND2(a, b) == OR2(a, b)
-False
+tinyflow-synth> a = Signal("a")
+tinyflow-synth> b = Signal("b")
+tinyflow-synth> c = Signal("c")
+tinyflow-synth> tree1 = AND2( OR2(a, b), c )
+tinyflow-synth> print(tree1)
 ```
 
-Go ahead and evaluate all input combinations using `tree.eval()` and derive
-the truth table for `AND2(OR2(a, b), c)`.
+Note that the TinyFlow REPL will automatically ignore the leading
+`tinyflow-synth> ` so you should be able to copy-and-paste the above
+commands directly into the REPL.
 
+Every node has a `type` field and a list of its children. Let's print the
+type of every node in the tree.
 
-print_tree
+```python
+tinyflow-synth> print(tree1.type)
+tinyflow-synth> print(tree1.children[0].type)
+tinyflow-synth> print(tree1.children[0].children[0].type)
+tinyflow-synth> print(tree1.children[0].children[1].type)
+tinyflow-synth> print(tree1.children[1].type)
+```
+
+Each node also has the following helper methods
+
+ - `is_generic_gate()`
+ - `is_standard_cell()`
+ - `is_signal()`
+ - `is_wildcard()~
+
+Go ahead and check to see which of the five nodes are generic-gate nodes.
+
+```python
+tinyflow-synth> tree1.is_generic_gate()
+tinyflow-synth> tree1.children[0].is_generic_gate()
+tinyflow-synth> tree1.children[0].children[0].is_generic_gate()
+tinyflow-synth> tree1.children[0].children[1].is_generic_gate()
+tinyflow-synth> tree1.children[1].is_generic_gate()
+```
+
+The `==`/`!=` operators compare nodes by type. You can also evaluate a
+tree using the `eval` method. So the following will evaluate our tree
+when the input ports are set to the given values.
+
+```
+tinyflow-synth> print(tree1.eval(a=0, b=0, c=0))
+```
+
+Go ahead and evaluate all input combinations using `tree.eval()` and
+derive the truth table for `AND2(OR2(a, b), c)`. Does it match your
+expectations?
+
+Use the TinyFlow REPL to create the following tree.
+
+![](img/lab3-tree1.png){ width=25% }
+
+Evaluate all possible inputs to confirm that it implements the following
+truth table.
+
+| a | b | c | y |
+|---|---|---|---|
+| 0 | 0 | 0 | 1 |
+| 0 | 0 | 1 | 0 |
+| 0 | 1 | 0 | 1 |
+| 0 | 1 | 1 | 0 |
+| 1 | 0 | 0 | 1 |
+| 1 | 0 | 1 | 0 |
+| 1 | 1 | 0 | 0 |
+| 1 | 1 | 1 | 0 |
 
 ### 2.2. Front-End Database
 
-print_forest
+The front-end database stores a forest of trees. To create a database
+using `TinyFrontEndDB`, we first need to have our front-end view ready.
+`StdCellFrontEndView` loads the front-end view YAML file. It provides
+access to cell information (area, timing parameters), patterns for
+technology mapping, and standard cell gate classes (INVX1, NAND2X1,
+etc.).
+
+Let's create the view and database:
+
+```python
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> db = TinyFrontEndDB(view)
+```
+
+The database supports visualizing its contents through a GUI. Enable the
+GUI with:
+
+```python
+tinyflow-synth> db.enable_gui()
+```
+The GUI window will open.
+
+![](img/lab3-gui-blank.png)
+
+Now add inputs, outputs, and set a tree:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> db.add_inports(["a", "b", "c"])
+tinyflow-synth> db.add_outports(["out"])
+tinyflow-synth> db.set_tree("out", AND2(OR2(a, b), c))
+tinyflow-synth> db.get_tree("out")
+```
+
+Watch the GUI update to show your tree when you call `db.set_tree(...)`.
+
+![](img/lab3-gui-simple.png)
+
+In the visualization above, you will only see primary inputs, primary
+outputs, and generic gates. The GUI uses the following visual
+conventions:
+
+ - **Green ovals:** Primary inputs
+ - **Orange ovals:** Wire signals
+ - **Blue ovals:** Primary outputs
+ - **Grey rectangles:** Generic gates
+ - **Red rectangles:** Standard cell gates
+
+![](img/lab3-gui-types.png)
+
+Add the following tree to the front-end database and verify you can see
+both the old and new tree in the GUI.
+
+![](img/lab3-tree1.png){ width=25% }
+
+Once you are done with the GUI, you can exit the REPL by calling `exit()`
+or pressing Ctrl-D.
+
+### 2.2. Printing Trees and Forests
+
+Let's write some functions to print trees and forests. Open the
+`print.py` file in VS Code.
+
+```bash
+% cd ${HOME}/ece6745/lab3/tinyflow/build
+% code ../synth/print_.py
+```
+
+Find the `print_tree` and `print_tree_h` functions.
+
+```python
+def print_tree_h( node, indent ):
+  pass
+
+def print_tree( db, name ):
+  pass
+```
+
+The `print_tree` function takes as input the front-end database and the
+name of the tree to print (i.e., the name of the output port at the root
+of the tree) and should print each node in the tree using indentation to
+indicate the depth of the node. So printing the `AND2(OR2(a, b), c))`
+tree should output
+
+```
+AND2
+  OR2
+    a
+    b
+  c
+```
+
+The `print_tree` function should get the correct tree from the database
+and then call the recursive `print_tree_h` helper function. The recusrive
+helper function should use a preorder tree traversal to print the tree:
+
+ - Step 1: Print leading spaces based on `indent`
+ - Step 2: Print the type for a generic-gate node or the name for a signal node
+ - Step 3: Recusively call helper function for all children with `indent+1`
+
+Once you have finished writing your `print_tree` function try it out
+using the TinyFlow REPL.
+
+```python
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> db = TinyFrontEndDB(view)
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> db.add_inports(["a", "b", "c"])
+tinyflow-synth> db.add_outports(["out"])
+tinyflow-synth> db.set_tree("out", AND2(OR2(a, b), c))
+tinyflow-synth> print_tree( db, "out" )
+```
+
+Now find the `print_forest` function.
+
+```python
+def print_forest( db ):
+  pass
+```
+
+This function should iterate across all trees in the forest and print
+each one using `print_tree`. Trees are stored as a dictionary in the
+database. The dictionary maps the name of the tree (i.e, the name of the
+output port or wire) to the actual tree. So you can iterate over the
+trees in a front-end database like this.
+
+```python
+  for name,tree in db.trees.items():
+    ... do something with the name and/or tree ...
+```
+
+Once you have finished writing your `print_forest` function try it out
+using the TinyFlow REPL.
+
+```python
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> db = TinyFrontEndDB(view)
+
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> db.add_inports(["a", "b", "c"])
+tinyflow-synth> db.add_outports(["out1"])
+tinyflow-synth> db.set_tree("out1", AND2(OR2(a, b), c))
+
+tinyflow-synth> d, e, f = Signal("d"), Signal("e"), Signal("f")
+tinyflow-synth> db.add_inports(["d", "e", "f"])
+tinyflow-synth> db.add_outports(["out2"])
+tinyflow-synth> db.set_tree("out2", INV(OR2(AND2(a, b), c)))
+
+tinyflow-synth> print_forest(db)
+```
 
 3. Algorithm: Verilog Reader
 --------------------------------------------------------------------------

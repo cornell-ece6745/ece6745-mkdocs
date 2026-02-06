@@ -188,16 +188,17 @@ tinyflow-synth> AND2(a, b) == OR2(a, b)
 False
 ```
 
-Go ahead and evaluate all input combinations using `tree.eval()` and derive
-the truth table for `AND2(OR2(a, b), c)`.
+Go ahead and evaluate all input combinations using `tree.eval()` and
+derive the truth table for `AND2(OR2(a, b), c)`.
 
 ### 2.3. Frontend Database and GUI
 
 Now let's use the frontend database to manage a design. To create a
-database using `TinyFrontEndDB`, we first need to have our frontend view ready. `StdCellFrontEndView`
-loads the front-end view YAML file you created in Project 1 Part A. It
-provides access to cell information (area, timing parameters), patterns for
-technology mapping, and standard cell gate classes (INVX1, NAND2X1, etc.).
+database using `TinyFrontEndDB`, we first need to have our frontend view
+ready. `StdCellFrontEndView` loads the front-end view YAML file you
+created in Project 1 Part A. It provides access to cell information
+(area, timing parameters), patterns for technology mapping, and standard
+cell gate classes (INVX1, NAND2X1, etc.).
 
 Let's create the view and database:
 
