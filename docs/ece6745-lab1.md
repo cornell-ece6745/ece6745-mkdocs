@@ -311,12 +311,12 @@ the inverter and buffer.
 
 ```
 .
-├── buf/
+├── buf
 │   ├── buf-rcx-sim.sp
 │   ├── buf-sim.sp
 │   ├── buf.gds
 │   └── buf.sp
-└── inv/
+└── inv
     ├── inv-rcx-sim.sp
     ├── inv-sim.sp
     ├── inv.gds

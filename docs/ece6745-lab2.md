@@ -63,8 +63,6 @@ the VS Code Surfer extension to be able to view waveforms.
  - Use View > Terminal to open a terminal on ecelinux
  - Start MS Remote Desktop
 
-![](img/tut00-vscode-remote-ssh.png)
-
 ![](img/tut00-vscode-surfer.png)
 
 Now use the following commands to clone the repo we will be using for
@@ -81,13 +79,13 @@ today's lab.
 % tree
 ```
 
-Your repo contains the following files for the views and simulation scripts for
-each standard cell:
+Your repo contains the following files for the views and simulation
+scripts for each standard cell.
 
 ```
 .
-└── stdcells/
-    ├── verilog-test/
+└── stdcells
+    ├── verilog-test
     │   ├── AOI21X1-test.v
     │   ├── INVX1-test.v
     │   ├── NAND2X1-test.v
