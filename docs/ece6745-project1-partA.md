@@ -622,13 +622,13 @@ Students should not implement a gate with increased drive strength (e.g.,
 INVX2, INVX4) since TinyFlow cannot take advantage of these larger cells.
 Some ideas include:
 
- - BUF
  - NAND3X1, NOR3X1, NAND4X1, NOR4X1
  - AND2X1, OR2X1
  - OAI21X1, AOI22X1, OAI22X1
- - XOR2, XNOR2
 
-Students will need to add this new gate to all six views.
+Students will need to add this new gate to all six views. We do not
+recommend implementing XORX1 or XNORX1. These are very complicated gates
+and they are unlikely to actually be used by the TinyFlow front end.
 
 3. Project Submission
 --------------------------------------------------------------------------

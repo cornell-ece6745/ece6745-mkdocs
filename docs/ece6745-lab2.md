@@ -414,7 +414,7 @@ the schematic view is the different Spice file.
 
 ```bash
 % cd ${HOME}/ece6745/lab2/stdcells/build
-% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=50f \
+% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 \
     --inputs="A:0-1-0"
 ```
 
@@ -429,28 +429,38 @@ model_ which we can then use in the standard cell front-end view. Our
 linear-delay model should represent the worst case propagation delay
 through the inverter (either rising input to falling output or falling
 output to rising input) as a function of its load capacitance (cload). To
-do this, you will choose three values of `cload` between 0f and 100f to
-plug into the above command, and you will then observe the values in the
-`Measured delays:` section of the TinyFlow-Ngspice output to find the
-worst-case rising or falling delay for that value of `cload`. `t_pdf`
-represents the falling propagation delay, while `t_pdr` represents the
-rising propagation delay. Choose the worst of the two for the delay for
-this value of `cload`. Ideally, these values should be close as we have
-designed the inverter to have balanced rise and fall time via its 2:1
-sizing. Note down the worst case delay **and convert the value to ps**
-for each `cload` **convert this value to fF**.
+do this, focus on a single transition at a time. Then choose three values
+of `cload` and observe the values in the `Measured delays:` section of
+the TinyFlow-Ngspice output. `t_pdf` represents the falling propagation
+delay, while `t_pdr` represents the rising propagation delay. So here is
+how we would gather propagation delays at three load capacitances for the
+output falling transition.
 
-Once you have obtained a worst case delay for at least three `cload*
-values, and you have converted the delay to ps and the load value to fF,
-generate a linear regression of the data with delay on the y-axis and
-load value on the x-axis using your favorite data analyzer (Google
-Sheets, TI calculator, etc.). Note down the y-intercept and slope. As
-discussed in lecture, the y-intercept represents the _parasitic delay_,
-or the delay when the cell is unloaded, while the slope represents the
-_load-delay factor_, a measure of how much the delay increases for
-increasing load capacitance. These values are necessary for static-timing
-analysis which will be performed in later labs. Only continue once you
-have obtained both of these values for your inverter.
+```bash
+% cd ${HOME}/ece6745/lab2/stdcells/build
+% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=10f \
+    --inputs="A:0-1"
+% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=20f \
+    --inputs="A:0-1"
+% tinyflow-ngspice --spice=../stdcells-rcx.sp --cell=INVX1 --cload=30f \
+    --inputs="A:0-1"
+```
+
+Remember, only analyze a single transition at a time. Once you have
+obtained a propagatoin delays for at least three load capacitances,
+converted the delay to ps and the load value to fF. Then generate a
+linear regression of the data with delay on the y-axis and load value on
+the x-axis using your favorite data analyzer (Google Sheets, TI
+calculator, etc.). Note down the y-intercept and slope. As discussed in
+lecture, the y-intercept represents the _parasitic delay_, or the delay
+when the cell is unloaded, while the slope represents the _load-delay
+factor_, a measure of how much the delay increases for increasing load
+capacitance. These values are necessary for static-timing analysis which
+will be performed in later labs.
+
+Once you have determined a linear for _both_ transitions look at these
+equations and choose the worst case linear delay equation to use as the
+delay model for your front-end view.
 
 !!! question "Critical Thinking Questions"
 
