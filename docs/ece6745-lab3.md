@@ -81,8 +81,6 @@ Your repo contains the following directories:
 │       └── FullAdder-test.v
 ├── stdcells
 └── tinyflow
-    ├── conftest.py
-    ├── pytest.ini
     ├── synth
     │   ├── StdCellFrontEndView.py
     │   ├── TinyFrontEndDB.py
