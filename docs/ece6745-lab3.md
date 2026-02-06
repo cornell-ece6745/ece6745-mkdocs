@@ -202,7 +202,7 @@ Each node also has the following helper methods
  - `is_generic_gate()`
  - `is_standard_cell()`
  - `is_signal()`
- - `is_wildcard()~
+ - `is_wildcard()`
 
 Go ahead and check to see which of the five nodes are generic-gate nodes.
 
@@ -528,7 +528,6 @@ tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
 tinyflow-synth> sub = Substitute(find=AND2(_0, _1), replace=INV(NAND2(_0, _1)))
 tinyflow-synth> result = sub.apply(AND2(OR2(a, b), c))
 tinyflow-synth> print(result)
-INV(NAND2(OR2(a, b), c))
 ```
 
 This is pretty complicated to implement, so we will take an incremental
@@ -596,7 +595,11 @@ if we have the tree below on the left, we want to be able to determine
 that the pattern on the right matches since there is an AND2 gate at the
 root of the tree on the left.
 
-TREE
+![](img/lab3-tree3.png){ width=50% }
+
+![](img/lab3-tree4.png){ width=50% }
+
+![](img/lab3-tree5.png){ width=50% }
 
 Find the `match` function in `substitute.py`.
 
@@ -645,10 +648,6 @@ example, wildcard `_0` captures the `OR(a,b)` subtree and wildcard `_1`
 captures the `c` signal node.
 
 ![](img/lab3-tree3.png){ width=50% }
-
-![](img/lab3-tree4.png){ width=50% }
-
-![](img/lab3-tree5.png){ width=50% }
 
 The captures should be a dictionary mapping the wildcard name to the
 subtree it matched. For example, matching `AND2(OR2(a, b), c)` against
@@ -945,6 +944,7 @@ db.write_verilog("post-synth.v")
 Now run the synthesis:
 
 ```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/03-tinyflow-synth
 % ../../../tinyflow/tinyflow-synth -f run.py
 ```
 
@@ -961,15 +961,6 @@ perform fast-functional gate-level simulation (FFGL), which is four-state
 simulation using the same testbench but with the synthesized design and
 the behavioral view of the standard cells.
 
-First, copy over your `stdcells.v` from your project directory to the
-lab3 stdcells directory:
-
-```bash
-% cp $HOME/ece6745/project1-groupXX/stdcells/stdcells.v $HOME/ece6745/lab3/stdcells/
-```
-
-Now run the fast-functional gate-level simulation:
-
 ```bash
 % cd $HOME/ece6745/lab3/asic/build-fa/04-iverilog-ffglsim
 % iverilog -g2012 -o FullAdder-test \
@@ -980,3 +971,4 @@ Now run the fast-functional gate-level simulation:
 
 If the simulation passes, your synthesized design is functionally
 correct.
+
