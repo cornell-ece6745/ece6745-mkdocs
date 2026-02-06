@@ -803,23 +803,26 @@ Here is a sketch of how to implement the layout for the buffer.
 
 ![](img/lab1-buf-sketch.png)
 
-Start with the layout from your inverter as follows.
+Start by copying your layout from your inverter as follows. First, use
+KLayout to open the layout for the buffer and inverter in two separate
+tabs.
 
 ```bash
 % cd ${HOME}/lab1
-% cp inv/inv.gds buf/buf.gds
+% klayout -e buf/buf.gds inv/inv.gds
 ```
 
-Then open this layout using KLayout in edit mode.
+Now use the following steps to copy the inverter cell from `inv.gds` into
+`buf.gds` and then rename this cell from _INV_ to _BUF_.
 
-```bash
-% cd ${HOME}/lab1
-% klayout -e buf/buf.gds
-```
-
-**You must now change the topcell name from _INV_ to _BUF_!**
-
- - Right click on _INV_ in the _Cells Panel_
+ - Click on the tab for the inverter layout
+ - Right click on _INV_ in the _Cells_ panel
+ - Choose _Copy_
+ - Click on the tab for the buffer layout
+ - Right click on the _Cells_ pane
+ - Choose _Paste_
+ - Close the tab for the inverter layout
+ - Right click on _INV_ in the _Cells_
  - Choose _Rename Cell_
  - Enter _BUF_
  - Click _OK_
