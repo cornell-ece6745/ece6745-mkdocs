@@ -2,8 +2,9 @@
 ECE 6745 Lab 3: TinyFlow Frontend
 ==========================================================================
 
-In this lab, we will learn about the TinyFlow frontend and implement a
-basic synthesis flow that transforms Verilog RTL into a gate-level netlist.
+In this lab, we will explore the TinyFlow frontend, implement a basic
+synthesis flow that transforms Verilog RTL into a gate-level netlist, and
+walk through the complete frontend verification flow for an RTL design.
 
  - **Verilog Parser:** Reads Verilog RTL and converts it into an internal
      tree representation of generic gates
