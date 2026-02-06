@@ -101,6 +101,7 @@ nav:
   - 'Labs':
     - 'Lab 1: Full-Custom Inverter': ece6745-lab1.md
     - 'Lab 2: Standard-Cell Inverter': ece6745-lab2.md
+    - 'Lab 3: TinyFlow Front End': ece6745-lab3.md
 
   - 'Projects':
     - 'Project 1: TinyFlow Tape-Out':
