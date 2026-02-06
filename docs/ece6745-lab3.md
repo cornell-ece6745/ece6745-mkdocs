@@ -67,29 +67,31 @@ Your repo contains the following directories:
 
 ```
 .
-├── asic/
-│   └── build-fa/
-│       ├── 01-verilator-rtlsim/
-│       ├── 02-iverilog-rtlsim/
-│       ├── 03-tinyflow-synth/
-│       └── 04-iverilog-ffglsim/
-├── rtl/
+├── README.md
+├── asic
+│   └── build-fa
+│       ├── 01-verilator-rtlsim
+│       ├── 02-iverilog-rtlsim
+│       ├── 03-tinyflow-synth
+│       │   └── run.py
+│       └── 04-tinyflow-ffglsim
+├── rtl
 │   ├── FullAdder.v
-│   └── test/
+│   └── test
 │       └── FullAdder-test.v
-├── stdcells/
-└── tinyflow/
+├── stdcells
+└── tinyflow
     ├── conftest.py
     ├── pytest.ini
-    ├── synth/
-    │   ├── StdCellFrontEndView.py
-    │   ├── substitute.py
-    │   ├── print_tree.py
-    │   ├── techmap_unopt.py
-    │   ├── TinyFrontEndDB.py
-    │   ├── TinyFrontEndGUI.py
-    │   ├── tinyv.lark
-    │   └── verilog_parser.py
+    ├── synth
+    │   ├── StdCellFrontEndView.py
+    │   ├── TinyFrontEndDB.py
+    │   ├── TinyFrontEndGUI.py
+    │   ├── print_tree.py
+    │   ├── substitute.py
+    │   ├── techmap_unopt.py
+    │   ├── tinyv.lark
+    │   └── verilog_parser.py
     └── tinyflow-synth
 ```
 
@@ -221,7 +223,7 @@ tinyflow-synth> db.add_outports(["out"])
 tinyflow-synth> db.set_tree("out", AND2(OR2(a, b), c))
 ```
 
-Watch the GUI update to show your tree.
+Watch the GUI update to show your tree when you call `db.set_tree(...)`.
 
 ![](img/lab3-gui-simple.png)
 
@@ -359,7 +361,6 @@ Test your implementation in the REPL:
 
 ```python
 tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
-tinyflow-synth> from synth.substitute import match
 tinyflow-synth> match(AND2(a, b), AND2(_a, _b))
 True
 tinyflow-synth> match(AND2(a, b), OR2(_a, _b))
@@ -397,7 +398,6 @@ Test your implementation in the REPL:
 
 ```python
 tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
-tinyflow-synth> from synth.substitute import match, capture
 tinyflow-synth> n = AND2(OR2(a, b), c)
 tinyflow-synth> p = AND2(_a, _b)
 tinyflow-synth> if match(n, p):
@@ -432,7 +432,6 @@ Test your implementation in the REPL:
 
 ```python
 tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
-tinyflow-synth> from synth.substitute import match, capture, replace
 tinyflow-synth> n = AND2(OR2(a, b), c)
 tinyflow-synth> p = AND2(_a, _b)
 tinyflow-synth> t = INV(NAND2(_a, _b))
@@ -533,7 +532,6 @@ Test your implementation with the REPL and GUI. After running techmap, the
 grey generic gates should become red standard cell gates:
 
 ```python
-tinyflow-synth> from synth.techmap_unopt import techmap_unopt
 tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
 tinyflow-synth> db = TinyFrontEndDB(view)
 tinyflow-synth> db.enable_gui()
