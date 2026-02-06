@@ -674,7 +674,7 @@ steps.
    corresponding subtree starting at `node`. Return a new dictionary that
    maps the wild card name (i.e., `p_node.name`) to `node`.
 
- - Recursive Case: Recursively all function for all children, keep a
+ - Recursive Case: Recursively call function for all children, keep a
    running dictionary and merge in the dictionary returned from each
    recursive function call. You can use the `|=` operator to merge a new
    dictionary into an existing dictionary.
@@ -690,27 +690,293 @@ tinyflow-synth> capture( INV(OR2(AND2(a,b), c)), INV(_0) )
 
 ### 4.4. Replacing Trees
 
+Now that we can match and capture subtrees, we want to build a new tree
+using the captured subtrees. Find the `replace` function in
+`substitute.py`.
+
+```python
+def replace( t_node, captures ):
+  ...
+```
+
+This recursive function takes as input a node in the _template_ tree and
+the captures. The tempalte tree is the tree that we want to insert the
+captured subtrees. The function should use the following steps.
+
+ - Base Case: If the current `t_node` is a wildcard (i.e.,
+   `is_wildcard()` returns true) then we want to insert the corresponding
+   captured subtree at this point. So all we need to do is look up the
+   wildcard in the captures dictionary (i.e., `captures[t_node.name]`)
+   and return the result.
+
+ - Recursive Case: Recursively call function for all children and append
+   the subtree returned from each recursive function call to running list
+   of new children. Once you have finished iterating over all of the
+   children create a copy of the current `t_node` using the list of
+   children (e.g., `type(t_node)(*children)`). Return this new node.
+
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> n = AND2(OR2(a, b), c)
+tinyflow-synth> p = AND2(_a, _b)
+tinyflow-synth> t = INV(NAND2(_a, _b))
+tinyflow-synth> captures = capture(n, p)
+tinyflow-synth> replace(t, captures)
+```
+
 ### 4.5. Substitutions
 
+Now that we have implemented `match` (to check if a tree matches a
+pattern), `capture` (to extract the subtrees that wildcards match), and
+`replace` (to build a new tree using captured subtrees), we have the core
+implementation for the substitution framework.
+
+The `Substitute` class is a container that holds a find pattern and a
+replace template. Find the `Substitute` class in `substitute.py`. Go
+ahead and implement the `apply` method which combines `match`, `capture`,
+and `replace`:
+
+```python
+def apply(self, node):
+  ...
+```
+
+The basic approach is:
+
+ - use the match function to see if there is match between the given node
+   and the stored find pattern
+ - if there is a match, then use the capture function to capture the
+   wildcard subtrees, and the replace these captures
+
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> sub = Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
+tinyflow-synth> result = sub.apply(AND2(OR2(a, b), c))
+tinyflow-synth> print(result)
+```
+
 ### 4.6. Unoptimized Technology Mapping
+
+Now we can use our substitution framework to implement unoptimized
+technology mapping where we replace each generic gate with a
+corresponding standard cell. For example, to map AND2 to NAND2X1 + INVX1:
+
+```python
+Substitute(find=AND2(_a, _b), replace=view.INVX1(view.NAND2X1(_a, _b)))
+```
+
+Note that you can access standard cell classes directly from the view
+using `view.INVX1`, `view.NAND2X1`, etc.
+
+Implement `techmap_unopt` in `synth/techmap_unopt.py`. The function takes
+the database and view as arguments:
+
+```python
+def techmap_unopt(db, view):
+  ...
+```
+
+First, we will need to define substitution rules for each generic gate
+type. Just focus on the gates we need for the full adder: AND2, OR2, NOT.
+
+```python
+rules = [
+  Substitute(find=AND2(_0, _1), replace=view.INVX1(view.NAND2X1(_0, _1))),
+  Substitute(find=OR2(_0, _1),  replace=...),
+  Substitute(find=NOT(_0, _1),  replace=...).
+]
+```
+
+Next, implement an `apply_rules` helper function that recursively applies
+rules bottom-up. The key insight is that we must transform children first
+before transforming the current node. This ensures that when we match a
+pattern at a node, its children have already been mapped to standard
+cells. The function should: (1) return immediately for Signal nodes (base
+case), (2) recursively apply rules to all children first, (3) iterate
+through all rules and try each one on the current node -- return the
+result as soon as a rule matches (first match wins), (4) return the node
+unchanged if no rules match.
+
+Finally, iterate through all trees in the database and apply the rules:
+
+```python
+for name in list(db.trees.keys()):
+  tree = db.get_tree(name)
+  new_tree = apply_rules(tree)
+  db.set_tree(name, new_tree)
+```
+
+Test your implementation with the REPL and GUI. After running techmap,
+the grey generic gates should become red standard cell gates:
+
+```python
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> db = TinyFrontEndDB(view)
+tinyflow-synth> db.enable_gui()
+tinyflow-synth> db.read_verilog("../../rtl/FullAdder.v")
+tinyflow-synth> techmap_unopt(db, view)
+```
 
 5. Algorithm: Gate-Level Netlist Writer
 --------------------------------------------------------------------------
 
-6. Synthesis Tool
+We provide you a gate-level netlist writer which will write a forest of
+trees of standard-cell nodes to a Verilog file. You can try it out like
+this.
+
+```python
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> db = TinyFrontEndDB(view)
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> db.add_inports(["a", "b", "c"])
+tinyflow-synth> db.add_outports(["out1"])
+tinyflow-synth> db.set_tree("out1", view.NAND2X1(view.NOR2X1(a, b), c))
+tinyflow-synth> db.write_verilog("test.v")
+tinyflow-synth> exit()
+```
+
+Now take a look at the generated Verilog gate-level netlist.
+
+```bash
+% cd ${HOME}/ece6745/lab3/tinyflow/build
+% cat test.v
+```
+
+6. TinyFlow Front End
 --------------------------------------------------------------------------
 
-full adder
+As discussed in lecture, the front end is more than just synthesis. The
+front-end flow consists of four stages: two-state simulation, four-state
+simulation, synthesis, and fast-functional gate-level simulation. As
+paranoid ASIC engineers, we verify our design at each step. We simulate
+the RTL before synthesis to catch design bugs early, then simulate the
+gate-level netlist after synthesis to ensure the transformation preserved
+functionality.
 
-7. TinyFlow Front End
---------------------------------------------------------------------------
+### 4.1 Two-State RTL Simulation
 
-### 7.1. Two-State RTL Simulation
+To ensure functionality, the first step is to verify our design quickly
+using two-state simulation. Two-state simulation tests only logic values
+1 and 0 to ensure basic logic correctness. In this part we will use
+Verilator to perform two-state simulation.
 
-### 7.2. Four-State RTL Simulation
+In this lab we will verify a Full Adder design. We provide the Verilog
+RTL in `rtl/FullAdder.v` and a basic testbench in
+`rtl/test/FullAdder-test.v`. Take a look at both files to understand the
+design and test structure.
 
-### 7.3. Synthesis
+Now run the two-state simulation with Verilator:
 
-### 7.4. Fast-Functional Gate-Level Simulation
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/01-verilator-rtlsim
+% verilator --top Top --timing --binary -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./obj_dir/FullAdder-test
+```
 
+As discussed in lecture, two-state simulation has a limitation:
+unassigned signals default to 0. This can hide bugs in your design. For
+example, if you forget to assign an output, two-state simulation will
+silently use 0 instead of flagging an error.
 
+Try this experiment: comment out the `assign g = a & b;` line in your
+Full Adder and re-run the simulation. Notice that `g` silently takes the
+value 0 instead of producing an error. This is why we need four-state
+simulation in the next step. Change the code back before continuing.
+
+### 4.2 Four-State RTL Simulation
+
+Four-state simulation uses four logic values: 0, 1, X (unknown), and Z
+(high impedance). You get X when a signal is uninitialized, when multiple
+drivers are fighting (contention), or through propagation of uncertainty
+(X propagates through logic). You get Z when a wire is floating (nothing
+is driving it) or from a tri-stated output.
+
+We use four-state simulation to capture these bugs. It is slower than
+two-state simulation, but it narrows down our issue search space. If your
+design passes two-state but fails four-state, the problem is usually
+related to X propagation or uninitialized signals.
+
+Go ahead and run the four-state simulation with Icarus Verilog:
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/02-iverilog-rtlsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+Now try the same experiment: comment out the `assign g = a & b;` line and
+re-run the simulation. This time you should see the simulation catch the
+error because `g` becomes X instead of silently defaulting to 0. Change
+the code back before continuing.
+
+### 4.3 Synthesis
+
+Now that we have rigorously tested our Verilog design, we are ready to
+synthesize it into a gate-level netlist. For this step, we will use the
+batch processing mode of `tinyflow-synth` instead of the REPL mode we
+have previous used. The batch mode takes a run script that describes the
+synthesis steps.
+
+Go ahead and edit the run script:
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/03-tinyflow-synth
+% code run.py
+```
+
+Populate the script with the commands to perform technology mapping:
+
+```python
+view = StdCellFrontEndView.parse_lib("../../../stdcells/stdcells-fe.yml")
+db = TinyFrontEndDB(view)
+db.read_verilog("../../../rtl/FullAdder.v")
+techmap_unopt(db, view)
+db.write_verilog("post-synth.v")
+```
+
+Now run the synthesis:
+
+```bash
+% ../../../tinyflow/tinyflow-synth -f run.py
+```
+
+This outputs the `post-synth.v` file. Open it and have a look. You should
+see that all gates are now standard cells from your library, and the
+module still has the same inputs and outputs as the original RTL.
+
+### 4.4 Fast-Functional Gate-Level Simulation
+
+Now that we have our synthesized design, as paranoid ASIC engineers we
+want to double check that the synthesized design still does what we
+intended. Synthesis tools may not always be correct! To verify this, we
+perform fast-functional gate-level simulation (FFGL), which is four-state
+simulation using the same testbench but with the synthesized design and
+the behavioral view of the standard cells.
+
+First, copy over your `stdcells.v` from your project directory to the
+lab3 stdcells directory:
+
+```bash
+% cp $HOME/ece6745/project1-groupXX/stdcells/stdcells.v $HOME/ece6745/lab3/stdcells/
+```
+
+Now run the fast-functional gate-level simulation:
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/04-iverilog-ffglsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../stdcells/stdcells.v ../03-tinyflow-synth/post-synth.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+If the simulation passes, your synthesized design is functionally
+correct.
