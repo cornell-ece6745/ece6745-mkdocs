@@ -20,7 +20,7 @@ basic synthesis flow that transforms Verilog RTL into a gate-level netlist.
 
 We will be using the following TinyFlow frontend synthesis flow.
 
-![](img/lab03-frontend.png)
+![](img/lab3-frontend.png)
 
 We will begin by exploring the TinyFlow data structures using the REPL and
 GUI. We will then implement a Verilog parser, tree printing, substitution,
@@ -31,10 +31,10 @@ fast-functional gate-level simulation) to verify a Full Adder design.
 1. Logging Into `ecelinux`
 --------------------------------------------------------------------------
 
-Follow the same process as previous labs Find a free workstation. Find a
-free workstation and log into the workstation using your NetID and
-standard NetID password. Then complete the following steps. These are the
-same stes as in the first lab with one exception. We are now installing
+Follow the same process as previous labs. Find a free workstation and log
+into the workstation using your NetID and standard NetID password. Then
+complete the following steps. These are the same steps as in the first lab
+with one exception. We are now installing
 the VS Code Surfer extension to be able to view waveforms.
 
  - Start VS Code
@@ -62,11 +62,20 @@ today's lab.
 % tree
 ```
 
-Your repo contains the following files for the views and simulation scripts for
-each standard cell:
+Your repo contains the following directories:
 
 ```
 .
+├── asic/
+│   └── build-fa/
+│       ├── 01-verilator-rtlsim/
+│       ├── 02-iverilog-rtlsim/
+│       ├── 03-tinyflow-synth/
+│       └── 04-iverilog-ffglsim/
+├── rtl/
+│   ├── FullAdder.v
+│   └── test/
+│       └── FullAdder-test.v
 ├── stdcells/
 └── tinyflow/
     ├── conftest.py
@@ -84,7 +93,7 @@ each standard cell:
     │   ├── TinyFrontEndGUI.py
     │   ├── tinyv.lark
     │   ├── verilog_parser.py
-    │   └──tests
+    │   └── tests/
     │       └── ...
     └── tinyflow-synth
 ```
@@ -185,7 +194,7 @@ technology mapping, and standard cell gate classes (INVX1, NAND2X1, etc.).
 Let's create the view and database:
 
 ```python
-tinyflow-synth> view = StdCellFrontEndView("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
 tinyflow-synth> db = TinyFrontEndDB(view)
 ```
 
@@ -195,8 +204,11 @@ GUI with:
 ```python
 tinyflow-synth> db.enable_gui()
 ```
+The GUI window will open. 
 
-The GUI window will open. Now add inputs, outputs, and set a tree:
+![](img/lab3-gui-blank.png)
+
+Now add inputs, outputs, and set a tree:
 
 ```python
 tinyflow-synth> db.add_inports(["a", "b", "c"])
@@ -204,7 +216,12 @@ tinyflow-synth> db.add_outports(["out"])
 tinyflow-synth> db.set_tree("out", AND2(OR2("a", "b"), "c"))
 ```
 
-Watch the GUI update to show your tree. In the GUI:
+Watch the GUI update to show your tree.
+
+
+![](img/lab3-gui-types.png)
+
+In the GUI:
 
  - **Green ovals:** Primary inputs
  - **Orange ovals:** Wire signals
@@ -220,7 +237,7 @@ Once you are done with the GUI, you can exit the REPL by calling `exit()` or pre
 In this section we will implement a couple of algorithms that will warm
 you up for writing recursive functions and will be useful for Project 1
 Part B. By the end of this lab, you will have a working naive technology
-mapping implementation that does the job but may not guarentee minimal area cost.
+mapping implementation that does the job but may not guarantee minimal area cost.
 
 ### 3.1. Verilog Parser
 
@@ -239,9 +256,9 @@ for the TinyFlow. This limitation is mainly pedagogical to simplify the flow as 
 **Rules:**
 
 1. Only Combinational Verilog
-2. Only Use `wire` keyword instead f `logic`
+2. Only Use `wire` keyword instead of `logic`
 3. Only Gate level modeling. However NOT using the gate primitives like `and(), or(), not()` instead we will be using `assign` statements with operators: `&, |, ~, ^`.
-4. No heirarchy, every module is flat.
+4. No hierarchy, every module is flat.
 5. No multibit wires. So you cannot declare something like `wire[7:0] foo` you need something like
     ```verilog
     wire foo0;
@@ -261,7 +278,7 @@ The database includes a method to read in Verilog by passing the path to
 the Verilog file:
 
 ```python
-tinyflow-synth> view = StdCellFrontEndView("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
 tinyflow-synth> db = TinyFrontEndDB(view)
 tinyflow-synth> db.enable_gui()
 tinyflow-synth> db.read_verilog("../../rtl/FullAdder.v")
@@ -388,7 +405,7 @@ grey generic gates should become red standard cell gates:
 
 ```python
 tinyflow-synth> from synth.techmap import techmap_unopt
-tinyflow-synth> view = StdCellFrontEndView("../../stdcells/stdcells-fe.yml")
+tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
 tinyflow-synth> db = TinyFrontEndDB(view)
 tinyflow-synth> db.enable_gui()
 tinyflow-synth> db.read_verilog("../../rtl/FullAdder.v")
@@ -413,17 +430,9 @@ using two-state simulation. Two-state simulation tests only logic values
 1 and 0 to ensure basic logic correctness. In this part we will use
 Verilator to perform two-state simulation.
 
-We will first design our hardware. In this lab you will implement a Full
-Adder. Go ahead and write the Verilog for the Full Adder:
-
-```bash
-% cd ${HOME}/ece6745/lab3/rtl
-% code FullAdder.v
-```
-
-Next we need a testbench. We provide a basic testbench in
-`rtl/test/FullAdder-test.v`. Go ahead and add more checks for exhaustive
-testing to cover all input combinations.
+In this lab we will verify a Full Adder design. We provide the Verilog RTL
+in `rtl/FullAdder.v` and a basic testbench in `rtl/test/FullAdder-test.v`.
+Take a look at both files to understand the design and test structure.
 
 Now run the two-state simulation with Verilator:
 
@@ -490,7 +499,7 @@ Go ahead and edit the run script:
 Populate the script with the commands to perform technology mapping:
 
 ```python
-view = StdCellFrontEndView("../../../stdcells/stdcells-fe.yml")
+view = StdCellFrontEndView.parse_lib("../../../stdcells/stdcells-fe.yml")
 db = TinyFrontEndDB(view)
 db.read_verilog("../../../rtl/FullAdder.v")
 techmap_unopt(db, view)
@@ -534,3 +543,35 @@ Now run the fast-functional gate-level simulation:
 ```
 
 If the simulation passes, your synthesized design is functionally correct.
+
+### 4.5 Exercise: Design a Decoder
+
+You have now walked through the frontend flow with the Full Adder. For the
+final part of this lab, design your own module from scratch. Implement a
+simple 2-to-4 decoder and push it through the complete four-step flow. 
+
+First, create the build directory structure:
+
+```bash
+% mkdir -p $HOME/ece6745/lab3/asic/build-decoder
+% cd $HOME/ece6745/lab3/asic/build-decoder
+% mkdir 01-verilator-rtlsim 02-iverilog-rtlsim 03-tinyflow-synth 04-iverilog-ffglsim
+```
+
+Next, write the Verilog RTL for your decoder:
+
+```bash
+% cd $HOME/ece6745/lab3/rtl
+% code Decoder.v
+```
+
+Then write a testbench for your decoder:
+
+```bash
+% cd $HOME/ece6745/lab3/rtl/test
+% code Decoder-test.v
+```
+
+Now run through the four-step frontend flow, referring back to sections
+4.1-4.4 for the commands. Remember to update the file paths to use your
+decoder files instead of the Full Adder files.
