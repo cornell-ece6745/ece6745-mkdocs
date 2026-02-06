@@ -82,20 +82,14 @@ Your repo contains the following directories:
     ├── conftest.py
     ├── pytest.ini
     ├── synth/
-    │   ├── canonicalize.py
-    │   ├── design_check.py
-    │   ├── generate_forms.py
-    │   ├── sta.py
     │   ├── StdCellFrontEndView.py
     │   ├── substitute.py
-    │   ├── synth.py
-    │   ├── techmap.py
+    │   ├── print_tree.py
+    │   ├── techmap_unopt.py
     │   ├── TinyFrontEndDB.py
     │   ├── TinyFrontEndGUI.py
     │   ├── tinyv.lark
-    │   ├── verilog_parser.py
-    │   └── tests/
-    │       └── ...
+    │   └── verilog_parser.py
     └── tinyflow-synth
 ```
 
@@ -151,12 +145,13 @@ algorithms. It provides a REPL for interactive exploration.
 The base class for all gates is `Node`. Generic gates (AND2, OR2, NAND2,
 NOR2, XOR2, NOT, INV, BUF) are Nodes that represent logic operations.
 Standard cell gates (INVX1, NAND2X1, NOR2X1, etc.) are Nodes read in from
-your front-end view. There are also special nodes like `Const0`, `Const1`,
-and `Wildcard` that we will explain later. Let's create a simple tree and
-explore it:
+your front-end view. `Signal` nodes represent inputs and wires. There are
+also special `Wildcard` nodes that we will explain later. Let's create a
+simple tree and explore it:
 
 ```python
-tinyflow-synth> tree = AND2(OR2("a", "b"), "c")
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> tree = AND2(OR2(a, b), c)
 tinyflow-synth> print(tree)
 tinyflow-synth> print(tree.type)
 tinyflow-synth> print(tree.generic)
@@ -167,22 +162,30 @@ tinyflow-synth> print(tree.eval(a=1, b=0, c=1))
 ```
 
 Each node has a `type` (the gate name), `children` (its inputs), and
-`generic` (True for generic gates, False for standard cell gates). Children
-can be other nodes or strings (input names).
-
-### 2.2. Constants
-
-TinyFlow also supports constant values using `Const0` and `Const1` (or
-the shorthand `_0` and `_1`):
+`generic` (True for generic gates, False for standard cell gates). Signal
+nodes are leaf nodes with no children. Nodes also provide helper methods:
+`is_signal()` returns `True` for Signal nodes, `is_wildcard()` returns
+`True` for Wildcard nodes, and `==`/`!=` compare nodes by type.
 
 ```python
-tinyflow-synth> tree = AND2("a", _1)
-tinyflow-synth> print(tree.eval(a=1))
-tinyflow-synth> print(tree.eval(a=0))
+tinyflow-synth> a.is_signal()
+True
+tinyflow-synth> tree.is_signal()
+False
+tinyflow-synth> _a.is_wildcard()
+True
+tinyflow-synth> a == Signal("a")
+True
+tinyflow-synth> a == AND2(a, b)
+False
+tinyflow-synth> AND2(a, b) == AND2(c, c)
+True
+tinyflow-synth> AND2(a, b) == OR2(a, b)
+False
 ```
 
-`Const0` and `Const1` correspond to the TIELO and TIEHI cells in your
-standard cell library.
+Go ahead and evaluate all input combinations using `tree.eval()` and derive
+the truth table for `AND2(OR2(a, b), c)`.
 
 ### 2.3. Frontend Database and GUI
 
@@ -212,23 +215,25 @@ The GUI window will open.
 Now add inputs, outputs, and set a tree:
 
 ```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
 tinyflow-synth> db.add_inports(["a", "b", "c"])
 tinyflow-synth> db.add_outports(["out"])
-tinyflow-synth> db.set_tree("out", AND2(OR2("a", "b"), "c"))
+tinyflow-synth> db.set_tree("out", AND2(OR2(a, b), c))
 ```
 
 Watch the GUI update to show your tree.
 
+![](img/lab3-gui-simple.png)
 
-![](img/lab3-gui-types.png)
-
-In the GUI:
+In the visualization above, you will only see primary inputs, primary outputs, and generic gates. The GUI uses the following visual conventions:
 
  - **Green ovals:** Primary inputs
  - **Orange ovals:** Wire signals
  - **Blue ovals:** Primary outputs
  - **Grey rectangles:** Generic gates
  - **Red rectangles:** Standard cell gates
+
+![](img/lab3-gui-types.png)
 
 Once you are done with the GUI, you can exit the REPL by calling `exit()` or pressing Ctrl-D.
 
@@ -244,13 +249,9 @@ mapping implementation that does the job but may not guarantee minimal area cost
 
 The first step of our synthesis flow is parsing. The parser lexes the
 simple Verilog syntax, forms an Abstract Syntax Tree (AST), and performs
-"forresting" to translate the AST into the tree of logic form used in
+"forresting" to translate the AST into the forests of logic trees used in
 TinyFlow.
 
-<!-- TODO: @Chris to fill in parser implementation details -->
-
-
-<!-- Irwin's text on verilog -->
 In this part, we will be discussing the limitations of verilog we can write
 for the TinyFlow. This limitation is mainly pedagogical to simplify the flow as well as limitations due to our parser (this does not mean our parser is not good).
 
@@ -273,8 +274,6 @@ module will get.
 
 If you are ever confused take a look at the Lark grammar that we use to see what our parser should parse.
 
-<!-- Irwin's text on verilog -->
-
 The database includes a method to read in Verilog by passing the path to
 the Verilog file:
 
@@ -290,93 +289,193 @@ Watch the GUI update to show the parsed trees.
 ### 3.2. Printing Trees
 
 Before we implement more complex algorithms, let's warm up with a simple
-recursive function. Write a standalone function `print_tree(node, indent=0)`
-that prints a tree structure to the terminal. For example, given
-`AND2(OR2("a", "b"), "c")`, it should print:
+recursive function. Implement `print_tree(node, indent=0)` in
+`synth/print_tree.py` that prints a tree structure to the terminal. The
+function should recursively visit a node and its children, passing along
+the indentation level. At each node, print the indent amount of spaces
+first, then the node type (accessible via `node.type`). `Signal` nodes are
+leaf nodes and should print their name. For example, given
+`AND2(OR2(Signal("a"), Signal("b")), Signal("c"))`, it should print:
 
 ```
 AND2
-|- OR2
-|  |- a
-|  |- b
-|- c
+ OR2
+  a
+  b
+ c
 ```
 
-Create a new file for your function:
+Open the `synth/print_tree.py` file:
 
 ```bash
 % cd ${HOME}/ece6745/lab3/tinyflow
-% code synth/simple_print_tree.py
+% code synth/print_tree.py
 ```
 
-Think about the recursive structure: for each node, print its type, then
-recursively print each child with increased indentation. Strings (input
-names) are leaf nodes. Test your function in the REPL:
+Here are some hints: The function takes a `node` and an `indent` level. First, print the
+indentation (one space per indent level). Then check if the node is a
+Signal (with `.is_signal()`): if so, print its name; otherwise, print the node's type and
+recursively call `print_tree` on each child with `indent + 1`.
+
+Once you are done with your implementation, test your function in the REPL:
 
 ```python
-tinyflow-synth> from synth.simple_print_tree import print_tree
-tinyflow-synth> tree = AND2(OR2("a", "b"), "c")
+tinyflow-synth> a, b, c, d = Signal("a"), Signal("b"), Signal("c"), Signal("d")
+tinyflow-synth> tree = AND2(OR2(a, b), c)
+tinyflow-synth> print_tree(tree)
+tinyflow-synth> tree = XOR2(AND2(a, b), OR2(c, d))
 tinyflow-synth> print_tree(tree)
 ```
 
-### 3.3. Substitution
+### 3.3. Matching Trees
 
-We are now ready to start implementing our first core algorithm: substitution.
-Substitution is a core operation used throughout synthesis. It matches a
-**find pattern** against a node and its subtree, and if successful, produces
-a new subtree based on a **replace template**. The `Substitute` class takes
-a find pattern and a replace template, both of which are trees that can
-contain wildcards:
+Building on the spirt of recursively travering trees, we now implement `match(n_node, p_node)` which compares two trees and returns `True` if they match, `False` otherwise.
+This function takes a node tree `n_node` and a pattern tree `p_node`.
 
-```python
-sub = Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
-```
+Here we introduce a new type of node called `Wildcard`. A wildcard matches
+any subtree. For example, the pattern `AND2(_a, _b)` matches `AND2(x, y)`,
+`AND2(OR2(a, b), c)`, or any other AND2 tree regardless of its children.
+The REPL provides predefined wildcards `_a`, `_b`, `_c`, `_d` for
+convenience. In this `match` function, you can assume only the pattern tree
+`p_node` can contain wildcards.
 
-`Wildcard` is a special type of Node that matches any subtree and captures
-it by name. For example, `_a = Wildcard("a")` creates a wildcard that
-captures into the key `"a"`. The REPL provides predefined wildcards `_a`,
-`_b`, `_c`, `_d` for convenience. When the pattern matches, the captured subtrees are
-substituted into the replace template. For example:
-
-```python
-tinyflow-synth> sub = Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
-tinyflow-synth> result = sub.apply(AND2("x", "y"))
-tinyflow-synth> print(result)
-INV(NAND2(x, y))
-```
-
-In this example, the substitution matches the AND2 tree with the find
-pattern, captures `{"a": "x", "b": "y"}`, and builds a new tree from the
-replace template with captured subtrees in the corresponding positions.
-
-The `apply` method works in two phases:
-
- 1. **Match**: Recursively compare the find pattern tree against the input
-    tree. Wildcards match any subtree and return a dictionary of captures
-    (e.g., `{"a": subtree1, "b": subtree2}`). If types or structure don't
-    match, return `None`.
-
- 2. **Replace**: Recursively build a new tree from the replace template,
-    substituting captured values from the match phase wherever wildcards
-    appear.
-
-Go ahead and implement `_match_recursive` and `_replace_recursive` in
-`synth/substitute.py`. Test your implementation in the REPL:
-
-```python
-tinyflow-synth> sub = Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
-tinyflow-synth> sub.apply(AND2(OR2("a", "b"), "c"))
-```
-
-You should see `INV(NAND2(OR2(a, b), c))`. Once you are happy with your
-implementation, run the substitution tests:
+Open `synth/substitute.py`:
 
 ```bash
-% cd ${HOME}/ece6745/lab3/tinyflow/build
-% pytest ../synth/tests/substitute_test.py -v
+% cd ${HOME}/ece6745/lab3/tinyflow
+% code synth/substitute.py
 ```
 
-### 3.4. Naive Technology Mapping
+Here are some hints: The function traverses both trees together. First,
+check if `p_node` is a wildcard (using `.is_wildcard()`): if so, return
+`True` because wildcards match anything. Then compare `p_node` and `n_node`:
+if they are different (using `!=`), return `False`. These are the base
+cases. For the recursive case, maintain a match state (to track whether all
+children match) and iterate through both nodes' children together (using
+`zip`). Recursively compare each pair of children and accumulate the
+results for whether children match. Return the final match result.
+
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> from synth.substitute import match
+tinyflow-synth> match(AND2(a, b), AND2(_a, _b))
+True
+tinyflow-synth> match(AND2(a, b), OR2(_a, _b))
+False
+tinyflow-synth> match(AND2(OR2(a, b), c), AND2(_a, _b))
+True
+```
+
+### 3.4. Capturing Subtrees
+
+Now that we can recursively compare two trees, we want to also capture
+whatever the wildcards in the pattern tree match to. The captures should be
+a dictionary mapping the wildcard name to the subtree it matched. For
+example, matching `AND2(OR2(a, b), c)` against pattern `AND2(_a, _b)`
+produces `{"a": OR2(a, b), "b": c}`.
+
+Implement `capture(n_node, p_node)` which is similar to `match` but returns
+a dictionary instead of `True`/`False`. Here we can assume that `n_node`
+and `p_node` already match (you should call `match` first before calling
+`capture`).
+
+Open `synth/substitute.py`:
+
+```bash
+% cd ${HOME}/ece6745/lab3/tinyflow
+% code synth/substitute.py
+```
+
+Here are some hints: Similar to `match`, first check if `p_node` is a
+wildcard. If so, return a dictionary with just the wildcard's name mapped
+to `n_node`. Otherwise, recursively call `capture` on both nodes' children
+(using `zip`) and merge the results. You can use `|=` to merge dictionaries.
+
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> from synth.substitute import match, capture
+tinyflow-synth> n = AND2(OR2(a, b), c)
+tinyflow-synth> p = AND2(_a, _b)
+tinyflow-synth> if match(n, p):
+              >     captures = capture(n, p)
+              >     print(captures)
+{'a': OR2(a, b), 'b': c}
+```
+
+### 3.5. Replacing Trees
+
+Now that we can match and capture subtrees, we want to build a new tree
+using the captured values. Implement `replace(t_node, captures)` which
+takes a template tree `t_node` (containing wildcards) and the captures
+dictionary, and returns a new tree with wildcards replaced by their
+corresponding captured subtrees.
+
+Open `synth/substitute.py`:
+
+```bash
+% cd ${HOME}/ece6745/lab3/tinyflow
+% code synth/substitute.py
+```
+
+Here are some hints: The goal is to return a node, and the parent call
+updates its children with what each recursive call returns. In each call we check if
+`t_node` is a wildcard: if so, return the corresponding captured subtree
+instead of the wildcard. Otherwise, recursively call `replace` on each
+child, collect the results into a new children list, update
+`t_node.children`, and return `t_node`.
+
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> from synth.substitute import match, capture, replace
+tinyflow-synth> n = AND2(OR2(a, b), c)
+tinyflow-synth> p = AND2(_a, _b)
+tinyflow-synth> t = INV(NAND2(_a, _b))
+tinyflow-synth> if match(n, p):
+              >     captures = capture(n, p)
+              >     result = replace(t, captures)
+              >     print(result)
+INV(NAND2(OR2(a, b), c))
+```
+
+### 3.6. Substitution
+
+Now that we have implemented `match` (to check if a tree matches a
+pattern), `capture` (to extract the subtrees that wildcards match), and
+`replace` (to build a new tree using captured subtrees), we have the core
+implementation for substitution in TinyFlow's frontend.
+
+Substitution is one of the core functionalities that enables the synthesis
+flow. In the standard cell frontend view, each standard cell defines
+patterns that describe how generic gates map to that cell. The view
+captures these patterns as `Substitute` objects that can be applied to
+trees in the database.
+
+The `Substitute` class is a container that holds a find pattern and a
+replace template. Go ahead and implement the `apply` method which combines
+`match`, `capture`, and `replace`:
+
+```python
+def apply(self, node):
+  # if match, capture and replace; otherwise return None
+```
+
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> sub = Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
+tinyflow-synth> result = sub.apply(AND2(OR2(a, b), c))
+tinyflow-synth> print(result)
+INV(NAND2(OR2(a, b), c))
+```
+
+### 3.7. Naive Technology Mapping
 
 In Project 1 Part B you will implement an optimized version of technology
 mapping. For this lab, we will implement a naive version that simply
@@ -386,26 +485,55 @@ The idea is to use your substitution implementation to define a pattern for
 each generic gate. For example, to map AND2 to NAND2X1 + INVX1:
 
 ```python
-Substitute(find=AND2(_a, _b), replace=INVX1(NAND2X1(_a, _b)))
+Substitute(find=AND2(_a, _b), replace=view.INVX1(view.NAND2X1(_a, _b)))
 ```
 
-Implement `techmap_unopt` in `synth/techmap.py`. The function takes the
-database and view as arguments:
+Note that you can access standard cell classes directly from the view using
+`view.INVX1`, `view.NAND2X1`, etc.
+
+Implement `techmap_unopt` in `synth/techmap_unopt.py`. The function takes
+the database and view as arguments:
 
 ```python
-def techmap_unopt(db: TinyFrontEndDB, view: StdCellFrontEndView):
+def techmap_unopt(db, view):
 ```
 
-Inside the function, define substitution rules for each generic gate type
-(AND2, OR2, NOT, BUF, XOR2) and apply them to all trees in the database.
-You can iterate over all trees with `db.trees.keys()`, retrieve each tree
-with `db.get_tree(name)`, and update it with `db.set_tree(name, new_tree)`.
+First, we will need to define substitution rules for each generic gate type
+(AND2, OR2, NOT, INV, BUF):
+
+```python
+rules = [
+  Substitute(find=AND2(_a, _b), replace=view.INVX1(view.NAND2X1(_a, _b))),
+  Substitute(find=..., replace=...)
+  # ... add rules for XOR2, NOT, INV, BUF
+]
+```
+
+Next, implement an `apply_rules` helper function that recursively applies
+rules bottom-up. The key insight is that we must transform children first
+before transforming the current node. This ensures that when we match a
+pattern at a node, its children have already been mapped to standard cells.
+The function should: (1) return immediately for Signal nodes (base case),
+(2) recursively apply rules to all children first, (3) iterate through all
+rules and try each one on the current node - return the result as soon as
+a rule matches (first match wins), (4) return the node unchanged if no
+rules match.
+
+Finally, iterate through all trees in the database and apply the rules:
+
+```python
+for name in list(db.trees.keys()):
+  tree = db.get_tree(name)
+  if tree is not None:
+    new_tree = apply_rules(tree)
+    db.set_tree(name, new_tree)
+```
 
 Test your implementation with the REPL and GUI. After running techmap, the
 grey generic gates should become red standard cell gates:
 
 ```python
-tinyflow-synth> from synth.techmap import techmap_unopt
+tinyflow-synth> from synth.techmap_unopt import techmap_unopt
 tinyflow-synth> view = StdCellFrontEndView.parse_lib("../../stdcells/stdcells-fe.yml")
 tinyflow-synth> db = TinyFrontEndDB(view)
 tinyflow-synth> db.enable_gui()
