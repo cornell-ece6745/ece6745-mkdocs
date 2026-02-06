@@ -2,31 +2,36 @@
 ECE 6745 Lab 3: TinyFlow Front End
 ==========================================================================
 
-In this lab, we will explore the TinyFlow front-end which takes as input
-a Verilog RTL design and produces a gate-level netlist of standard cells.
-The complete TinyFlow standard-cell and ASIC design flow is shown below
-with the front end highlighted in red.
+In this lab, we will explore both the data structures and algorithms used
+in TinyFlow front end. We will implement a basic synthesis tool that
+transforms Verilog RTL into a gate-level netlist and then use this
+synthesis tool to create a very simple end-to-end front end flow which
+includes two-state RTL simulation, four-state RTL s
+walk through the
+complete frontend verification flow for an RTL design.
 
-![](img/lab3-tinyflow.png)
+ - **Verilog Parser:** Reads Verilog RTL and converts it into an internal
+     tree representation of generic gates
 
-The front end includes two-state RTL simulation, four-state RTL
-simulation, synthesis, and fast-functional gate-level simulation. In
-lecture, we discussed an approach to synthesis based on technology
-mapping with dynamic programming to optimize the area of the final
-gate-level netlist. In this lab, we will be instead implementing a very
-simple unoptimized synthesis tool. The three key algorithms in the
-unoptimized synthesis tool are shown below.
+ - **Substitution:** Pattern matching and replacement operation that
+     transforms trees by matching a find pattern and producing a new tree
+     from a replace template
 
-![](img/lab3-synth-flow.png){ width=50% }
+ - **Naive Technology Mapping:** Maps generic gates to standard cells from
+     your library using simple pattern substitution
 
-We will be begin by exploring the key data structure used in the
-synthesis tool: a forest of trees where the nodes are generic gates,
-standard cells, or signals. We will then explore the verilog reader,
-implement an unoptimized technology mapping algorithm, use the provided
-gate-level netlist writer to generate the final Verilog gate-level
-netlist, and then put these algorithms together into a synthesis tool.
-Finally, we will go through the entire end-to-end front end flow for a
-full adder.
+ - **Gate-Level Netlist Writer:** Outputs the mapped design as a Verilog
+     gate-level netlist using your standard cells
+
+We will be using the following TinyFlow frontend synthesis flow.
+
+![](img/lab3-frontend.png)
+
+We will begin by exploring the TinyFlow data structures using the REPL and
+GUI. We will then implement a Verilog parser, tree printing, substitution,
+and naive technology mapping. Finally, we will walk through the four-step
+frontend flow (2-state simulation, 4-state simulation, synthesis,
+fast-functional gate-level simulation) to verify a Full Adder design.
 
 1. Logging Into `ecelinux`
 --------------------------------------------------------------------------
