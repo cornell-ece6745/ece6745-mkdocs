@@ -339,12 +339,12 @@ AND2
 ```
 
 The `print_tree` function should get the correct tree from the database
-and then call the recursive `print_tree_h` helper function. The recusrive
+and then call the recursive `print_tree_h` helper function. The recursive
 helper function should use a preorder tree traversal to print the tree:
 
- - Step 1: Print leading spaces based on `indent`
- - Step 2: Print the type for a generic-gate node or the name for a signal node
- - Step 3: Recusively call helper function for all children with `indent+1`
+ - _Step 1:_ Print leading spaces based on `indent`
+ - _Step 2:_ Print the type for a generic-gate node or the name for a signal node
+ - _Step 3:_ Recusively call helper function for all children with `indent+1`
 
 Once you have finished writing your `print_tree` function try it out
 using the TinyFlow REPL.
@@ -562,9 +562,9 @@ This recursive function takes as input two nodes in two trees and
 compares the corresponding subtrees starting from these two nodes using
 the following steps.
 
- - Base Case: If the nodes are not equal return false
+ - _Base Case:_ If the nodes are not equal return false
 
- - Recursive Case: Recursively call function for all children, keep track
+ - _Recursive Case:_ Recursively call function for all children, keep track
    if any children return false and if so then this function should
    return false, otherwise return true
 
@@ -589,11 +589,14 @@ tinyflow-synth> match_exact( AND2(OR2(a,b), c), AND2(a,b) )
 ### 4.2. Partially Matching Trees
 
 Now that we know how to recursively traverse two trees in parallel, let's
-implement a partial match algorithm. Here is where will start to take
-advantage of wildcards. A wildcard matches any subtree. For example, the
-pattern `AND2(_0, _1)` matches `AND2(x, y)`, `AND2(OR2(a, b), c)`, or any
-other AND2 tree regardless of its children. The REPL provides predefined
-wildcards `_0`, `_1`, `_2`, `_3` for convenience.
+implement a partial match algorithm. Here is where we will start to take
+advantage of wildcards. A wildcard matches any subtree. The REPL provides
+predefined wildcards `_0`, `_1`, `_2`, `_3` for convenience. For example,
+if we have the tree below on the left, we want to be able to determine
+that the pattern on the right matches since there is an AND2 gate at the
+root of the tree on the left.
+
+TREE
 
 Find the `match` function in `substitute.py`.
 
@@ -608,31 +611,18 @@ the `node` tree is the tree want want to search over. The function
 compares the corresponding subtrees starting from these two nodes using
 the following steps.
 
- - Base Case 1: If the current `p_node` is a wildcard (i.e.,
+ - _Base Case 1_: If the current `p_node` is a wildcard (i.e.,
    `is_wildcard()` returns true) then it always matches the corresponding
    `node` so return true.
 
- - Base Case 2: If the current `p_node` does not equal the current `node`
-   (i.e., use `!=` which compares the types of the two nodes) then there
-   is no match so return false.
+ - _Base Case 2_: If the current `p_node` does not equal the current
+   `node` (i.e., use `!=` which compares the types of the two nodes) then
+   there is no match so return false.
 
- - Recursive Case: Recursively all function for all children, keep track
-   if any children return false and if so then this function should
+ - _Recursive Case_: Recursively call function for all children, keep
+   track if any children return false and if so then this function should
    return false, otherwise return true
 
-Once you have implemented your exact match algorithm, try it out using
-the TinyFlow REPL.
-
-```python
-tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
-tinyflow-synth> tree1 = AND2(OR2(a, b), c)
-tinyflow-synth> tree2 = AND2(OR2(a, b), c)
-tinyflow-synth> tree3 = OR2(AND2(a, b), c)
-
-tinyflow-synth> match_exact( tree1, tree2 )
-tinyflow-synth> match_exact( tree1, tree3 )
-tinyflow-synth> match_exact( tree2, tree3 )
-```
 Test your implementation in the REPL:
 
 ```python
@@ -640,12 +630,63 @@ tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
 tinyflow-synth> match( AND2(OR2(a,b), c), AND2(OR2(_0,_1), _2) )
 tinyflow-synth> match( AND2(OR2(a,b), c), OR2(AND2(_0,_1), _2) )
 tinyflow-synth> match( AND2(OR2(a,b), c), AND2(_0,_1) )
+tinyflow-synth> match( INV(OR2(AND2(a,b), c)), INV(OR2(_0,_1)) )
+tinyflow-synth> match( INV(OR2(AND2(a,b), c)), INV(_0) )
 ```
 
-Notice how the final match should return true since `AND2(_0,_1)`
-partially matches the `AND2(OR2(a,b), c)` tree.
+Notice how the final three matches should return true since the pattern
+partially matches the given tree.
 
 ### 4.3. Capturing Wildcard Subtrees
+
+Now that we can recursively compare two trees, we want to also _capture_
+whatever the wildcards in the pattern tree match to. So in the following
+example, wildcard `_0` captures the `OR(a,b)` subtree and wildcard `_1`
+captures the `c` signal node.
+
+![](img/lab3-tree3.png){ width=50% }
+
+![](img/lab3-tree4.png){ width=50% }
+
+![](img/lab3-tree5.png){ width=50% }
+
+The captures should be a dictionary mapping the wildcard name to the
+subtree it matched. For example, matching `AND2(OR2(a, b), c)` against
+pattern `AND2(_0, _1)` produces `{"_0": OR2(a, b), "_1": c}`.
+
+Find the `capture` function in `substitute.py`.
+
+```python
+def capture( node, p_node ):
+  ...
+```
+
+This recursive function takes as input two nodes in two trees. The
+`p_node` tree is the _pattern_ tree (i.e., the tree with wildcards) while
+the `node` tree is the tree want want to search over. The `capture`
+algorithm can assume we have already used the `match` algorithm to
+confirm there is indeed a partial match. The function compares the
+corresponding subtrees starting from these two nodes using the following
+steps.
+
+ - Base Case: If the current `p_node` is a wildcard (i.e.,
+   `is_wildcard()` returns true) then we want to capture the
+   corresponding subtree starting at `node`. Return a new dictionary that
+   maps the wild card name (i.e., `p_node.name`) to `node`.
+
+ - Recursive Case: Recursively all function for all children, keep a
+   running dictionary and merge in the dictionary returned from each
+   recursive function call. You can use the `|=` operator to merge a new
+   dictionary into an existing dictionary.
+
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> capture( AND2(OR2(a,b), c), AND2(_0,_1) )
+tinyflow-synth> capture( INV(OR2(AND2(a,b), c)), INV(OR2(_0,_1)) )
+tinyflow-synth> capture( INV(OR2(AND2(a,b), c)), INV(_0) )
+```
 
 ### 4.4. Replacing Trees
 
