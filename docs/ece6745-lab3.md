@@ -318,10 +318,10 @@ Find the `print_tree` and `print_tree_h` functions.
 
 ```python
 def print_tree_h( node, indent ):
-  pass
+  ...
 
 def print_tree( db, name ):
-  pass
+  ...
 ```
 
 The `print_tree` function takes as input the front-end database and the
@@ -363,7 +363,7 @@ Now find the `print_forest` function.
 
 ```python
 def print_forest( db ):
-  pass
+  ...
 ```
 
 This function should iterate across all trees in the forest and print
@@ -495,11 +495,157 @@ tinyflow-synth> db.read_verilog("../../rtl/FullAdder.v")
 4. Algorithm: Unoptimized Technology Mapping
 --------------------------------------------------------------------------
 
+Our unoptimized technology mapping algorithm will be very simple. It will
+replace every generic gate with a logically equivalent subtree of
+standard cells. We will not be trying to optimize area. We are simply
+trying to develop the most basic possible technology mapping algorithm.
+
+We will develop a subtree substitution framework which we can then use to
+implement the unoptimized technology mapping algorithm. You can also use
+this subtree substitution framework to implement canoncalization and
+optimized technology mapping in the project. The subtree substitution
+framework will enable us to create a substitute like this:
+
+```python
+Substitute( find=AND2(_0, _1), replace=INV(NAND2(_0, _1) ))
+```
+
+Once we have created a substitute we can _apply_ to a tree. So applying
+the above subsittute would find every AND2 generig cate and replace it
+with a new INV/NAND2 subtree. Substitutes make use of wildcard nodes
+which are denoted using `_0`, `_1`, `_2`, and `_3`. A wildcard node will
+matches any subtree.
+
+So let's say we start with the tree on the left and we want to apply the
+above substitute to create the tree on the right.
+
+![](img/lab3-tree2.png){ width=60% }
+
+Our goal is to be able to do this as follows.
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> sub = Substitute(find=AND2(_0, _1), replace=INV(NAND2(_0, _1)))
+tinyflow-synth> result = sub.apply(AND2(OR2(a, b), c))
+tinyflow-synth> print(result)
+INV(NAND2(OR2(a, b), c))
+```
+
+This is pretty complicated to implement, so we will take an incremental
+approach. We will start by implementing an exact match algorithm before
+implementing a partial match algorithm. Then we will work on capturing
+the wildcard subtrees from a partial match. We will implement the actual
+replacement before finalyl creating a substitution. Then we can use this
+to implement the unoptimized technology mapping.
+
 ### 4.1. Exactly Matching Trees
+
+Our first step is to implement an exact match algorithm. Our earlier work
+on printing trees only traversed a single tree. Here we will need to
+recurse two trees in parallel to see if they match exactly.
+
+Open the `substitute.py` file in VS Code.
+
+```bash
+% cd ${HOME}/ece6745/lab3/tinyflow/build
+% code ../synth/substitute.py
+```
+
+Find the `match_exact` function in `substitute.py`.
+
+```python
+def match_exact( node, p_node ):
+  ...
+```
+
+This recursive function takes as input two nodes in two trees and
+compares the corresponding subtrees starting from these two nodes using
+the following steps.
+
+ - Base Case: If the nodes are not equal return false
+
+ - Recursive Case: Recursively call function for all children, keep track
+   if any children return false and if so then this function should
+   return false, otherwise return true
+
+You can use the Python `zip` function to easily iterate over the children
+of both nodes together like this:
+
+```
+  for p_child, n_child in zip( p_node.children, node.children ):
+    ... do something with p_child and n_child ...
+```
+
+Once you have implemented your exact match algorithm, try it out using
+the TinyFlow REPL.
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> match_exact( AND2(OR2(a,b), c), AND2(OR2(a,b), c) )
+tinyflow-synth> match_exact( AND2(OR2(a,b), c), OR2(AND2(a,b), c) )
+tinyflow-synth> match_exact( AND2(OR2(a,b), c), AND2(a,b) )
+```
 
 ### 4.2. Partially Matching Trees
 
-### 4.3. Capturing Subtrees
+Now that we know how to recursively traverse two trees in parallel, let's
+implement a partial match algorithm. Here is where will start to take
+advantage of wildcards. A wildcard matches any subtree. For example, the
+pattern `AND2(_0, _1)` matches `AND2(x, y)`, `AND2(OR2(a, b), c)`, or any
+other AND2 tree regardless of its children. The REPL provides predefined
+wildcards `_0`, `_1`, `_2`, `_3` for convenience.
+
+Find the `match` function in `substitute.py`.
+
+```python
+def match( node, p_node ):
+  ...
+```
+
+This recursive function takes as input two nodes in two trees. The
+`p_node` tree is the _pattern_ tree (i.e., the tree with wildcards) while
+the `node` tree is the tree want want to search over. The function
+compares the corresponding subtrees starting from these two nodes using
+the following steps.
+
+ - Base Case 1: If the current `p_node` is a wildcard (i.e.,
+   `is_wildcard()` returns true) then it always matches the corresponding
+   `node` so return true.
+
+ - Base Case 2: If the current `p_node` does not equal the current `node`
+   (i.e., use `!=` which compares the types of the two nodes) then there
+   is no match so return false.
+
+ - Recursive Case: Recursively all function for all children, keep track
+   if any children return false and if so then this function should
+   return false, otherwise return true
+
+Once you have implemented your exact match algorithm, try it out using
+the TinyFlow REPL.
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> tree1 = AND2(OR2(a, b), c)
+tinyflow-synth> tree2 = AND2(OR2(a, b), c)
+tinyflow-synth> tree3 = OR2(AND2(a, b), c)
+
+tinyflow-synth> match_exact( tree1, tree2 )
+tinyflow-synth> match_exact( tree1, tree3 )
+tinyflow-synth> match_exact( tree2, tree3 )
+```
+Test your implementation in the REPL:
+
+```python
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> match( AND2(OR2(a,b), c), AND2(OR2(_0,_1), _2) )
+tinyflow-synth> match( AND2(OR2(a,b), c), OR2(AND2(_0,_1), _2) )
+tinyflow-synth> match( AND2(OR2(a,b), c), AND2(_0,_1) )
+```
+
+Notice how the final match should return true since `AND2(_0,_1)`
+partially matches the `AND2(OR2(a,b), c)` tree.
+
+### 4.3. Capturing Wildcard Subtrees
 
 ### 4.4. Replacing Trees
 
