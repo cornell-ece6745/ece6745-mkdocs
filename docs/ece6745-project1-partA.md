@@ -21,8 +21,8 @@ node.
 The project includes three parts:
 
  - Part A: TinyFlow Standard Cells
- - Part B: TinyFlow Front-End
- - Part C: TinyFlow Back-End
+ - Part B: TinyFlow Front End
+ - Part C: TinyFlow Back End
 
 All parts must be done in a group of 2-3 students. You can confirm your
 group on Canvas (Click on People, then Groups, then search for your name

@@ -2,19 +2,27 @@
 ECE 6745 Project 1: TinyFlow Tape-Out<br>TinyFlow Front-End
 ==========================================================================
 
-In Project 1, you are building TinyFlow, a simple standard-cell-based
-ASIC flow. In Part A, you developed standard cells with six views. In
-this part (Part B), you will implement the front-end synthesis algorithms
-and use the four-step testing flow to verify your designs. You will
-implement substitution, canonicalization, technology mapping, and static
-timing analysis. You will then run your designs through RTL simulation,
-synthesis, and gate-level simulation to ensure correctness.
+In this project, students will build their own TinyFlow, a very simple
+standard-cell-based flow. They will develop seven standard cells in TSMC
+180nm and the corresponding standard cell behavioral, schematic, layout,
+extracted schematic, front-end, and back-end views. They will then
+implement simple algorithms for synthesis (technology mapping via tree
+covering, static timing analysis) and place-and-route (simulated
+annealing, 3D maze routing). Finally they will combine this work with
+open-source Verilog RTL and gate-level simulators and an open-source
+LVS/DRC tool to create the complete TinyFlow. Even though their TinyFlow
+will only support a very small combinational subset of Verilog, this
+project still gives students a unique hands-on opportunity to appreciate
+every step required in more sophisticated commercial tools. Each group
+will create a tiny block using their TinyFlow and these blocks will be
+aggregated into a single unified tape-out on the TSMC 180nm technology
+node.
 
 The project includes three parts:
 
  - Part A: TinyFlow Standard Cells
- - Part B: TinyFlow Front-End
- - Part C: TinyFlow Back-End
+ - Part B: TinyFlow Front End
+ - Part C: TinyFlow Back End
 
 Continue working with your group from Part A. You can confirm your
 group on Canvas (Click on People, then Groups, then search for your name
@@ -37,25 +45,41 @@ to find your project group).
     deduction to their project score.**
 
 This handout assumes that you have read and understand the course
-tutorials, that you have attended the lab sections, and that you have
-completed lab 3. To get started, use VS Code to log into a specific
-ecelinux server, source the setup script, and navigate to your repository:
+tutorials and that you have attended the lab sections. To get started,
+use VS Code to log into a specific `ecelinux` server, use MS Remote
+Desktop to log into the same `ecelinux` server, source the setup scripts,
+and clone your remote repository from GitHub:
 
 ```bash
 % source setup-ece6745.sh
 % source setup-gui.sh
+% xclock &
+% mkdir -p ${HOME}/ece6745
+% cd ${HOME}/ece6745
+% git clone git@github.com:cornell-ece6745/project1-groupXX
+% cd project1-groupXX
+% tree
+```
+
+where `XX` should be replaced with your group number. You can both pull
+and push to your remote repository. If you have already cloned your
+remote repository, then use git pull to ensure you have any recent
+updates before working on your lab assignment.
+
+```bash
 % cd ${HOME}/ece6745/project1-groupXX
 % git pull
 % tree
 ```
 
 where `XX` should be replaced with your group number. Your repo contains
-the following files relevant to Part B:
+the following files.
 
 ```
 .
 ├── stdcells
 │   ├── ...
+│   └── stdcells.v
 │   └── stdcells-fe.yml
 └── tinyflow
     ├── conftest.py
@@ -86,55 +110,44 @@ tools and tests:
 % cd tinyflow/build
 ```
 
-1. Synthesis Overview
+1. Background on TinyFlow
 --------------------------------------------------------------------------
 
-The front-end ASIC flow takes a Verilog RTL design and produces a
-gate-level netlist. The flow includes simulation steps to verify
-correctness at each stage:
+The complete TinyFlow standard-cell and ASIC design flow is shown below
+with the front end highlighted in red.
 
- - **Two-State RTL Simulation:** Verify the RTL design using fast
-   simulation where all signals are 0 or 1
+![](img/lab3-tinyflow.png)
 
- - **Four-State RTL Simulation:** Verify the RTL design using simulation
-   where signals can be 0, 1, X, or Z to catch subtle bugs
+The front end includes two-state RTL simulation, four-state RTL
+simulation, synthesis, and fast-functional gate-level simulation. In
+lecture, we discussed an approach to synthesis based on technology
+mapping with dynamic programming to optimize the area of the final
+gate-level netlist.
 
- - **Synthesis:** Transform the RTL into a gate-level netlist using your
-   standard cell library
+Synthesis itself consists of four key algorithms.
 
- - **Fast-Functional Gate-Level Simulation:** Verify the synthesized
-   netlist is functionally equivalent to the RTL (no timing)
+![](img/proj1b-synth-flow.png){ width=60% }
 
-Synthesis itself consists of several passes that transform the design:
+ - **Verilog Reader:** Parses Verilog RTL design into forest of trees of
+   generic logic gates
 
- - **Verilog Parser:** Parse Verilog RTL into an internal representation
-   of the design's logic
+ - **Technology Mapping:** Maps trees of generic gates to trees of
+   standard cells; we will be implementing both an unoptimized and
+   optimized version
 
- - **Canonicalize:** Convert generic gates to a canonical NAND/INV form
-   to simplify technology mapping
+ - **Static Timing Analysis:** Statically analyze all paths to find
+   critical path
 
- - **Technology Mapping:** Map the canonical trees to standard cells
-   (INVX1, NAND2X1, NOR2X1, AOI21X1, etc.) using dynamic programming
-   to minimize area
+ - **Gate-Level Netlist Writer:** Outputs a standard-cell gate-level
+   netlist in a Verilog file
 
- - **Static Timing Analysis:** Analyze all paths through the design to
-   find the critical path and maximum delay
+We provide you the Verilog reader and gate-level netlist writer. In this
+project you are reponsible for implementing technology mapping and static
+timing analysis.
 
- - **Gate-Level Netlist Writer:** Output the final standard-cell
-   gate-level netlist
-
-2. Synthesis Data Structures
---------------------------------------------------------------------------
-
-<!-- TODO: Discuss with team - this section may be better placed in lab 3,
-     with project referencing lab for basics and focusing on new concepts
-     (wildcards, constants, patterns for techmap). -->
-
-TinyFlow represents logic using expression trees stored in a frontend
+TinyFlow represents logic using expression trees stored in a front end
 database. This section describes the key data structures you will work
 with when implementing the synthesis algorithms.
-
-### 2.1. Forest and Trees
 
 A design is represented as a **forest** of expression trees. Each primary
 output has one tree that computes its logic function. Intermediate signals
@@ -157,20 +170,25 @@ trees (both outputs and wires).
 Each node in a tree represents a logic gate. The `Node` base class has
 these key attributes:
 
- - **type:** Name of the gate (e.g., `"AND2"`, `"INVX1"`)
- - **children:** List of inputs, which can be other Nodes or strings
+ - `type`: Name of the gate (e.g., `"AND2"`, `"INVX1"`)
+ - `children`: List of inputs, which can be other Nodes or strings
    (primary inputs / wire references)
- - **generic:** `True` for generic gates, `False` for library gates
 
-Trees are recursive structures. A node's children are either leaf strings
-(primary inputs) or other nodes (gates):
+And the following useful methods to determine the type of node.
+
+- `is_generic_gate()`
+- `is_standard_cell()`
+- `is_signal()`
+- `is_wildcard()`
+
+Trees are recursive structures.
 
 ```
-        NAND2                Node: type="NAND2", children=[Node, Node]
+        NAND2                Node: type="NAND2", children=[INV, INV]
         /   \
-      INV   INV              Node: type="INV", children=["a"]
+      INV   INV              Node: type="INV", children=[Signal]
        |     |
-      "a"   "b"              String: primary input
+       a     b               Node: type="Signal"
 ```
 
 The `repr()` of a tree shows its structure: `NAND2(INV(a), INV(b))`.
@@ -178,8 +196,7 @@ The `repr()` of a tree shows its structure: `NAND2(INV(a), INV(b))`.
 ### 2.3. Generic Gates
 
 Generic gates represent logic operations parsed from Verilog RTL. They
-have `generic = True` and no physical implementation. TinyFlow supports
-these generic gates:
+have no physical implementation. TinyFlow supports these generic gates:
 
  - **Two-input gates:** AND2, OR2, NAND2, NOR2, XOR2, XNOR2
  - **Single-input gates:** NOT, INV, BUF
@@ -210,31 +227,24 @@ and transform trees.
 **Wildcards** match any subtree and capture it by name:
 
 ```python
-_a = Wildcard('a')   # matches any subtree, captures as 'a'
-_b = Wildcard('b')   # matches any subtree, captures as 'b'
-```
-
-**Constants** match constant logic values:
-
-```python
-_0 = Const0()        # matches constant 0
-_1 = Const1()        # matches constant 1
+_0 = Wildcard('_0') # matches any subtree, captures as '_0'
+_1 = Wildcard('_1') # matches any subtree, captures as '_1'
 ```
 
 These are used in substitution rules. For example, to replace AND with
 NAND-INV:
 
 ```python
-Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
+Substitute(find=AND2(_0, _1), replace=INV(NAND2(_0, _1)))
 ```
 
-The wildcards `_a`, `_b`, `_c`, `_d` and constants `_0`, `_1` are
+The wildcards `_0`, `_1`, `_2`, `_3` and constants `_0`, `_1` are
 predefined in `TinyFrontEndDB` for convenience.
 
-### 2.5. Library Gates
+### 2.5. Standard Cells
 
-Library gates represent physical standard cells from your cell library.
-They have `generic = False` and include physical information:
+Standard cells represent physical standard cells from your cell library
+and include physical information:
 
  - **area_cost:** Area of the cell (in lambda^2)
  - **patterns:** List of generic gate patterns the cell can implement
@@ -245,21 +255,22 @@ For example, `NOR2X1` can implement multiple patterns:
 NOR2X1
 ├── area_cost: 2048
 └── patterns:
-    ├── INV(NAND2(INV(_a), INV(_b)))    # NOR via De Morgan's
-    └── INV(NAND2(INV(_b), INV(_a)))    # same, inputs swapped
+    ├── INV(NAND2(INV(_0), INV(_1)))         # NOR via De Morgan's
+    └── INV(INV(INV(NAND2(INV(_0), INV(_1))) # double inverter at output
 ```
 
 The patterns tell techmap which generic gate combinations can be
-"covered" by a single library cell. Technology mapping uses these
+"covered" by a single standard cell. Technology mapping uses these
 patterns to find the minimum-area implementation.
 
-Library gate classes (INVX1, NAND2X1, NOR2X1, AOI21X1, etc.) are
+Standard cell classes (INVX1, NAND2X1, NOR2X1, AOI21X1, etc.) are
 dynamically created when you load the standard cell view.
 
 ### 2.6. Standard Cell View
 
 The `StdCellFrontEndView` provides information about your standard cell
-library. It is loaded from `stdcells-fe.yml` and passed to `TinyFrontEndDB`:
+library. It is loaded from `stdcells-fe.yml` and passed to
+`TinyFrontEndDB`:
 
 ```python
 view = StdCellFrontEndView("../stdcells/stdcells-fe.yml")
@@ -279,61 +290,33 @@ The view provides information needed by synthesis algorithms:
 The delay through a gate is computed as: `delay = tau_d + tau_t * load`
 where `load` is the total capacitance driven by the gate's output
 
-3. Synthesis Algorithms
---------------------------------------------------------------------------
+### 2.7. Verilog Reader
 
-In this section, you will walk through the synthesis flow step by step,
-implementing the core algorithms and verifying them interactively using
-the TinyFlow REPL and GUI.
-
-### 3.1. Verilog Parser
-
-As discussed in lecture, Verilog parsing is the first phase in frontend
-synthesis. It converts designs described in Verilog RTL into an internal
-representation - specifically, trees of generic gates in TinyFlow. We
-provide the parser for you. In lab 3, you explored how to build trees manually using
-the REPL. Now let's see how the parser does this automatically from
-Verilog.
-
-Start the TinyFlow REPL from your build directory:
-
-```bash
-% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% ../tinyflow-synth
-```
-
-You should see the TinyFlow REPL prompt. Go ahead and set up the standard
-cell view and database, then enable the GUI so you can visualize the
-trees as you work:
-
-```python
-tinyflow-synth> view = StdCellFrontEndView("../../stdcells/stdcells-fe.yml")
-tinyflow-synth> db = TinyFrontEndDB(view)
-tinyflow-synth> db.enable_gui()
-```
-
-The GUI window will open showing an empty forest. Now let's parse a
-Verilog file to see how the parser converts RTL into generic gate trees:
+We provide you the verilog reader. Feel free to take a look at the
+associated grammar located in `tinyflow/synth/tinyv.lark`. You can use
+the following command to read a Verilog file into the TinyFlow front-end
+database.
 
 ```python
 tinyflow-synth> db.read_verilog("path/to/design.v")
 ```
 
-Watch the GUI update as the parser creates trees for each output. Each
-tree is composed of generic gates (AND2, OR2, NOT, etc.) that represent
-the logic from your Verilog `assign` statements. You can also inspect
-the trees in the REPL:
+### 2.8. Gate-Level Netlist Writer
+
+We provide you the gate-level netlist writer. You can use the following
+command to write the TinyFlow front-end database to a Verilog file.
 
 ```python
-tinyflow-synth> db.print_forest()
-tinyflow-synth> db.print_tree("out")
+tinyflow-synth> db.write_verilog("post-synth.v")
 ```
 
-Take a moment to compare the Verilog source with the tree representation.
-Think about how the parser maps Verilog operators (`&`, `|`, `~`, `^`) to
-generic gates (AND2, OR2, NOT, XOR2).
+3. Algorithm: Unoptimized Technology Mapping
+--------------------------------------------------------------------------
 
-### 3.2. Substitution
+Students should implement a substitution rule framework before
+implementing technology mapping.
+
+### 3.1. Substitution
 
 Substitution is a core operation used throughout our synthesis framework
 in TinyFlow. It matches a **find pattern** against a node and, if
@@ -342,73 +325,61 @@ in the pattern capture subtrees, which are then substituted into the
 template. For example, to transform an AND gate into NAND-INV form:
 
 ```python
-tinyflow-synth> sub = Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
-tinyflow-synth> result = sub.apply(AND2("x", "y")) # Returns INV(NAND2(x, y))
-```
-
-The wildcards `_a` and `_b` in the pattern capture the inputs `"x"` and
-`"y"`, then those captured values are substituted into the replace
-template to produce `INV(NAND2(x, y))`.
-
-The substitution works in two phases:
-
- 1. **Match:** Recursively compare the find pattern tree against the input
-    node. Wildcards match any subtree and capture it by name. If types
-    or structure don't match, return `None`.
-
- 2. **Replace:** Recursively build a new tree from the replace template,
-    substituting captured values wherever wildcards appear.
-
-Let's walk through a more complex example where wildcards capture entire
-subtrees, not just strings. Consider matching the pattern
-`INV(NAND2(_a, _b))` against the node `INV(NAND2(AND2("x", "y"), NOT("z")))`:
-
- - Step 1: Pattern INV matches Node INV (same type)
- - Step 2: Recurse on child: `NAND2(_a, _b)` vs `NAND2(AND2("x", "y"), NOT("z"))`
-   - NAND2 matches NAND2 (same type)
-   - Recurse on children[0]: `_a` (wildcard) matches `AND2("x", "y")` →
-     capture `{a: AND2("x", "y")}`
-   - Recurse on children[1]: `_b` (wildcard) matches `NOT("z")` →
-     capture `{b: NOT("z")}`
- - Step 3: Merge captures → `{a: AND2("x", "y"), b: NOT("z")}`
-
-Notice that `_a` and `_b` captured entire subtrees, not just leaf strings.
-This is essential for synthesis transformations where we need to preserve
-complex subexpressions.
-
-Go ahead and implement the `_match_recursive` and `_replace_recursive`
-methods in `synth/substitute.py`. Here are some hints to guide your
-implementation:
-
- - Wildcards (`isinstance(pattern, Wildcard)`) match anything and return
-   `{pattern.name: node}`
- - Constants (`Const0`, `Const1`) match their respective constant values
- - Non-Node leaves (strings) must be equal to match
- - Nodes must have the same `type` and matching children
- - If the same wildcard appears twice, both captures must be equal
-   (compare using `repr()`)
-
-Use the REPL and GUI to test your implementation as you develop it. Try
-different patterns and see if they match as expected:
-
-```python
-tinyflow-synth> sub = Substitute(find=AND2(_a, _b), replace=INV(NAND2(_a, _b)))
-tinyflow-synth> tree = AND2("x", "y")
-tinyflow-synth> result = sub.apply(tree)
+tinyflow-synth> a, b, c = Signal("a"), Signal("b"), Signal("c")
+tinyflow-synth> sub = Substitute(find=AND2(_0, _1), replace=INV(NAND2(_0, _1)))
+tinyflow-synth> result = sub.apply(AND2(OR2(a, b), c))
 tinyflow-synth> print(result)
-INV(NAND2(x, y))
 ```
 
-Once your implementation is working, run the substitution tests:
+The wildcards `_0` and `_1` in the pattern capture the inputs `x` and
+`y`, then those captured values are substituted into the replace template
+to produce `INV(NAND2(x, y))`.
 
-```bash
-% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../synth/tests/substitute_test.py -v
-```
+We require students to implement the following functions in
+`tinyflow/synth/substitute.py` to complete the substitution framework:
 
-All 22 tests should pass when your implementation is correct.
+ - `match`: Recursively compare the find pattern tree against the input
+    node. Wildcards match any subtree and capture it by name. If types or
+    structure don't match, return `None`.
 
-### 3.3. Canonicalize
+ - `capture`: Capture whatever the wildcards in the pattern tree match
+   to. Returns a dictionary mapping the wildcard name to the subtree it
+   matched.
+
+ - `replace`: Build a new tree using the template and the captured
+   subtrees.
+
+ - `Substitutions.apply`: Combine `match`, `capture`, and `replace` to
+   apply a substitution rule to a given subject tree.
+
+### 3.2. Unoptimized Technology Mapping
+
+Once you have your substitution framework working, you can use the
+substitution framework to implement a naive unoptimized technology
+mapping algorithm in `tinyflow/synth/techmap_unopt.py`. Simply create one
+rule for every generic gate and include a corresponding replacement which
+implements this generic gate using standard cells. Then apply these rules
+to every node in every tree. This unoptimized technology mapping
+algorithm makes no attempt to minimize area and will serve as a nice
+baseline for your optimized technology mapping algorithm.
+
+4. Algorithm: Optimized Technology Mapping
+--------------------------------------------------------------------------
+
+The optimized technology mapping algorithm has three steps:
+
+  - **Canonicalize:** Replace every generic gate with equivalent tree of
+     just NAND2 and INV generic gates; determine equivalent trees of
+     NAND2 and INV generic gates for each standard cell
+
+  - **Cover:** Use _dynamic programming_ to determine optimal way to
+     cover each node in a canonicalized tree of generic gates with
+     equivalent standard cells; goal is to minmize total area
+
+  - **Traceback:** Determine final optimal cover of all trees in the
+     forest
+
+### 4.1. Canonicalize
 
 With the ability to substitute patterns with a template, we can now build
 the first step of the technology mapping phase: canonicalization. In order
@@ -418,57 +389,25 @@ Canonicalization is that step. The input is a tree with generic gates
 (AND2, OR2, NOR2, XOR2, XNOR2, NOT, BUF) and the output is a logically
 equivalent tree using only NAND2 and INV gates.
 
-Go ahead and implement the `canonicalize` function in
-`synth/canonicalize.py`. You will need to define a substitution rule for
-each generic gate type (one rule per gate), apply the rules to the nodes
-in a tree, and apply it to all trees in the database. The recommended approach is to
-write a recursive function to apply the rules to a tree, but you can
-implement this however you want.
+Go ahead and implement the `canonicalize` function in `synth/techmap.py`.
+You will need to define a substitution rule for each generic gate type
+(one rule per gate), apply the rules to the nodes in a tree, and apply it
+to all trees in the database. The recommended approach is to write a
+recursive function to apply the rules to a tree, but you can implement
+this however you want.
 
-To test your implementation, use the REPL and GUI to visualize trees
-before and after canonicalization:
-
-```python
-tinyflow-synth> view = StdCellFrontEndView("../../stdcells/stdcells-fe.yml")
-tinyflow-synth> db = TinyFrontEndDB(view)
-tinyflow-synth> db.enable_gui()
-tinyflow-synth> db.add_inports(["a", "b", "c"])
-tinyflow-synth> db.add_outports(["out"])
-tinyflow-synth> db.set_tree("out", OR2(AND2("a", "b"), "c"))
-tinyflow-synth> db.print_forest()
-```
-
-Look at the GUI to see the tree with generic gates. Now run canonicalize
-and observe the transformation:
-
-```python
-tinyflow-synth> canonicalize(db, view)
-tinyflow-synth> db.print_forest()
-```
-
-The trees should now contain only NAND2 and INV gates and the tree logic should be
-equivalent to the pre-canonicalized tree. Once your implementation is working, run
-the canonicalize tests:
-
-```bash
-% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../synth/tests/canonicalize_test.py -v
-```
-
-All 20 tests should pass when your implementation is correct.
-
-### 3.4. Techmap
+### 4.2. Cover
 
 Technology mapping replaces the canonical NAND2/INV tree with library
 cells from your standard cell library. The goal is to find the
 minimum-area implementation.
 
-This is where the **patterns** field from your Part A front-end view
-comes into play. Each library cell has patterns describing which
+This is where the **patterns** field from your standard-cell front-end
+view comes into play. Each library cell has patterns describing which
 NAND2/INV combinations it can implement. For example, NOR2X1 has a
-pattern that matches `INV(NAND2(INV(_a), INV(_b)))`. When techmap finds
-this pattern in the canonical tree, it can replace all four gates with
-a single NOR2X1 cell.
+pattern that matches `INV(NAND2(INV(_0), INV(_1)))`. When techmap finds
+this pattern in the canonical tree, it can replace all four gates with a
+single NOR2X1 cell.
 
 **Input:** Canonicalized tree (NAND2/INV gates only)
 
@@ -512,16 +451,15 @@ tinyflow-synth> db.report_area()
 The trees should now contain library cells (INVX1, NAND2X1, NOR2X1, etc.)
 instead of generic gates.
 
-**Testing:** Run the techmap tests from your build directory:
+### 4.3. Traceback
 
-```bash
-% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../synth/tests/techmap_test.py -v
-```
+### 4.4. Optimized Technology Mapping
 
-All 30 tests should pass when your implementation is correct.
+Now put all three steps together in the `techmap` function located in
+'tinyflow/synth/techmap.py`
 
-### 3.5. STA
+5. Algorithm: Static Timing Analysis
+--------------------------------------------------------------------------
 
 Static timing analysis (STA) computes the delay through the mapped
 netlist and finds the critical path. This is where the **timing model**
@@ -580,6 +518,18 @@ tinyflow-synth> db.report_summary()
 The timing report shows the critical path delay and the gates on the
 critical path.
 
+6. Testing
+--------------------------------------------------------------------------
+
+**Testing:** Run the techmap tests from your build directory:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../synth/tests/techmap_test.py -v
+```
+
+All 30 tests should pass when your implementation is correct.
+
 **Testing:** Run the STA tests from your build directory:
 
 ```bash
@@ -589,48 +539,189 @@ critical path.
 
 All 18 tests should pass when your implementation is correct.
 
-### 3.6. Gate-Level Netlist Writer
+7. TinyFlow Front-End
+--------------------------------------------------------------------------
 
-The final step is to write the mapped netlist to a Verilog file. This is
-provided for you:
+As discussed in lecture, the front end is more than just synthesis. The
+front-end flow consists of four stages: two-state simulation, four-state
+simulation, synthesis, and fast-functional gate-level simulation. As
+paranoid ASIC engineers, we verify our design at each step. We simulate
+the RTL before synthesis to catch design bugs early, then simulate the
+gate-level netlist after synthesis to ensure the transformation preserved
+functionality.
 
-```python
-tinyflow-synth> db.write_verilog("design_mapped.v")
+### 7.1 Two-State RTL Simulation
+
+To ensure functionality, the first step is to verify our design quickly
+using two-state simulation. Two-state simulation tests only logic values
+1 and 0 to ensure basic logic correctness. In this part we will use
+Verilator to perform two-state simulation.
+
+In this project, we will verify a Full Adder design. We provide the
+Verilog RTL in `rtl/FullAdder.v` and a basic testbench in
+`rtl/test/FullAdder-test.v`. You can run the two-state simulation with
+Verilator as follows.
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/01-verilator-rtlsim
+% verilator --top Top --timing --binary -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./obj_dir/FullAdder-test
 ```
 
-Open the output file and verify it contains library cell instantiations
-(INVX1, NAND2X1, NOR2X1, AOI21X1) connected by wires. This gate-level
-netlist can be used for fast-functional simulation to verify correctness
-and will be the input to the back-end flow in Part C.
+We have put the above command in a shell script to simplify running
+two-state RTL simulation.
 
-4. TinyFlow Front-End
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa
+% ./01-verilator-rtlsim/run
+```
+
+### 7.2 Four-State RTL Simulation
+
+Four-state simulation uses four logic values: 0, 1, X (unknown), and Z
+(high impedance). You get X when a signal is uninitialized, when multiple
+drivers are fighting (contention), or through propagation of uncertainty
+(X propagates through logic). You get Z when a wire is floating (nothing
+is driving it) or from a tri-stated output.
+
+We use four-state simulation to capture these bugs. It is slower than
+two-state simulation, but it narrows down our issue search space. If your
+design passes two-state but fails four-state, the problem is usually
+related to X propagation or uninitialized signals.
+
+Go ahead and run the four-state simulation with Icarus Verilog:
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/02-iverilog-rtlsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+We have put the above command in a shell script to simplify running
+two-state RTL simulation.
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa
+% ./02-iverilog-rtlsim/run
+```
+
+### 7.3 Synthesis
+
+Now that we have rigorously tested our Verilog design, we are ready to
+synthesize it into a gate-level netlist. For this step, we will use the
+batch processing mode of `tinyflow-synth` instead of the REPL mode we
+have previous used. The batch mode takes a run script that describes the
+synthesis steps. Populate the 'asic/build-fa/03-tinyflow-synth/run.py'
+script with the commands to perform synthesis and STA.
+
+```python
+# Load the standard-cell front-end view and create front-end database
+
+view = StdCellFrontEndView.parse_lib("../../../stdcells/stdcells-fe.yml")
+db = TinyFrontEndDB(view)
+
+# Read Verilog file into the database
+
+db.read_verilog("../../../rtl/FullAdder.v")
+
+# Optimized technology mapping
+
+techmap(db, view)
+
+# Static timing analysis with output load of 10fF
+
+output_load = 10
+sta(db, view, output_load)
+
+# Check design for issues
+
+db.check_design()
+
+# Write front-end database to a Verilog gate-level netlist
+
+db.write_verilog("post-synth.v")
+```
+
+Now run the synthesis:
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/03-tinyflow-synth
+% ../../../tinyflow/tinyflow-synth -f run.py
+```
+
+This outputs the `post-synth.v` file. We have put the above command in a
+shell script to simplify running synthesis.
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa
+% ./03-tinyflow-synth/run
+```
+
+### 7.4 Fast-Functional Gate-Level Simulation
+
+Now that we have our synthesized design, as paranoid ASIC engineers we
+want to double check that the synthesized design still does what we
+intended. Synthesis tools may not always be correct! To verify this, we
+perform fast-functional gate-level simulation (FFGL), which is four-state
+simulation using the same testbench but with the synthesized design and
+the behavioral view of the standard cells.
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa/04-iverilog-ffglsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../stdcells/stdcells.v ../03-tinyflow-synth/post-synth.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+If the simulation passes, your synthesized design is functionally
+correct. We have put the above command in a shell script to simplify
+running synthesis.
+
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa
+% ./04-iverilog-ffglsim/run
+```
+
+9. Project Submission
 --------------------------------------------------------------------------
 
-In this section, you will use the four-step testing flow to verify your
-synthesis implementation.
+To submit your code you simply push your code to GitHub. You can push
+your code as many times as you like before the deadline. Students are
+responsible for going to the GitHub website for your repository, browsing
+the source code, and confirming that the code they want to submit is on
+GitHub. Be sure to verify your code is passing all of
+your simulations on `ecelinux`.
 
-### 4.1. 01-pymtl-rtlsim
+Here is how we will be testing your final code submission for Part B.
+First, we will create a build directory.
 
-TODO
+```bash
+% mkdir -p ${HOME}/ece6745
+% cd ${HOME}/ece6745
+% git clone git@github.com:cornell-ece6745/project1-groupXX
+```
 
-### 4.2. 02-iverilog-rtlsim
+Then we will run all of the tests for the synthesis flow.
 
-TODO
+```bash
+% mkdir -p ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../synth
+```
 
-### 4.3. 03-tinyflow-synth
+Then we will verify that we can succesfully push the full adder through
+your TinyFlow.
 
-TODO
+```bash
+% cd $HOME/ece6745/lab3/asic/build-fa
+% ./01-verilator-rtlsim/run
+% ./02-iverilog-rtlsim/run
+% ./03-tinyflow-synth/run
+% ./04-iverilog-ffglsim/run
+```
 
-### 4.4. 04-iverilog-ffglsim
-
-TODO
-
-5. Optional Extensions
---------------------------------------------------------------------------
-
-TODO
-
-6. Project Submission
---------------------------------------------------------------------------
-
-TODO

@@ -786,7 +786,7 @@ type. Just focus on the gates we need for the full adder: AND2, OR2, NOT.
 rules = [
   Substitute(find=AND2(_0, _1), replace=view.INVX1(view.NAND2X1(_0, _1))),
   Substitute(find=OR2(_0, _1),  replace=...),
-  Substitute(find=NOT(_0, _1),  replace=...).
+  Substitute(find=NOT(_0),      replace=...),
 ]
 ```
 
