@@ -349,9 +349,6 @@ We require students to implement the following functions in
  - `replace`: Build a new tree using the template and the captured
    subtrees.
 
- - `Substitutions.apply`: Combine `match`, `capture`, and `replace` to
-   apply a substitution rule to a given subject tree.
-
 ### 3.2. Unoptimized Technology Mapping
 
 Once you have your substitution framework working, you can use the
@@ -389,12 +386,12 @@ Canonicalization is that step. The input is a tree with generic gates
 (AND2, OR2, NOR2, XOR2, XNOR2, NOT, BUF) and the output is a logically
 equivalent tree using only NAND2 and INV gates.
 
-Go ahead and implement the `canonicalize` function in `synth/techmap.py`.
-You will need to define a substitution rule for each generic gate type
-(one rule per gate), apply the rules to the nodes in a tree, and apply it
-to all trees in the database. The recommended approach is to write a
-recursive function to apply the rules to a tree, but you can implement
-this however you want.
+Go ahead and implement the `canonicalize` function in
+`tinyflow/synth/techmap.py`. You will need to define a substitution rule
+for each generic gate type (one rule per gate), apply the rules to the
+nodes in a tree, and apply it to all trees in the database. The
+recommended approach is to write a recursive function to apply the rules
+to a tree, but you can implement this however you want.
 
 ### 4.2. Cover
 
@@ -411,17 +408,8 @@ single NOR2X1 cell.
 
 **Input:** Canonicalized tree (NAND2/INV gates only)
 
-**Output:** Tree with library cells (INVX1, NAND2X1, NOR2X1, AOI21X1, etc.)
-with minimum area (optimal for trees)
-
-The algorithm uses two-phase dynamic programming:
-
- - **Phase 1 (bottom-up):** For each node, try all patterns and compute
-   the minimum cost. Store the optimal cost and pattern for later.
-
- - **Phase 2 (top-down):** Starting from the primary output tree roots,
-   apply the optimal pattern stored for each node and recursively
-   process children.
+**Output:** Tree with library cells (INVX1, NAND2X1, NOR2X1, AOI21X1,
+etc.) with minimum area (optimal for trees)
 
 The DP recurrence is:
 
@@ -429,34 +417,30 @@ The DP recurrence is:
 opt_cost(node) = min over patterns p { p.area_cost + sum(opt_cost(child)) }
 ```
 
-**Your task:** Implement `_techmap_phase1` and `_techmap_phase2` in
-`synth/techmap.py`.
+Go ahead and implement the `cover` function in
+`tinyflow/synth/techmap.py`.
 
 **Hints:**
 
  - Use `repr(node)` as the key into `opt_cost` and `opt_pattern` dicts
  - Iterate over `view.patterns` to try all possible pattern matches
- - In phase 1, process children before the current node (bottom-up)
- - In phase 2, apply the pattern first, then recurse on children
- - Leaf nodes (strings) have zero cost and pass through unchanged
-
-**Interactive:** After canonicalizing, run techmap and observe the GUI:
-
-```python
-tinyflow-synth> techmap(db, view)
-tinyflow-synth> db.print_forest()
-tinyflow-synth> db.report_area()
-```
-
-The trees should now contain library cells (INVX1, NAND2X1, NOR2X1, etc.)
-instead of generic gates.
+ - Process children before the current node (bottom-up)
+ - Signals have zero cost and pass through unchanged
 
 ### 4.3. Traceback
+
+Finally, use a top-down approach to reconstruct the optimal technology
+mapping. Start from the root and recursively apply the optimal patterns.
+When you are done return the final tree which should exclusively contain
+standard-cell nodes.
 
 ### 4.4. Optimized Technology Mapping
 
 Now put all three steps together in the `techmap` function located in
-'tinyflow/synth/techmap.py`
+'tinyflow/synth/techmap.py`. Call canonicalize first. Then call cover on
+every tree in the front-end database. Finally call traceback on every
+tree in the front-end database and set each tree to the newly technology
+mapped tree.
 
 5. Algorithm: Static Timing Analysis
 --------------------------------------------------------------------------
@@ -494,8 +478,8 @@ The algorithm has three phases:
    arrival time, then backtrace through the tree following the critical
    pin at each node.
 
-**Your task:** Implement `_compute_loads`, `_compute_arrivals`, and
-`_find_critical_path` in `synth/sta.py`.
+**Your task:** Implement `compute_loads`, `compute_arrivals`, and
+`find_critical_path` in `tinyflow/synth/sta.py`.
 
 **Hints:**
 
@@ -507,7 +491,7 @@ The algorithm has three phases:
  - Primary inputs have arrival time 0
  - For arrivals, use memoization via `node.timing` to avoid recomputation
 
-**Interactive:** After techmap, run STA and view timing results:
+After techmap, you can run STA and view timing results:
 
 ```python
 tinyflow-synth> sta(db, view)
@@ -521,23 +505,24 @@ critical path.
 6. Testing
 --------------------------------------------------------------------------
 
-**Testing:** Run the techmap tests from your build directory:
+You can run the tests from your build directory like this.
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../synth/tests/substitute_test.py -v
 % pytest ../synth/tests/techmap_test.py -v
+% pytest ../synth/tests/sta_test.py -v
+% pytest ../synth/tests/synth_test.py -v
 ```
 
-All 30 tests should pass when your implementation is correct.
-
-**Testing:** Run the STA tests from your build directory:
+You can also run all the tests at once.
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../synth/tests/sta_test.py -v
+% pytest ../synth/tests
 ```
 
-All 18 tests should pass when your implementation is correct.
+All tests should pass when your implementation is correct.
 
 7. TinyFlow Front-End
 --------------------------------------------------------------------------
