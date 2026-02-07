@@ -347,7 +347,7 @@ We require students to implement the following functions in
 
  - `match`: Recursively compare the find pattern tree against the input
     node. Wildcards match any subtree and capture it by name. If types or
-    structure don't match, return `None`.
+    structure don't match, return `False`.
 
  - `capture`: Capture whatever the wildcards in the pattern tree match
    to. Returns a dictionary mapping the wildcard name to the subtree it
