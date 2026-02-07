@@ -77,25 +77,32 @@ the following files.
 
 ```
 .
-├── stdcells
+├── asic
+│   ├── build-fa
+│   │   ├── 01-verilator-rtlsim
+│   │   ├── 02-iverilog-rtlsim
+│   │   ├── 03-tinyflow-synth
+│   │   │   └── run.py
+│   │   └── 04-iverilog-ffglsim
 │   ├── ...
-│   └── stdcells.v
 │   └── stdcells-fe.yml
+├── stdcells
+│   ├── stdcells.v
+│   ├── stdcells-fe.yml
+│   └── ...
 └── tinyflow
     ├── conftest.py
     ├── pytest.ini
     ├── synth
+    │   ├── tinyv.lark
+    │   ├── verilog_parser.py
     │   ├── StdCellFrontEndView.py
     │   ├── TinyFrontEndDB.py
     │   ├── TinyFrontEndGUI.py
-    │   ├── canonicalize.py
-    │   ├── design_check.py
-    │   ├── sta.py
     │   ├── substitute.py
-    │   ├── synth.py
+    │   ├── techmap_unopt.py
     │   ├── techmap.py
-    │   ├── tinyv.lark
-    │   ├── verilog_parser.py
+    │   ├── sta.py
     │   └── tests
     │       └── ...
     └── tinyflow-synth
