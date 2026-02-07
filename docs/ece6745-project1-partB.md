@@ -641,6 +641,12 @@ sta(db, view, output_load)
 
 db.check_design()
 
+# Output reports
+
+db.report_area()
+db.report_timing()
+db.report_summary()
+
 # Write front-end database to a Verilog gate-level netlist
 
 db.write_verilog("post-synth.v")
