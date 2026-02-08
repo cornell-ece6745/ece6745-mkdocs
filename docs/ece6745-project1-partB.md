@@ -360,6 +360,54 @@ We require students to implement the following functions in
  - `replace`: Build a new tree using the template and the captured
    subtrees.
 
+!!! warning "Handling Repeated Wildcards"
+
+    In the lab, `match` did not track captures, and `capture` used `|=` to
+    merge dictionaries from child recursions. This works for simple patterns
+    but fails for **repeated wildcards** like `NAND2(_a, _a)` (which matches
+    `INV`). With `|=`, the second capture silently overwrites the first, so
+    `NAND2(x, y)` would incorrectly match `NAND2(_a, _a)`.
+
+    In the project, we pass `captures` as an argument through `match` and
+    `capture`. When a wildcard is encountered again, `match` checks if the
+    new value equals the previously captured value. If they differ, `match`
+    returns `False`. This correctly rejects `NAND2(x, y)` against `NAND2(_a, _a)`.
+
+!!! note "Function: `match(node, p_node, captures)`"
+
+    **Goal:** Check if `node` matches pattern `p_node`, populating captures dict.
+
+    **Args:**
+
+    - `node`: Tree node to match against
+    - `p_node`: Pattern tree (contains wildcards)
+    - `captures`: Dict to populate with wildcard name → matched subtree
+
+    **Returns:** `True` if node matches pattern, `False` otherwise
+
+!!! note "Function: `capture(node, p_node, captures)`"
+
+    **Goal:** Populate captures dict by traversing a matched pattern.
+
+    **Args:**
+
+    - `node`: Tree node (already verified to match)
+    - `p_node`: Pattern tree (contains wildcards)
+    - `captures`: Dict to populate with wildcard name → matched subtree
+
+    **Returns:** The `captures` dict
+
+!!! note "Function: `replace(t_node, captures)`"
+
+    **Goal:** Build a new tree from template, substituting captured values for wildcards.
+
+    **Args:**
+
+    - `t_node`: Template tree (contains wildcards to substitute)
+    - `captures`: Dict mapping wildcard name → subtree to substitute
+
+    **Returns:** New `Node` tree with wildcards replaced by captured subtrees
+
 ### 3.2. Unoptimized Technology Mapping
 
 Once you have your substitution framework working, you can use the
@@ -370,6 +418,16 @@ implements this generic gate using standard cells. Then apply these rules
 to every node in every tree. This unoptimized technology mapping
 algorithm makes no attempt to minimize area and will serve as a nice
 baseline for your optimized technology mapping algorithm.
+
+!!! note "Function: `apply_rules(node)`"
+
+    **Goal:** Recursively apply substitution rules to a tree, bottom-up.
+
+    **Args:**
+
+    - `node`: Tree node to transform
+
+    **Returns:** Transformed node with matching pattern applied
 
 4. Algorithm: Optimized Technology Mapping
 --------------------------------------------------------------------------
@@ -403,6 +461,30 @@ for each generic gate type (one rule per gate), apply the rules to the
 nodes in a tree, and apply it to all trees in the database. The
 recommended approach is to write a recursive function to apply the rules
 to a tree, but you can implement this however you want.
+
+!!! note "Function: `canonicalize_node(node, rules)`"
+
+    **Goal:** Recursively convert a tree to NAND2/INV basis.
+
+    **Args:**
+
+    - `node`: Tree node to canonicalize
+    - `rules`: List of substitution rules for generic gates
+
+    **Returns:** Canonicalized node using only NAND2 and INV gates
+
+!!! note "Function: `canonicalize(db, view)`"
+
+    **Goal:** Canonicalize all trees in the database.
+
+    **Args:**
+
+    - `db`: TinyFrontEndDB containing trees to canonicalize
+    - `view`: StdCellFrontEndView (unused, but passed for API consistency)
+
+    **Returns:** None (modifies db in place)
+
+    **Hint:** Use `db.get_tree(name)` and `db.set_tree(name, node)` to modify db in place
 
 ### 4.2. Cover
 
@@ -438,12 +520,36 @@ Go ahead and implement the `cover` function in
  - Process children before the current node (bottom-up)
  - Signals have zero cost and pass through unchanged
 
+!!! note "Function: `cover(node, view, opt_cost, opt_pattern)`"
+
+    **Goal:** Compute optimal cost and pattern for each node using bottom-up DP.
+
+    **Args:**
+
+    - `node`: Canonicalized tree node to cover
+    - `view`: StdCellFrontEndView containing patterns
+    - `opt_cost`: Dict to populate with node key → minimum cost
+    - `opt_pattern`: Dict to populate with node key → best pattern
+
+    **Returns:** None (populates opt_cost and opt_pattern dicts)
+
 ### 4.3. Traceback
 
 Finally, use a top-down approach to reconstruct the optimal technology
 mapping. Start from the root and recursively apply the optimal patterns.
 When you are done return the final tree which should exclusively contain
 standard-cell nodes.
+
+!!! note "Function: `traceback(node, opt_pattern)`"
+
+    **Goal:** Reconstruct optimal tree by applying best patterns top-down.
+
+    **Args:**
+
+    - `node`: Canonicalized tree node
+    - `opt_pattern`: Dict mapping node key → best pattern
+
+    **Returns:** New tree with standard cells
 
 ### 4.4. Optimized Technology Mapping
 
@@ -452,6 +558,17 @@ Now put all three steps together in the `techmap` function located in
 every tree in the front-end database. Finally call traceback on every
 tree in the front-end database and set each tree to the newly technology
 mapped tree.
+
+!!! note "Function: `techmap(db, view)`"
+
+    **Goal:** Technology map all trees: canonicalize, cover, traceback.
+
+    **Args:**
+
+    - `db`: TinyFrontEndDB containing trees to map
+    - `view`: StdCellFrontEndView containing patterns and cell info
+
+    **Returns:** None (modifies db in place)
 
 5. Algorithm: Static Timing Analysis
 --------------------------------------------------------------------------
@@ -501,6 +618,57 @@ The algorithm has three phases:
    arrival time and critical pin (use `Timing` namedtuple)
  - Primary inputs have arrival time 0
  - For arrivals, use memoization via `node.timing` to avoid recomputation
+
+!!! note "Function: `compute_loads(db, view, output_load)`"
+
+    **Goal:** Compute load capacitance for all nodes.
+
+    **Args:**
+
+    - `db`: TinyFrontEndDB containing mapped trees
+    - `view`: StdCellFrontEndView for Cgate lookup
+    - `output_load`: Fixed load on primary outputs (default 10.0 fF)
+
+    **Returns:** None (sets `node.load_cap` on each gate)
+
+!!! note "Function: `compute_arrivals(db, view)`"
+
+    **Goal:** Compute arrival times for all nodes using forward DP.
+
+    **Args:**
+
+    - `db`: TinyFrontEndDB containing mapped trees with `load_cap` set
+    - `view`: StdCellFrontEndView for timing parameters
+
+    **Returns:** None (sets `node.timing` on each gate)
+
+!!! note "Function: `find_critical_path(db)`"
+
+    **Goal:** Find critical path by backtracing from max delay output.
+
+    **Args:**
+
+    - `db`: TinyFrontEndDB with timing computed
+
+    **Returns:** Tuple of `(max_delay, critical_path, critical_output)`
+
+!!! note "Function: `sta(db, view, output_load)`"
+
+    **Goal:** Run full STA: compute_loads, compute_arrivals, find_critical_path.
+
+    **Args:**
+
+    - `db`: TinyFrontEndDB containing mapped trees
+    - `view`: StdCellFrontEndView for timing parameters
+    - `output_load`: Fixed load on primary outputs (default 10.0 fF)
+
+    **Returns:** None (stores results in db via db.set_sta_results)
+
+    **Hint:** You can set the STA results into DB using the following:
+    ```
+    path_stages = sum(1 for node in critical_path if node.is_gate())
+    db.set_sta_results(max_delay, critical_path, path_stages, critical_output)
+    ```
 
 After techmap, you can run STA and view timing results:
 
