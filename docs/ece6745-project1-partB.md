@@ -86,6 +86,10 @@ the following files.
 │   │   └── 04-iverilog-ffglsim
 │   ├── ...
 │   └── stdcells-fe.yml
+├── rtl
+│   ├── FullAdder.v
+│   └── test
+│       └── FullAdder-test.v
 ├── stdcells
 │   ├── stdcells.v
 │   ├── stdcells-fe.yml
