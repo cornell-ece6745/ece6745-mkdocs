@@ -727,7 +727,7 @@ Verilog RTL in `rtl/FullAdder.v` and a basic testbench in
 Verilator as follows.
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa/01-verilator-rtlsim
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa/01-verilator-rtlsim
 % verilator --top Top --timing --binary -o FullAdder-test \
     ../../../rtl/FullAdder.v \
     ../../../rtl/test/FullAdder-test.v
@@ -738,7 +738,7 @@ We have put the above command in a shell script to simplify running
 two-state RTL simulation.
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa
 % ./01-verilator-rtlsim/run
 ```
 
@@ -758,7 +758,7 @@ related to X propagation or uninitialized signals.
 Go ahead and run the four-state simulation with Icarus Verilog:
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa/02-iverilog-rtlsim
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa/02-iverilog-rtlsim
 % iverilog -g2012 -o FullAdder-test \
     ../../../rtl/FullAdder.v \
     ../../../rtl/test/FullAdder-test.v
@@ -769,7 +769,7 @@ We have put the above command in a shell script to simplify running
 two-state RTL simulation.
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa
 % ./02-iverilog-rtlsim/run
 ```
 
@@ -819,7 +819,7 @@ db.write_verilog("post-synth.v")
 Now run the synthesis:
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa/03-tinyflow-synth
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa/03-tinyflow-synth
 % ../../../tinyflow/tinyflow-synth -f run.py
 ```
 
@@ -827,7 +827,7 @@ This outputs the `post-synth.v` file. We have put the above command in a
 shell script to simplify running synthesis.
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa
 % ./03-tinyflow-synth/run
 ```
 
@@ -841,7 +841,7 @@ simulation using the same testbench but with the synthesized design and
 the behavioral view of the standard cells.
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa/04-iverilog-ffglsim
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa/04-iverilog-ffglsim
 % iverilog -g2012 -o FullAdder-test \
     ../../../stdcells/stdcells.v ../03-tinyflow-synth/post-synth.v \
     ../../../rtl/test/FullAdder-test.v
@@ -853,7 +853,7 @@ correct. We have put the above command in a shell script to simplify
 running synthesis.
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa
 % ./04-iverilog-ffglsim/run
 ```
 
@@ -888,7 +888,7 @@ Then we will verify that we can succesfully push the full adder through
 your TinyFlow.
 
 ```bash
-% cd $HOME/ece6745/lab3/asic/build-fa
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa
 % ./01-verilator-rtlsim/run
 % ./02-iverilog-rtlsim/run
 % ./03-tinyflow-synth/run
