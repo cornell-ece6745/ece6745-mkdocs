@@ -294,109 +294,307 @@ tinyflow-pnr> db.get_output_names()
 3. Algorithm: Floorplan
 --------------------------------------------------------------------------
 
-TODO: Intro. Given die width and height in um, need to derive lambda
-coordinates. Explain site/row structure. IO pins must be on chip edge.
+In Section 2, we called `db.floorplan` directly with the number of rows
+and sites per row. In practice, the floorplan algorithm computes the grid
+dimensions and places IO ports on the chip boundary.
+
+There are two approaches. `floorplan_fixed` takes explicit chip width and
+height in micrometers along with IO port locations, and converts those
+physical dimensions into grid coordinates. `floorplan_auto` computes the
+chip dimensions automatically from the total cell area and a target
+utilization. In this lab, we will implement `floorplan_fixed`.
 
 ### 3.1. Fixed Floorplan
 
-TODO: Explain floorplan_fixed -- given width/height in um and IO locations.
-Students understand the conversion from um to lambda grid coordinates.
+`floorplan_fixed` takes the chip width and height in micrometers, along
+with a dictionary of IO port locations also in micrometers. It converts
+all physical dimensions into grid coordinates using the back-end library
+view.
+
+!!! note "Function: `floorplan_fixed(db, view, width_um, height_um, io_locs)`"
+
+    **Args:**
+
+    - `db` -- TinyBackEndDB with cells and nets loaded
+    - `view` -- StdCellBackEndView with site dimensions and lambda
+    - `width_um` -- Chip width in micrometers
+    - `height_um` -- Chip height in micrometers
+    - `io_locs` -- Dict mapping port names to (x_um, y_um) locations
+
+    **Returns:** None (modifies db in place)
+
+The algorithm works as follows:
+
+1. Get the technology's lambda value in micrometers from
+   `view.get_lambda_um()` and the site dimensions in lambda from
+   `view.get_site()`
+2. Convert the chip width and height from micrometers to lambda by
+   dividing by lambda_um
+3. Compute the number of rows and columns by dividing the lambda
+   dimensions by the site height and site width
+4. Call `db.floorplan(num_rows, num_cols)` to initialize the placement
+   and routing grids
+5. Convert each IO port location from micrometers to grid coordinates
+   and call `db.add_ioport` for each port
+
+Go ahead and implement `floorplan_fixed` in `floorplan.py`. Use
+`logging.info` to print useful information such as the computed number of
+rows and columns. Once you are done, you can
+test your implementation with the following:
 
 ```python
-tinyflow-pnr> io_locs = { ... }
-tinyflow-pnr> floorplan_fixed(db, view, width_um, height_um, io_locs)
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../path/to/post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (??, ??), 'b': (??, ??), 'y': (??, ??) }
+tinyflow-pnr> floorplan_fixed(db, view, ??, ??, io_locs)
+tinyflow-pnr> db.get_num_rows()
+tinyflow-pnr> db.get_num_cols()
+tinyflow-pnr> db.get_ioport('a')
 ```
-
-TODO: REPL exercises. Verify grid size, check IO placement on boundary.
 
 4. Algorithm: Unoptimized Placement
 --------------------------------------------------------------------------
 
-TODO: Intro. We just need to place all cells on the floorplan without
-overlap. No optimization -- just find an unoccupied site and place.
+Placement assigns each cell to a location on the placement grid. The
+goal is to find positions for all cells such that no two cells overlap.
+In an optimized flow, placement also minimizes wire length and improves
+timing. In this lab, we will implement `place_unopt`, which randomly
+assigns cells to grid positions without any optimization. In the
+project, we will build on this random placement using simulated annealing
+to iteratively improve cell positions.
 
-### 4.1. Implementing `place_unopt`
+### 4.1. Random placement
 
-TODO: Explain coarse grid approach. Divide columns by max cell width.
-Shuffle positions, assign cells.
+The random placement we implement in this lab is a naive version that
+simply places cells at random positions without any optimization. If we
+recall the standard cells we drew in Part A, cells can have different
+widths. To ensure no overlap, we use a coarse grid: instead of
+considering every site column, we divide the columns into slots that are
+each as wide as the widest cell. Since every slot is at least as wide as
+any cell, placing one cell per slot guarantees no overlap. The algorithm
+shuffles these coarse grid positions and assigns one to each cell.
 
-TODO: Student task scaffold in place_unopt.py
+The algorithm works as follows:
 
-TODO: REPL exercise -- run place_unopt, verify cells placed, check GUI.
+1. Find the maximum cell width across all cells
+2. Compute the number of coarse columns by dividing the total columns by
+   the max cell width
+3. Generate all (row, coarse_col) positions and shuffle them randomly
+4. For each cell, take the next position and place it at
+   (row, coarse_col * max_width)
 
-5. Pin Promotion
+!!! note "Function: `place_unopt(db)`"
+
+    **Args:**
+
+    - `db` -- TinyBackEndDB with floorplan initialized
+
+    **Returns:** None (modifies db in place)
+
+Go ahead and implement `place_unopt` in `place_unopt.py`. You can use
+`logging.info` to print useful information such as the number of cells
+placed or cell's placed location.
+
+Once you are done, test your implementation in the REPL:
+
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../path/to/post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (??, ??), 'b': (??, ??), 'y': (??, ??) }
+tinyflow-pnr> floorplan_fixed(db, view, ??, ??, io_locs)
+tinyflow-pnr> place_unopt(db)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.get_cells()[0].is_placed()
+tinyflow-pnr> db.get_cells()[0].get_place()
+```
+
+You should see all cells placed on the grid in the GUI. Each cell
+appears as a labeled box in the placement panel, with pin locations
+shown as yellow squares in the routing panel.
+
+5. Algorithm: Unoptimized Routing
 --------------------------------------------------------------------------
 
-TODO: Placeholder. Cell pins live on M1, routing on M2+. Need to elevate
-pins before routing. May or may not include in lab.
+Routing draws the metal wiring and vias that connect the pins of each
+net. In Section 2, we manually routed a net by creating Line segments
+for vias and wires. In this section, we will automate that process. In
+this lab, we will implement a naive router that connects pins using
+manhattan L-shaped routes. Similar to Lab 3, we will start by
+implementing small modular functions and build up towards a working
+multi-net router. In the project, we will replace this with an optimized
+router.
 
-TODO: Explain promote_pins concept. M1 to M2 via, occupancy reservation.
+### 5.1. Check Lines
 
-6. Algorithm: Unoptimized Routing
---------------------------------------------------------------------------
+Before we can route a net, we need a way to check whether a proposed
+route is valid. When routing a net, we construct a **route** for that
+net. A route is a list of **Lines**, where each Line is a straight
+segment between two grid points with exactly one coordinate changing
+(a wire in the x or y direction on one layer, or a via in the z
+direction between layers). Together, the Lines in a route form the
+complete wiring for one net.
 
-TODO: Intro. Routing connects pins of each net using metal wire segments
-(Lines). We build up from basic checks to full multi-net routing.
+Each Line passes through a sequence of grid points. If any of those
+points is already occupied by another net's wire, we cannot use that
+route. For example, if two nets try to use the same node on M2, that
+would be a short circuit.
 
-### 6.1. Check Lines
+A Line provides `get_points()` which returns all grid points along the
+segment. We can check each point using `db.get_occupancy(i, j, k)`,
+which returns the net occupying that node or `None` if it is available.
+A point is a collision only if it is occupied by a different net. Points
+occupied by the current net are allowed since a net can cross its own
+wires.
 
-TODO: Explain Line class -- represents a straight wire segment
-(i,j,k) to (i,j,k) where exactly one coordinate changes.
+!!! note "Function: `check_lines(db, net, lines)`"
+    **Args:**
 
-TODO: Student implements check_lines -- validate that a proposed Line
-does not conflict with occupied nodes from other nets.
+    - `db` -- TinyBackEndDB for occupancy checks
+    - `net` -- Current net (allowed to use its own nodes)
+    - `lines` -- List of Line segments to check
 
-TODO: REPL exercises testing check_lines.
+    **Returns:** True if all lines are clear, False if any collision
+
+Go ahead and implement `check_lines` in `single_route_unopt.py`.
+
+To test, manually add a route to one net, then check if the same lines
+collide with a different net:
+
+```python
+tinyflow-pnr> net_a = db.get_net('??')
+tinyflow-pnr> net_b = db.get_net('??')
+tinyflow-pnr> lines = [Line((??, ??, 2), (??, ??, 2))]
+tinyflow-pnr> net_a.add_route_segment(lines)
+tinyflow-pnr> check_lines(db, net_b, lines)
+tinyflow-pnr> check_lines(db, net_a, lines)
+```
+
+The first check should return `False` since the nodes are occupied by
+`net_a`. The second check should return `True` since a net is allowed
+to cross its own wires.
 
 
-### 6.2. Manhattan Route (2D, Single Layer)
+### 5.2. Manhattan Route (2D, Single Layer)
 
-TODO: Explain L-shaped manhattan routing on a single metal layer.
-Given two points on the same layer, route with an L-shape (horizontal
-then vertical, or vertical then horizontal).
+Now we implement a simple routing function that only routes on the M2
+layer. Given two pin locations on M1, `manhattan_route_m2` connects them
+with an L-shaped route on M2. An L-shaped (manhattan) route uses at most
+two wire segments that meet at a right angle: one in the x direction and
+one in the y direction.
 
-TODO: Student implements 2D manhattan route.
+The algorithm first tries one L-shape ordering, then the other:
+
+1. Try x-then-y: construct Lines for via up (M1 to M2), x-direction
+   wire, y-direction wire, via down (M2 to M1). Use `check_lines` to
+   test for collisions. If clear, commit with
+   `net.add_route_segments(lines)` and return `True`.
+2. Try y-then-x: construct Lines for via up, y-direction wire,
+   x-direction wire, via down. Check and commit if clear.
+3. If both orderings collide, return `False`.
+
+!!! note "Function: `manhattan_route_m2(db, net, start, end)`"
+    **Args:**
+
+    - `db` -- TinyBackEndDB for occupancy checks
+    - `net` -- Net to add route to
+    - `start` -- Starting (i, j, k) tuple on M1
+    - `end` -- Ending (i, j, k) tuple on M1
+
+    **Returns:** True if route found and committed, False if both orderings blocked
+
+Go ahead and implement `manhattan_route_m2` in `single_route_unopt.py`.
 
 TODO: REPL exercises -- route between two points, observe in GUI.
 
-### 6.3. Manhattan Route (3D, Multi-Layer)
+### 5.3. Manhattan Route (3D, Multi-Layer)
 
-TODO: Extend to 3D -- routing across metal layers with vias.
-M1 to M2 via at source, route on M2, M2 to M1 via at destination
-(or similar).
+Now we generalize `manhattan_route_m2` to try multiple metal layers.
+Instead of only routing on M2, `manhattan_route` tries each routing
+layer from M6 down to M2. For each layer, it tries both L-shape
+orderings (x-then-y and y-then-x) just like before. If a layer is
+blocked, it moves on to the next layer. If all layers and orderings
+are exhausted, it returns `False`.
 
-TODO: Student implements 3D manhattan route.
+!!! note "Function: `manhattan_route(db, net, start, end)`"
+    **Args:**
+
+    - `db` -- TinyBackEndDB for occupancy checks
+    - `net` -- Net to add route to
+    - `start` -- Starting (i, j, k) tuple
+    - `end` -- Ending (i, j, k) tuple
+
+    **Returns:** True if route found and committed, False if all options blocked
+
+Go ahead and implement `manhattan_route` in `single_route_unopt.py`.
 
 TODO: REPL exercises.
 
-### 6.4. Single-Net Routing (`single_route_unopt`)
+### 5.4. Single-Net Routing (`single_route_unopt`)
 
-TODO: Putting it together. single_route_unopt routes all pins of a
-single net using manhattan routing.
+Now we put the pieces together to route a single net. So far,
+`manhattan_route` connects two pins. But a net can have more than two
+pins. For example, a net driving a fan-out of three gates has four pins
+(one driver and three loads). `single_route_unopt` takes a net name,
+gets all of its pin locations, and connects them sequentially: pin 0 to
+pin 1, pin 1 to pin 2, and so on. If any pair fails to route, it
+returns `False`. If all pairs succeed, it marks the net as routed and
+returns `True`.
 
-TODO: Student implements single_route_unopt.
+!!! note "Function: `single_route_unopt(db, net_name)`"
+    **Args:**
+
+    - `db` -- TinyBackEndDB with placed design
+    - `net_name` -- Name of the net to route
+
+    **Returns:** True if routing succeeded, False otherwise
+
+Go ahead and implement `single_route_unopt` in `single_route_unopt.py`.
 
 TODO: REPL exercise -- route a single net by name, verify in GUI.
 
-### 6.5. Multi-Net Routing (`multi_route_unopt`)
+### 5.5. Multi-Net Routing (`multi_route_unopt`)
 
-TODO: Route all nets. Iterate over nets, call single_route_unopt for
-each. Track failures.
+Finally, we route all nets in the design. `multi_route_unopt` iterates
+over every net with two or more pins and calls `single_route_unopt` for
+each one. It tracks which nets failed to route and reports the results.
 
-TODO: Student implements multi_route_unopt (or provided?).
+!!! note "Function: `multi_route_unopt(db)`"
+    **Args:**
+
+    - `db` -- TinyBackEndDB with placed design
+
+    **Returns:** True if all nets routed, False otherwise
+
+Go ahead and implement `multi_route_unopt` in `multi_route_unopt.py`.
 
 TODO: REPL exercise -- route all nets, check results.
 
-7. Algorithm: Add Filler
+6. Algorithm: Add Filler
 --------------------------------------------------------------------------
 
-TODO: Fill empty sites with filler cells for manufacturing rules.
+After placement and routing, some sites on the grid may still be empty.
+In a real chip, every site must be filled to satisfy manufacturing
+design rules and maintain continuous power rails. `add_filler` walks
+through every site in the placement grid and marks any unoccupied site
+as a filler cell.
 
-TODO: Student implements add_filler.
+!!! note "Function: `add_filler(db)`"
+    **Args:**
+
+    - `db` -- TinyBackEndDB with placed and routed design
+
+    **Returns:** None (modifies db in place)
+
+Go ahead and implement `add_filler` in `add_filler.py`. You can access
+the placement grid using `db.get_core()`, which returns a 2D array of
+sites. Each site has `site._get_occupancy()` to check if a cell is
+placed there, and `site.add_filler()` to mark it as a filler cell.
 
 TODO: REPL exercise.
 
-8. TinyFlow Back End
+7. TinyFlow Back End
 --------------------------------------------------------------------------
 
 TODO: End-to-end batch flow. Write run.py script.
