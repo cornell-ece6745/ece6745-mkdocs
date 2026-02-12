@@ -41,10 +41,12 @@ TODO: copy stdcells (stdcells-be.yml, stdcells.gds, behavioral view, gate-level 
 As discussed in lecture, the back end takes a gate-level netlist and
 produces a physical layout. The key data structure is the back-end
 database which manages cells (standard cell instances), nets (connections
-between pins), a 2D placement grid of sites, and a 3D routing grid of
+between pins), a 2D site grid of sites, and a 3D routing grid of
 nodes. The PnR algorithms -- floorplanning, placement, and routing --
 read and modify this database. We provide students the database, and
-students are responsible for writing the algorithms.
+students are responsible for writing the algorithms. Similar to the
+frontend, we have a REPL for interactive exploration of the back-end
+database and algorithms.
 
 In this section, we will manually build a small design from scratch in
 the REPL to understand how these data structures work together. We will
@@ -63,20 +65,20 @@ REPL.
 ### 2.1. Database, Floorplan, and the Grid
 
 Before we can place cells or route wires, we need to set up the chip's
-physical foundation: the placement grid and the routing grid. The
-placement grid is a 2D array of sites where cells can be placed. The
+physical foundation: the **site grid** and the **routing grid**. The
+site grid is a 2D array of sites where cells can be placed. The
 routing grid is a 3D array of nodes where wires can be routed across
 multiple metal layers. Both are created when we call `floorplan` on the
 database.
 
 Let's create a back-end library view, an empty database, and a small
-floorplan with 4 rows and 10 sites per row.
+floorplan with 3 rows and 21 sites per row.
 
 ```python
 tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
 tinyflow-pnr> db = TinyBackEndDB(view)
-tinyflow-pnr> db.floorplan(4, 10)
 tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.floorplan(3, 21)
 ```
 
 `StdCellBackEndView` is the back-end counterpart to the front-end view
@@ -85,20 +87,22 @@ route: site dimensions, cell layouts (pin locations, cell widths), and
 metal layer definitions.
 
 `TinyBackEndDB` is the central database for the back end. It stores all
-cells, nets, pins, IO ports, and manages both the placement grid and
+cells, nets, pins, IO ports, and manages both the site grid and
 routing grid. All PnR algorithms read and modify this database.
 
 `db.floorplan(num_rows, num_sites_per_row)` initializes the chip's
-physical grid. It creates a 2D array of placement sites (rows x columns)
+physical grid. It creates a 2D array of sites (rows x columns)
 where standard cells will be placed, and a 3D routing grid of nodes
 across all metal layers where wires will be routed. Nothing can be placed
 or routed until this is called. You should see the GUI show two panels:
-the top panel is the placement pane showing the grid in sites, and the
+the top panel is the site pane showing the grid in sites, and the
 bottom panel is the routing pane showing a top-down view of the 3D
 routing grid.
 
+![](img/lab4-gui-floorplan.png){ width=50% }
+
 Let's explore what `db.floorplan` created. First, check the dimensions
-of the placement grid and the routing grid.
+of the site grid and the routing grid.
 
 ```python
 tinyflow-pnr> db.get_num_rows()
@@ -107,7 +111,20 @@ tinyflow-pnr> db.get_grid_size_i()
 tinyflow-pnr> db.get_grid_size_j()
 ```
 
-The placement grid has `num_rows` rows and `num_cols` sites per row --
+??? note "Expected output"
+
+    ```
+    tinyflow-pnr> db.get_num_rows()
+    3
+    tinyflow-pnr> db.get_num_cols()
+    21
+    tinyflow-pnr> db.get_grid_size_i()
+    25
+    tinyflow-pnr> db.get_grid_size_j()
+    22
+    ```
+
+The site grid has `num_rows` rows and `num_cols` sites per row --
 these are the coordinates you use when placing cells. The routing grid is
 finer-grained: `grid_size_i` tracks in the vertical direction and
 `grid_size_j` tracks in the horizontal direction, across multiple metal
@@ -356,7 +373,7 @@ tinyflow-pnr> db.get_ioport('a')
 4. Algorithm: Unoptimized Placement
 --------------------------------------------------------------------------
 
-Placement assigns each cell to a location on the placement grid. The
+Placement assigns each cell to a location on the site grid. The
 goal is to find positions for all cells such that no two cells overlap.
 In an optimized flow, placement also minimizes wire length and improves
 timing. In this lab, we will implement `place_unopt`, which randomly
@@ -577,7 +594,7 @@ TODO: REPL exercise -- route all nets, check results.
 After placement and routing, some sites on the grid may still be empty.
 In a real chip, every site must be filled to satisfy manufacturing
 design rules and maintain continuous power rails. `add_filler` walks
-through every site in the placement grid and marks any unoccupied site
+through every site in the site grid and marks any unoccupied site
 as a filler cell.
 
 !!! note "Function: `add_filler(db)`"
@@ -588,7 +605,7 @@ as a filler cell.
     **Returns:** None (modifies db in place)
 
 Go ahead and implement `add_filler` in `add_filler.py`. You can access
-the placement grid using `db.get_core()`, which returns a 2D array of
+the site grid using `db.get_core()`, which returns a 2D array of
 sites. Each site has `site._get_occupancy()` to check if a cell is
 placed there, and `site.add_filler()` to mark it as a filler cell.
 
