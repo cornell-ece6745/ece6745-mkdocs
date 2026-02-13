@@ -11,7 +11,7 @@ below with the back end highlighted in red.
 
 The back end includes floorplanning, placement, routing, and filler cell
 insertion. In this lab, we will be implementing unoptimized versions of
-placement and routing. The key algorithms in the unoptimized back-end
+placement and routing. The key algorithms in the unoptimized back end
 flow are shown below.
 
 ![](img/lab4-pnr-flow.png){ width=50% }
@@ -74,7 +74,7 @@ Your repo contains the following files.
     └── tinyflow-pnr
 ```
 
-Our back-end flow uses the back-end and layout views from the sandard
+Our back end flow uses the back end and layout views from the sandard
 standard-cell library you developed in Project 1, Part A. You will also
 need your synthesis tool for the end-to-end flow. Copy these files into
 the lab4 directory.
@@ -88,7 +88,7 @@ the lab4 directory.
 
 where `XX` is your group number. We provide `FullAdder_cout.v` (the RTL)
 and `FullAdder_cout-post-synth.v` (a pre-synthesized gate-level netlist)
-in the `rtl` directory so you can test the back-end flow directly.
+in the `rtl` directory so you can test the back end flow directly.
 
 To make it easier to cut-and-paste commands from this handout onto the
 command line, you can tell Bash to ignore the `%` character using the
@@ -102,15 +102,15 @@ Now you can cut-and-paste a sequence of commands from this tutorial
 document and Bash will not get confused by the `%` character which begins
 each line.
 
-2. Data Structure: Back-End Database
+2. Data Structure: Back End Database
 --------------------------------------------------------------------------
 
 As discussed in lecture, the back end takes a gate-level netlist and
-produces a physical layout. The key data structure is the back-end
+produces a physical layout. The key data structure is the back end
 database which manages **cells** (standard cell instances), **IO ports**
 (block boundary pins), **nets** (connections between pins), a **2D site
 grid of sites**, and a **3D routing grid of nodes**. The PnR algorithms -- 
-floorplanning, placement, and routing -- read and modify this database. We provide students the database, and students are responsible for writing the algorithms. Similar to the frontend, we have a REPL for interactive exploration of the back-end
+floorplanning, placement, and routing -- read and modify this database. We provide students the database, and students are responsible for writing the algorithms. Similar to the front end, we have a REPL for interactive exploration of the back end
 database and algorithms.
 
 In this section, we will manually build a small design from scratch in
@@ -154,7 +154,7 @@ vertical connections (vias) between layers.
 
 ![](img/lab4-3d-view.png)
 
-Let's try this in TinyFlow. We first create a back-end library view and
+Let's try this in TinyFlow. We first create a back end library view and
 an empty database, then call `floorplan` to set up a small block with 3
 rows and 24 sites per row.
 
@@ -165,7 +165,7 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.floorplan(3, 24)
 ```
 
-`StdCellBackEndView` is the back-end counterpart to the front-end view
+`StdCellBackEndView` is the back end counterpart to the front end view
 from Lab 3. It provides the physical information needed for place and
 route: site dimensions, cell layouts (pin locations, cell widths), and
 metal layer definitions.
@@ -587,7 +587,7 @@ utilization. In this lab, we will implement `floorplan_fixed`.
 
 `floorplan_fixed` takes the block width and height in micrometers, along
 with a dictionary of IO port locations also in micrometers. It converts
-all physical dimensions into grid coordinates using the back-end library
+all physical dimensions into grid coordinates using the back end library
 view.
 
 The algorithm works as follows:
