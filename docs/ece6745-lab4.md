@@ -78,7 +78,7 @@ floorplan with 3 rows and 21 sites per row.
 tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.floorplan(3, 21)
+tinyflow-pnr> db.floorplan(3, 24)
 ```
 
 `StdCellBackEndView` is the back-end counterpart to the front-end view
@@ -111,7 +111,7 @@ tinyflow-pnr> db.get_grid_size_i()
 tinyflow-pnr> db.get_grid_size_j()
 ```
 
-??? note "Expected output"
+??? info "Expected output"
 
     ```
     tinyflow-pnr> db.get_num_rows()
@@ -131,34 +131,59 @@ finer-grained: `grid_size_i` tracks in the vertical direction and
 layers.
 
 Each placement site is represented by a **Site** object. A site is the
-smallest unit of space where a cell can be placed. Each rectangular box
-in the placement panel GUI corresponds to one site. Let's inspect one in REPL:
+smallest unit of space where a cell can be placed, the same size as a
+filler cell. Each rectangular box in the placement panel GUI corresponds
+to one site. Let's inspect a site to see what information it tracks:
 
 ```python
 tinyflow-pnr> db.get_site_at(0, 0)
-tinyflow-pnr> db.get_site_at(0, 0).occupied_by
+tinyflow-pnr> db.get_site_at(0, 0).occupied_by == None
 ```
 
-The `occupied_by` attribute is `None` since no cells have been placed
-yet.
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> db.get_site_at(0, 0)
+    <Site(x=0, y=0, occupied=False)>
+    tinyflow-pnr> db.get_site_at(0, 0).occupied_by == None
+    True
+    ```
+
+The site at (0, 0) shows its coordinates and whether it is occupied.
+Since we haven't placed any cells yet, `occupied_by` is `None`. Once we
+place cells in Section 2.3, we will see this change.
 
 Each routing grid point is represented by a **Node** object, addressed
 by `(i, j, k)` where `i` is the row track, `j` is the column track, and
 `k` is the metal layer (1=M1, 2=M2, etc.). In the routing panel of the
 GUI, nodes are the intersections of the grid lines. Each node tracks what
-occupies it: a net's wire, a cell pin, or an IO port. Let's inspect one:
+occupies it: a net's wire, a cell pin, or an IO port. Let's inspect a
+node to see what information it tracks:
 
 ```python
 tinyflow-pnr> db.get_node_at(0, 0, 1)
-tinyflow-pnr> db.get_occupancy(0, 0, 1)
+tinyflow-pnr> db.get_occupancy(0, 0, 1) == None
 ```
 
-The node is unoccupied since no wires have been routed yet.
+??? info "Expected output"
 
-### 2.2. Cells, Nets, and IO Ports
+    ```
+    tinyflow-pnr> db.get_node_at(0, 0, 1)
+    <Node(x=0, y=0, layer=1, occupied=None)>
+    tinyflow-pnr> db.get_occupancy(0, 0, 1) == None
+    True
+    ```
 
-Now that we have a floorplan, let's add cells, create nets to connect
-them, and place IO ports. We will build a simple two-inverter chain:
+The node at (0, 0, 1) is on M1 at row track 0, column track 0. Since
+we haven't routed any wires yet, the occupancy is `None`. Once we route
+nets in Section 2.3, we will see this change. `get_occupancy` will be
+very useful later when implementing the routing algorithms to check
+whether a node is available before routing through it.
+
+### 2.2. Cells, IO Ports, and Nets
+
+Now that we have a floorplan, let's add cells, register IO ports, and
+create nets to connect them. We will build a simple two-inverter chain:
 input `a` drives `inv1`, whose output connects to `inv2`, whose output
 drives output `y`.
 
@@ -173,6 +198,15 @@ tinyflow-pnr> db.add_cell('inv2', 'INVX1')
 tinyflow-pnr> db.get_cells()
 ```
 
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> db.add_cell('inv1', 'INVX1')
+    tinyflow-pnr> db.add_cell('inv2', 'INVX1')
+    tinyflow-pnr> db.get_cells()
+    (<Cell inv1, INVX1, placed=False>, <Cell inv2, INVX1, placed=False>)
+    ```
+
 Each cell has pins that we can inspect. Pins are not yet placed on the
 grid since we haven't placed the cells yet. Note that the GUI only shows
 placed cells, so you won't see them in the GUI here:
@@ -184,65 +218,119 @@ tinyflow-pnr> inv1.get_pin('A')
 tinyflow-pnr> inv1.get_pin('A').get_node()
 ```
 
-Now let's connect these cells with **Nets**. A net represents a logical
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> inv1 = db.get_cell('inv1')
+    tinyflow-pnr> inv1.get_pins()
+    [<Pin A (unplaced)>, <Pin Y (unplaced)>]
+    tinyflow-pnr> inv1.get_pin('A')
+    <Pin A (unplaced)>
+    tinyflow-pnr> inv1.get_pin('A').get_node()
+    (None, None, None)
+    ```
+
+An **IO Port** represents an external signal at the chip boundary. IO
+ports are registered with `add_ioport` -- at this point, they are
+unplaced, we just declare that they exist. They will be placed on the
+chip boundary later. Let's register that our design has an input `a`
+and an output `y`:
+
+```python
+tinyflow-pnr> db.add_ioport('a', 'input')
+tinyflow-pnr> db.add_ioport('y', 'output')
+tinyflow-pnr> db.get_ioports()
+```
+
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> db.add_ioport('a', 'input')
+    tinyflow-pnr> db.add_ioport('y', 'output')
+    tinyflow-pnr> db.get_ioports()
+    (<Pin a (unplaced)>, <Pin y (unplaced)>)
+    ```
+
+`add_ioport` creates an IO port. It takes a direction to indicate
+whether it is an input or output.
+
+Now let's connect everything with **Nets**. A net represents a logical
 connection between pins. For our inverter chain, we need three nets: `a`
-connects the input to `inv1`, `w` connects `inv1`'s output to `inv2`'s
-input, and `y` connects `inv2`'s output to the chip output.
+connects the input IO port to `inv1`, `w` connects `inv1`'s output to
+`inv2`'s input, and `y` connects `inv2`'s output to the output IO port.
+Since IO ports are pins, we include them directly in the pin list.
 
 ```python
 tinyflow-pnr> inv2 = db.get_cell('inv2')
-tinyflow-pnr> db.add_net('a', [inv1.get_pin('A')])
+tinyflow-pnr> db.add_net('a', [db.get_ioport('a'), inv1.get_pin('A')])
 tinyflow-pnr> db.add_net('w', [inv1.get_pin('Y'), inv2.get_pin('A')])
-tinyflow-pnr> db.add_net('y', [inv2.get_pin('Y')])
+tinyflow-pnr> db.add_net('y', [inv2.get_pin('Y'), db.get_ioport('y')])
 tinyflow-pnr> db.get_nets()
 ```
 
-Notice that nets `a` and `y` each have only one pin for now. We will add
-their IO port pins in the next step. Let's verify the connectivity:
+??? info "Expected output"
 
-```python
-tinyflow-pnr> db.get_net('w').pins
-```
+    ```
+    tinyflow-pnr> inv2 = db.get_cell('inv2')
+    tinyflow-pnr> db.add_net('a', [db.get_ioport('a'), inv1.get_pin('A')])
+    tinyflow-pnr> db.add_net('w', [inv1.get_pin('Y'), inv2.get_pin('A')])
+    tinyflow-pnr> db.add_net('y', [inv2.get_pin('Y'), db.get_ioport('y')])
+    tinyflow-pnr> db.get_nets()
+    (<Net a, 2 pins>, <Net w, 2 pins>, <Net y, 2 pins>)
+    ```
 
-Finally, let's add **IO ports**. An IO port sits at a fixed position on
-the chip boundary on M4 (k=4) and acts as a pin for an external signal.
-When we call `db.add_ioport`, it automatically connects to the net with
-the same name.
-
-```python
-tinyflow-pnr> db.add_ioport('a', ??, 0)
-tinyflow-pnr> db.add_ioport('y', ??, ??)
-```
-
-The IO ports should now appear on the boundary in the GUI as teal
-squares. Let's verify
-that they were automatically added to their nets:
+Nets `a` and `y` each have two pins: a cell pin and an IO port. Net `w`
+is an internal wire between the two inverters with no IO port. Let's
+verify:
 
 ```python
 tinyflow-pnr> db.get_net('a').pins
+tinyflow-pnr> db.get_net('w').pins
 tinyflow-pnr> db.get_net('y').pins
 ```
 
-Each net now has two pins: the cell pin and the IO port.
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> db.get_net('a').pins
+    [<Pin a (unplaced)>, <Pin A (unplaced)>]
+    tinyflow-pnr> db.get_net('w').pins
+    [<Pin Y (unplaced)>, <Pin A (unplaced)>]
+    tinyflow-pnr> db.get_net('y').pins
+    [<Pin Y (unplaced)>, <Pin y (unplaced)>]
+    ```
+
+Note that the IO ports are registered but not yet placed. We will place
+them on the chip boundary later in Section 2.3.
+
+With cells, IO ports, and nets defined, we have fully described the
+gate-level netlist -- what components exist and how they should be
+connected. The next step is to physically place and route them on the
+chip.
 
 ### 2.3. Manually Placing and Routing
 
-With cells, nets, and IO ports created, let's physically place the cells
-on the grid and manually route a net.
+With cells, IO ports, and nets created, let's physically place the cells
+and IO ports on the grid and manually route a net.
 
-`cell.set_place(row, col)` places a cell with its origin at site
+Let's start with placing a cell. `cell.set_place(row, col)` places a cell with its origin at site
 `(row, col)`. The cell occupies one or more sites to the right depending
 on its width. If any of those sites are already occupied by another cell,
 the database raises an error. Cells in even rows are oriented normally; cells in odd rows are flipped
-vertically so that adjacent rows share VDD and VSS power rails.
+vertically so that adjacent rows share VDD and VSS power rails. Go
+ahead and place `inv1` at (0, 2) and `inv2` at (2, 5):
 
 ```python
 tinyflow-pnr> inv1.set_place(0, 2)
 tinyflow-pnr> inv2.set_place(2, 5)
 ```
 
-The cells should now appear in the placement panel as boxes labeled with
-the cell name. In the routing panel, each placed cell shows as a shadow
+You should see something like this:
+
+![](img/lab4-gui-placed-cells.png){ width=50% }
+
+The cells should now appear in the placement panel as green boxes labeled with
+the cell name. In the routing panel, each placed cell shows as a teal dotted shadow
 box with its pin locations marked as yellow squares. When a cell is
 placed, its pins get assigned grid coordinates on metal layer 1 (M1):
 
@@ -252,7 +340,48 @@ tinyflow-pnr> inv1.get_pin('Y').get_node()
 tinyflow-pnr> inv2.get_pin('A').get_node()
 ```
 
-Now that our cells are placed, we want to connect their pins with wires.
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> inv1.is_placed()
+    True
+    tinyflow-pnr> inv1.get_pin('Y').get_node()
+    (4, 4, 1)
+    tinyflow-pnr> inv2.get_pin('A').get_node()
+    (20, 6, 1)
+    ```
+
+Let's then place the IO ports on the chip boundary. Recall that we
+registered them earlier but they were unplaced. We use `ioport.place(i,
+j)` to assign them to a grid location on the boundary. IO ports are
+placed on M2:
+
+```python
+tinyflow-pnr> db.get_ioport('a').place(3, 0)
+tinyflow-pnr> db.get_ioport('y').place(24, 20)
+```
+
+You should see the Routing panel include the IO ports as light blue square boxes.
+
+![](img/lab4-gui-placed-ports.png){ width=50% }
+
+Let's run `db.check_design()` to verify our placement:
+
+```python
+tinyflow-pnr> db.check_design()
+```
+
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> db.check_design()
+    INFO: Placement check passed
+    WARNING: UNROUTED: Net 'a' pins not fully connected
+    WARNING: UNROUTED: Net 'w' pins not fully connected
+    WARNING: UNROUTED: Net 'y' pins not fully connected
+    ```
+
+Placement passes, but all three nets are unrouted. Now that our cells and IO ports are placed, we want to connect their pins with wires.
 A wire is represented as a **Line**, a straight segment between two 3D
 grid points `(i, j, k)`. Exactly one coordinate changes: `i` or `j` for
 a wire on the same metal layer, or `k` for a via between layers.
@@ -266,19 +395,20 @@ example we will route on M2. To connect two cell pins, we need to:
 
 Since our two inverters are at different rows, the M2 route requires two
 segments forming an L-shape. Let's route net `w` which connects `inv1.Y`
-to `inv2.A`:
+to `inv2.A`. We will add each line segment one at a time so you can see
+the route build up in the GUI:
 
 ```python
 tinyflow-pnr> src = inv1.get_pin('Y').get_node()
 tinyflow-pnr> dst = inv2.get_pin('A').get_node()
 tinyflow-pnr> net_w = db.get_net('w')
-tinyflow-pnr> net_w.add_route_segment([
-tinyflow-pnr>   Line((src[0], src[1], 1), (src[0], src[1], 2)),  # via up at source
-tinyflow-pnr>   Line((src[0], src[1], 2), (src[0], dst[1], 2)),  # horizontal on M2
-tinyflow-pnr>   Line((src[0], dst[1], 2), (dst[0], dst[1], 2)),  # vertical on M2
-tinyflow-pnr>   Line((dst[0], dst[1], 2), (dst[0], dst[1], 1)),  # via down at dest
-tinyflow-pnr> ])
+tinyflow-pnr> net_w.add_route_segments([Line((src[0], src[1], 1), (src[0], src[1], 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((src[0], src[1], 2), (src[0], dst[1], 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((src[0], dst[1], 2), (dst[0], dst[1], 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((dst[0], dst[1], 2), (dst[0], dst[1], 1))])
 ```
+
+![](img/lab4-gui-manual-route.png){ width=50% }
 
 The route should now appear in the routing panel of the GUI. You can
 verify the node occupancy along the route:
@@ -288,25 +418,56 @@ tinyflow-pnr> db.get_occupancy(src[0], src[1], 2)
 tinyflow-pnr> net_w.get_route()
 ```
 
-### 2.4. Reading Verilog
+??? info "Expected output"
 
-In practice, we don't manually add cells and nets. The front end
-generates a gate-level Verilog netlist, and `db.read_verilog` reads it to
-create all cells, pins, and nets automatically. It also stores the list
-of input and output port names (accessible via `db.get_input_names()` and
-`db.get_output_names()`) which are used later to place IO ports during
-floorplanning. Here is how you would initialize the database from a
-gate-level netlist and verify what was created:
+    ```
+    tinyflow-pnr> db.get_occupancy(src[0], src[1], 2)
+    <Net w, 2 pins>
+    tinyflow-pnr> net_w.get_route()
+    [Line((4, 4, 1) -> (4, 4, 2)), Line((4, 4, 2) -> (4, 6, 2)), Line((4, 6, 2) -> (20, 6, 2)), Line((20, 6, 2) -> (20, 6, 1))]
+    ```
+
+At this point, we have only routed net `w`. Let's run `db.check_design()`
+to see if there are any issues:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
-tinyflow-pnr> db = TinyBackEndDB(view)
-tinyflow-pnr> db.read_verilog('../../path/to/post-synth.v')
-tinyflow-pnr> db.get_cells()
-tinyflow-pnr> db.get_nets()
-tinyflow-pnr> db.get_input_names()
-tinyflow-pnr> db.get_output_names()
+tinyflow-pnr> db.check_design()
 ```
+
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> db.check_design()
+    INFO: Placement check passed
+    WARNING: UNROUTED: Net 'a' pins not fully connected
+    WARNING: UNROUTED: Net 'y' pins not fully connected
+    ```
+
+The checker reports that nets `a` and `y` are not yet routed.
+Now let's route the IO ports to their cells. Recall that IO ports are
+on M2 while cell pins are on M1. For net `a`, the IO port is already on
+M2, so we route on M2 to reach `inv1.A` and via down. For net `y`, we
+via up from `inv2.Y` to M2, route on M2 to reach the IO port:
+
+```python
+tinyflow-pnr> io_a = db.get_ioport('a').get_node()
+tinyflow-pnr> pin_a = inv1.get_pin('A').get_node()
+tinyflow-pnr> net_a = db.get_net('a')
+tinyflow-pnr> net_a.add_route_segments([Line((io_a[0], io_a[1], 2), (io_a[0], pin_a[1], 2))])
+tinyflow-pnr> net_a.add_route_segments([Line((io_a[0], pin_a[1], 2), (pin_a[0], pin_a[1], 2))])
+tinyflow-pnr> net_a.add_route_segments([Line((pin_a[0], pin_a[1], 2), (pin_a[0], pin_a[1], 1))])
+
+tinyflow-pnr> io_y = db.get_ioport('y').get_node()
+tinyflow-pnr> pin_y = inv2.get_pin('Y').get_node()
+tinyflow-pnr> net_y = db.get_net('y')
+tinyflow-pnr> net_y.add_route_segments([Line((pin_y[0], pin_y[1], 1), (pin_y[0], pin_y[1], 2))])
+tinyflow-pnr> net_y.add_route_segments([Line((pin_y[0], pin_y[1], 2), (pin_y[0], io_y[1], 2))])
+tinyflow-pnr> net_y.add_route_segments([Line((pin_y[0], io_y[1], 2), (io_y[0], io_y[1], 2))])
+```
+
+![](img/lab4-gui-manual-pin-route.png){ width=50% }
+
+Now run `db.check_design()` again, your design should pass both placement and routing check now.
 
 3. Algorithm: Floorplan
 --------------------------------------------------------------------------
@@ -613,6 +774,21 @@ TODO: REPL exercise.
 
 7. TinyFlow Back End
 --------------------------------------------------------------------------
+
+In practice, we don't manually add cells and nets. The front end
+generates a gate-level Verilog netlist, and `db.read_verilog` reads it to
+create all cells, IO ports, and nets automatically. Here is how you
+would initialize the database from a gate-level netlist and verify what
+was created:
+
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../path/to/post-synth.v')
+tinyflow-pnr> db.get_cells()
+tinyflow-pnr> db.get_ioports()
+tinyflow-pnr> db.get_nets()
+```
 
 TODO: End-to-end batch flow. Write run.py script.
 
