@@ -469,6 +469,23 @@ tinyflow-pnr> net_y.add_route_segments([Line((pin_y[0], io_y[1], 2), (io_y[0], i
 
 Now run `db.check_design()` again, your design should pass both placement and routing check now.
 
+### 2.4. Reading Verilog
+
+In practice, we don't manually add cells, IO ports, and nets. The front
+end generates a gate-level Verilog netlist, and `db.read_verilog` reads
+it to create all cells, IO ports, and nets automatically. We have
+provided a synthesized `FullAdder_cout` design from lecture. Let's load
+it and verify what was created:
+
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.get_cells()
+tinyflow-pnr> db.get_ioports()
+tinyflow-pnr> db.get_nets()
+```
+
 3. Algorithm: Floorplan
 --------------------------------------------------------------------------
 
@@ -512,24 +529,40 @@ The algorithm works as follows:
    dimensions by the site height and site width
 4. Call `db.floorplan(num_rows, num_cols)` to initialize the placement
    and routing grids
-5. Convert each IO port location from micrometers to grid coordinates
-   and call `db.add_ioport` for each port
+5. For each IO port, convert its (x_um, y_um) location from micrometers
+   to routing grid coordinates (i, j). You will need the metal1 track
+   pitch, which you can get with
+   `view.get_layer('metal1').get_track_pitch()`. Divide the lambda
+   coordinate by the track pitch to get the grid index. Then call
+   `ioport.place(i, j)` to place each port on the grid
 
 Go ahead and implement `floorplan_fixed` in `floorplan.py`. Use
 `logging.info` to print useful information such as the computed number of
-rows and columns. Once you are done, you can
-test your implementation with the following:
+rows and columns. Once you are done, you can test your implementation
+using the `FullAdder_cout` design from lecture:
 
 ```python
 tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
 tinyflow-pnr> db = TinyBackEndDB(view)
-tinyflow-pnr> db.read_verilog('../../path/to/post-synth.v')
-tinyflow-pnr> io_locs = { 'a': (??, ??), 'b': (??, ??), 'y': (??, ??) }
-tinyflow-pnr> floorplan_fixed(db, view, ??, ??, io_locs)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> db.get_num_rows()
 tinyflow-pnr> db.get_num_cols()
-tinyflow-pnr> db.get_ioport('a')
+tinyflow-pnr> db.get_ioports()
 ```
+
+??? info "Expected output"
+
+    ```
+    tinyflow-pnr> db.get_num_rows()
+    5
+    tinyflow-pnr> db.get_num_cols()
+    40
+    tinyflow-pnr> db.get_ioports()
+    (<Pin a @(10,0,2)>, <Pin b @(20,0,2)>, <Pin cin @(30,0,2)>, <Pin cout @(20,40,2)>)
+    ```
 
 4. Algorithm: Unoptimized Placement
 --------------------------------------------------------------------------
@@ -774,21 +807,6 @@ TODO: REPL exercise.
 
 7. TinyFlow Back End
 --------------------------------------------------------------------------
-
-In practice, we don't manually add cells and nets. The front end
-generates a gate-level Verilog netlist, and `db.read_verilog` reads it to
-create all cells, IO ports, and nets automatically. Here is how you
-would initialize the database from a gate-level netlist and verify what
-was created:
-
-```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
-tinyflow-pnr> db = TinyBackEndDB(view)
-tinyflow-pnr> db.read_verilog('../../path/to/post-synth.v')
-tinyflow-pnr> db.get_cells()
-tinyflow-pnr> db.get_ioports()
-tinyflow-pnr> db.get_nets()
-```
 
 TODO: End-to-end batch flow. Write run.py script.
 
