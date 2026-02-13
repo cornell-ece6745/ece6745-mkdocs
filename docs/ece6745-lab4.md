@@ -108,7 +108,7 @@ each line.
 As discussed in lecture, the back end takes a gate-level netlist and
 produces a physical layout. The key data structure is the back-end
 database which manages **cells** (standard cell instances), **IO ports**
-(chip boundary pins), **nets** (connections between pins), a **2D site
+(block boundary pins), **nets** (connections between pins), a **2D site
 grid of sites**, and a **3D routing grid of nodes**. The PnR algorithms -- 
 floorplanning, placement, and routing -- read and modify this database. We provide students the database, and students are responsible for writing the algorithms. Similar to the frontend, we have a REPL for interactive exploration of the back-end
 database and algorithms.
@@ -129,7 +129,7 @@ REPL.
 
 ### 2.1. Database, Floorplan, and the Grid
 
-Before we can place cells or route wires, we need to set up the chip's
+Before we can place cells or route wires, we need to set up the block's
 physical foundation: the **site grid** and the **routing grid**. The
 site grid is a 2D array of sites where cells can be placed. The
 routing grid is a 3D array of nodes where wires can be routed across
@@ -137,7 +137,7 @@ multiple metal layers. Both are created when we call `floorplan` on the
 database.
 
 The figure below shows a top-down view of these two grids. Given the
-chip's overall dimensions (left), the floorplan divides the area into a
+block's overall dimensions (left), the floorplan divides the area into a
 2D grid of **sites** (center). Each site is one standard-cell slot. On
 top of that, a finer **routing grid** (right) provides nodes at every
 track pitch where wires and vias can be placed. The routing grid has
@@ -147,7 +147,7 @@ track pitch.
 ![](img/lab4-topdown-grids.png)
 
 The routing grid is actually 3D. Each node has coordinates `(i, j, k)`
-where `i` and `j` identify a position on the chip and `k` selects the
+where `i` and `j` identify a position on the block and `k` selects the
 metal layer. The 3D view below shows how the routing grid stacks on top
 of the site grid, extending across multiple metal layers (M1 to M6) with
 vertical connections (vias) between layers.
@@ -155,7 +155,7 @@ vertical connections (vias) between layers.
 ![](img/lab4-3d-view.png)
 
 Let's try this in TinyFlow. We first create a back-end library view and
-an empty database, then call `floorplan` to set up a small chip with 3
+an empty database, then call `floorplan` to set up a small block with 3
 rows and 24 sites per row.
 
 ```python
@@ -174,7 +174,7 @@ metal layer definitions.
 cells, nets, pins, IO ports, and manages both the site grid and
 routing grid. All PnR algorithms read and modify this database.
 
-`db.floorplan(num_rows, num_sites_per_row)` initializes the chip's
+`db.floorplan(num_rows, num_sites_per_row)` initializes the block's
 physical grid. It creates a 2D array of sites (rows x columns)
 where standard cells will be placed, and a 3D routing grid of nodes
 across all metal layers where wires will be routed. Nothing can be placed
@@ -314,10 +314,10 @@ tinyflow-pnr> inv1.get_pin('A').get_node()
     (None, None, None)
     ```
 
-An **IO Port** represents an external signal at the chip boundary. IO
+An **IO Port** represents an external signal at the block boundary. IO
 ports are registered with `add_ioport` -- at this point, they are
 unplaced, we just declare that they exist. They will be placed on the
-chip boundary later. Let's register that our design has an input `a`
+block boundary later. Let's register that our design has an input `a`
 and an output `y`:
 
 ```python
@@ -385,12 +385,12 @@ tinyflow-pnr> db.get_net('y').pins
     ```
 
 Note that the IO ports are registered but not yet placed. We will place
-them on the chip boundary later in Section 2.3.
+them on the block boundary later in Section 2.3.
 
 With cells, IO ports, and nets defined, we have fully described the
 gate-level netlist -- what components exist and how they should be
 connected. The next step is to physically place and route them on the
-chip.
+block.
 
 ### 2.3. Manually Placing and Routing
 
@@ -435,7 +435,7 @@ tinyflow-pnr> inv2.get_pin('A').get_node()
     (20, 6, 1)
     ```
 
-Let's then place the IO ports on the chip boundary. Recall that we
+Let's then place the IO ports on the block boundary. Recall that we
 registered them earlier but they were unplaced. We use `ioport.place(i,
 j)` to assign them to a grid location on the boundary. IO ports are
 placed on M2:
@@ -575,17 +575,17 @@ tinyflow-pnr> db.get_nets()
 
 In Section 2, we called `db.floorplan` directly with the number of rows
 and sites per row. In practice, the floorplan algorithm computes the grid
-dimensions and places IO ports on the chip boundary.
+dimensions and places IO ports on the block boundary.
 
-There are two approaches. `floorplan_fixed` takes explicit chip width and
+There are two approaches. `floorplan_fixed` takes explicit block width and
 height in micrometers along with IO port locations, and converts those
 physical dimensions into grid coordinates. `floorplan_auto` computes the
-chip dimensions automatically from the total cell area and a target
+block dimensions automatically from the total cell area and a target
 utilization. In this lab, we will implement `floorplan_fixed`.
 
 ### 3.1. Fixed Floorplan
 
-`floorplan_fixed` takes the chip width and height in micrometers, along
+`floorplan_fixed` takes the block width and height in micrometers, along
 with a dictionary of IO port locations also in micrometers. It converts
 all physical dimensions into grid coordinates using the back-end library
 view.
@@ -595,7 +595,7 @@ The algorithm works as follows:
 1. Get the technology's lambda value in micrometers from
    `view.get_lambda_um()` and the site dimensions in lambda from
    `view.get_site()`
-2. Convert the chip width and height from micrometers to lambda by
+2. Convert the block width and height from micrometers to lambda by
    dividing by lambda_um
 3. Compute the number of rows and columns by dividing the lambda
    dimensions by the site height and site width
@@ -614,8 +614,8 @@ The algorithm works as follows:
 
     - `db` -- TinyBackEndDB with cells and nets loaded
     - `view` -- StdCellBackEndView with site dimensions and lambda
-    - `width_um` -- Chip width in micrometers
-    - `height_um` -- Chip height in micrometers
+    - `width_um` -- Block width in micrometers
+    - `height_um` -- Block height in micrometers
     - `io_locs` -- Dict mapping port names to (x_um, y_um) locations
 
     **Returns:** None (modifies db in place)
