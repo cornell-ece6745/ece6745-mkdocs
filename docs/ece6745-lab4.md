@@ -506,18 +506,6 @@ with a dictionary of IO port locations also in micrometers. It converts
 all physical dimensions into grid coordinates using the back-end library
 view.
 
-!!! note "Function: `floorplan_fixed(db, view, width_um, height_um, io_locs)`"
-
-    **Args:**
-
-    - `db` -- TinyBackEndDB with cells and nets loaded
-    - `view` -- StdCellBackEndView with site dimensions and lambda
-    - `width_um` -- Chip width in micrometers
-    - `height_um` -- Chip height in micrometers
-    - `io_locs` -- Dict mapping port names to (x_um, y_um) locations
-
-    **Returns:** None (modifies db in place)
-
 The algorithm works as follows:
 
 1. Get the technology's lambda value in micrometers from
@@ -535,6 +523,18 @@ The algorithm works as follows:
    `view.get_layer('metal1').get_track_pitch()`. Divide the lambda
    coordinate by the track pitch to get the grid index. Then call
    `ioport.place(i, j)` to place each port on the grid
+
+!!! note "Function: `floorplan_fixed(db, view, width_um, height_um, io_locs)`"
+
+    **Args:**
+
+    - `db` -- TinyBackEndDB with cells and nets loaded
+    - `view` -- StdCellBackEndView with site dimensions and lambda
+    - `width_um` -- Chip width in micrometers
+    - `height_um` -- Chip height in micrometers
+    - `io_locs` -- Dict mapping port names to (x_um, y_um) locations
+
+    **Returns:** None (modifies db in place)
 
 Go ahead and implement `floorplan_fixed` in `floorplan.py`. Use
 `logging.info` to print useful information such as the computed number of
@@ -580,43 +580,42 @@ to iteratively improve cell positions.
 The random placement we implement in this lab is a naive version that
 simply places cells at random positions without any optimization. If we
 recall the standard cells we drew in Part A, cells can have different
-widths. To ensure no overlap, we use a coarse grid: instead of
-considering every site column, we divide the columns into slots that are
-each as wide as the widest cell. Since every slot is at least as wide as
-any cell, placing one cell per slot guarantees no overlap. The algorithm
-shuffles these coarse grid positions and assigns one to each cell.
+widths. A site is the minimum cell width, and the site grid is the
+fine-grained grid of all site positions. To ensure no overlap, we use a
+coarser grid which we will refer to as the _placement grid_. We divide
+the columns into slots that are each as wide as the widest cell. Since
+every slot is at least as wide as any cell, placing one cell per slot in the placement grid
+guarantees no overlap.
 
 The algorithm works as follows:
 
 1. Find the maximum cell width across all cells
-2. Compute the number of coarse columns by dividing the total columns by
-   the max cell width
-3. Generate all (row, coarse_col) positions and shuffle them randomly
-4. For each cell, take the next position and place it at
-   (row, coarse_col * max_width)
+2. Compute the number of placement columns by dividing the total columns
+   by the max cell width
+3. Randomly assign each cell to a unique placement grid position, placing
+   it at (row, placement_col * max_width)
 
-!!! note "Function: `place_unopt(db)`"
+!!! note "Function: `place_unopt(db, seed=0)`"
 
     **Args:**
 
     - `db` -- TinyBackEndDB with floorplan initialized
+    - `seed` -- Random seed
 
     **Returns:** None (modifies db in place)
 
 Go ahead and implement `place_unopt` in `place_unopt.py`. You can use
 `logging.info` to print useful information such as the number of cells
-placed or cell's placed location.
+placed or cell's placed location. You can pass in a different seed to
+try a different random placement.
 
-Once you are done, test your implementation in the REPL:
+Once you are done, test your implementation in the REPL. This assumes
+you have already run the Section 3.1 commands to load the design and
+initialize the floorplan:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
-tinyflow-pnr> db = TinyBackEndDB(view)
-tinyflow-pnr> db.read_verilog('../../path/to/post-synth.v')
-tinyflow-pnr> io_locs = { 'a': (??, ??), 'b': (??, ??), 'y': (??, ??) }
-tinyflow-pnr> floorplan_fixed(db, view, ??, ??, io_locs)
-tinyflow-pnr> place_unopt(db)
-tinyflow-pnr> db.enable_gui()
+# Assumes view, db, and floorplan from Section 3.1
+tinyflow-pnr> place_unopt(db, seed=42)
 tinyflow-pnr> db.get_cells()[0].is_placed()
 tinyflow-pnr> db.get_cells()[0].get_place()
 ```
