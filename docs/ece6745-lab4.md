@@ -466,13 +466,13 @@ to `inv2.A`. We will add each line segment one at a time so you can see
 the route build up in the GUI:
 
 ```python
-tinyflow-pnr> src_i, src_j, _ = inv1.get_pin('Y').get_node()
-tinyflow-pnr> dst_i, dst_j, _ = inv2.get_pin('A').get_node()
+tinyflow-pnr> src_x, src_y, _ = inv1.get_pin('Y').get_node()
+tinyflow-pnr> dst_x, dst_y, _ = inv2.get_pin('A').get_node()
 tinyflow-pnr> net_w = db.get_net('w')
-tinyflow-pnr> net_w.add_route_segments([Line((src_i, src_j, 1), (src_i, src_j, 2))])
-tinyflow-pnr> net_w.add_route_segments([Line((src_i, src_j, 2), (src_i, dst_j, 2))])
-tinyflow-pnr> net_w.add_route_segments([Line((src_i, dst_j, 2), (dst_i, dst_j, 2))])
-tinyflow-pnr> net_w.add_route_segments([Line((dst_i, dst_j, 2), (dst_i, dst_j, 1))])
+tinyflow-pnr> net_w.add_route_segments([Line((src_x, src_y, 1), (src_x, src_y, 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((src_x, src_y, 2), (src_x, dst_y, 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((src_x, dst_y, 2), (dst_x, dst_y, 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((dst_x, dst_y, 2), (dst_x, dst_y, 1))])
 ```
 
 ![](img/lab4-gui-manual-route.png){ width=50% }
@@ -481,14 +481,14 @@ The route should now appear in the routing panel of the GUI. You can
 verify the node occupancy along the route:
 
 ```python
-tinyflow-pnr> db.get_occupancy(src_i, src_j, 2)
+tinyflow-pnr> db.get_occupancy(src_x, src_y, 2)
 tinyflow-pnr> net_w.get_route()
 ```
 
 ??? info "Expected output"
 
     ```
-    tinyflow-pnr> db.get_occupancy(src_i, src_j, 2)
+    tinyflow-pnr> db.get_occupancy(src_x, src_y, 2)
     <Net w, 2 pins>
     tinyflow-pnr> net_w.get_route()
     [Line((4, 4, 1) -> (4, 4, 2)), Line((4, 4, 2) -> (4, 6, 2)), Line((4, 6, 2) -> (20, 6, 2)), Line((20, 6, 2) -> (20, 6, 1))]
