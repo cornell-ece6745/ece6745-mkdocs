@@ -1031,7 +1031,7 @@ tinyflow-pnr> add_filler(db, view)
 You should see the empty sites in the GUI filled in after running
 `add_filler`.
 
-7. Layout Writer
+7. Algorithm: Layout Writer
 --------------------------------------------------------------------------
 
 The final step is to write out the layout as a GDS file. This is
@@ -1059,31 +1059,354 @@ layouts and writes the combined result to a GDS file. Open
 8. TinyFlow Front and Back End
 --------------------------------------------------------------------------
 
-TODO: End-to-end batch flow. Write run.py script.
+The complete TinyFlow includes both the front-end and back-end. The
+front-end flow consists of four steps: two-state simulation, four-state
+simulation, synthesis, and fast-functional gate-level simulation. The
+back-end flow consists of three steps: place-and-route, design rule
+checking, and layout-vs-schematic. In this final part, we push the full
+adder design through all steps of the fron-end flow and the
+place-and-route step of the back-end flow to illustrate going from
+Verilog RTL to a gate-level netlist to layout. We first manually run each
+step before showing how we can automate running the flow.
+
+### 8.1. Tiny Front-End Manual Flow
+
+We need to first run the front-end flow as in the previous lab and
+project 1B to generate the gate-level netlist. We provide the Verilog RTL
+in `rtl/FullAdder.v` and a basic testbench in
+`rtl/test/FullAdder-test.v`. These are the same as in the previous lab.
+Trun the two-state simulation with Verilator.
 
 ```bash
-% cd $HOME/ece6745/lab4/asic/build-fa/XX-tinyflow-pnr
+% cd $HOME/ece6745/lab4/asic/playground/01-verilator-rtlsim
+% verilator --top Top --timing --binary -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./obj_dir/FullAdder-test
+```
+
+Now run four-state simulation with Icarus Verilog.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/02-iverilog-rtlsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+Create a `run.py` script for synthesis.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/03-tinyflow-synth
 % code run.py
 ```
 
-```python
-view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
-db = TinyBackEndDB(view)
-db.read_verilog('../XX-tinyflow-synth/post-synth.v')
-db.enable_gui()
+Populate the script with the commands to perform optimized technology
+mapping and static timing analysis using your work Project 1B.
 
+```python
+# Load the standard-cell front-end view and create front-end database
+
+view = StdCellFrontEndView.parse_lib("../../../stdcells/stdcells-fe.yml")
+db = TinyFrontEndDB(view)
+
+# Read Verilog file into the database
+
+db.read_verilog("../../../rtl/FullAdder.v")
+
+# Optimized technology mapping
+
+techmap(db, view)
+
+# Static timing analysis with output load of 10fF
+
+output_load = 10
+sta(db, view, output_load)
+
+# Check design for issues
+
+db.check_design()
+
+# Output reports
+
+db.report_area()
+db.report_timing()
+db.report_summary()
+
+# Write front-end database to a Verilog gate-level netlist
+
+db.write_verilog("post-synth.v")
+```
+
+Now go ahead and run synthesis.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/03-tinyflow-synth
+% ../../../tinyflow/tinyflow-synth -f run.py
+```
+
+Finally run fast-functional gate-level simulation to ensure the
+gate-level netlist is correct.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/04-iverilog-ffglsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../stdcells/stdcells.v ../03-tinyflow-synth/post-synth.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+### 8.2. Tiny Back-End Manual Flow
+
+Let's first run the back-end flow interactively, and then we will create
+a corresponding `run.py` script. Start the place-and-route REPL.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/05-tinyflow-pnr
+% ../../../tinyflow/tinyflow-pnr
+```
+
+Now load the standard view, create the tiny back-end database, and start
+the GUI.
+
+```python
+tinyflow-pnr> view = StdCellBackEndView(
+                be  = '../../../stdcells/stdcells-be.yml',
+                gds = '../../../stdcells/stdcells.gds',
+              )
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+```
+
+Read the gate-level netlist Verilog file into the database.
+
+```python
+tinyflow-pnr> db.read_verilog('../03-tinyflow-synth/post-synth.v')
+```
+
+Create a fixed floorplan.
+
+```python
+tinyflow-pnr> io_locs = {
+                'a'    : (  0.0, 21.6),
+                'b'    : (  0.0, 14.4),
+                'cin'  : (  0.0,  7.2),
+                'cout' : (29.52, 21.6),
+                'sum'  : (29.52,  7.2),
+              }
+tinyflow-pnr> floorplan_fixed(db, view, 30.0, 30.0, io_locs)
+```
+
+Place and route the design and insert filler cells.
+
+```python
+tinyflow-pnr> place_unopt(db, view)
+tinyflow-pnr> multi_route_unopt(db, view)
+tinyflow-pnr> add_filler(db, view)
+```
+
+Check the design for issues and output a summary report.
+
+```python
+tinyflow-pnr> db.check_design()
+tinyflow-pnr> db.report_summary()
+```
+
+Note that the unoptimized routing algorithm is unlikely to be able to
+succesfully route all of the nets. This means we could not fabricate this
+design, but it is ok for illustrating the process during the lab. The
+optimized place and route algorithms you implement for Project 1C must be
+able to successfully route all nets in order to be able to contribute
+your block to the tinyflow tapeout.
+
+Write the tiny back-end database to a GDS layout file and exit the REPL.
+
+```python
+tinyflow-pnr> db.write_gds('post-pnr.gds')
+tinyflow-pnr> exit()
+```
+
+You can now view the final layout using Klayout.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/05-tinyflow-pnr
+% klayout post-pnr.gds
+```
+
+Choose _Display > Top Level Only_ to hide the internals of each standard
+cell and show just the placement and routing of the standard cells. Try
+hiding and showing different metal layers to better visualize the
+routing. Spend some time appreciating all your hard work!
+
+![](img/lab4-final-layout.png)
+
+Create a `run.py` script to make it easier to run place-and-route.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/05-tinyflow-pnr
+% code run.py
+```
+
+Populate the script with the above commands. Note that we do not enable
+the GUI when using a `run.py` script.
+
+```python
+view = StdCellBackEndView(
+         be  = '../../../stdcells/stdcells-be.yml',
+         gds = '../../../stdcells/stdcells.gds',
+       )
+db = TinyBackEndDB(view)
+
+db.read_verilog('../03-tinyflow-synth/post-synth.v')
+
+io_locs = {
+  'a'    : (  0.0, 21.6),
+  'b'    : (  0.0, 14.4),
+  'cin'  : (  0.0,  7.2),
+  'cout' : (29.52, 21.6),
+  'sum'  : (29.52,  7.2),
+}
 floorplan_fixed(db, view, 30.0, 30.0, io_locs)
+
 place_unopt(db, view)
 multi_route_unopt(db, view)
 add_filler(db, view)
 
 db.check_design()
 db.report_summary()
-db.write_gds('out.gds')
+
+db.write_gds('post-pnr.gds')
 ```
 
-TODO: Run batch script, view GDS output in KLayout.
+Now rerun place-and-route using this `run.py` script.
 
-TODO: DRC, LVS
+```bash
+% cd $HOME/ece6745/lab4/asic/playground/05-tinyflow-pnr
+% ../../../tinyflow/tinyflow-pnr -f run.py
+```
 
-TODO: Screenshots of final layout.
+### 8.3. Tiny Automated Flow
+
+In the previous sections, we manually commands entering commands for each
+tool to take a design from RTL to layout. Using `run.py` scripts can
+help, and we could even crate `run` Bash scripts to further automate the
+flow. However, truly agile hardware design demands more sophisticated
+automation to simplify rapidly exploring the design space of one or more
+designs. In this section, we will introduce a tool called pyhflow which
+takes as input step templates and a design YAML and generates
+appropriate flow scripts.
+
+pyflow is based on the idea of step templates which are located in the
+asic/steps directory.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/steps
+% tree
+```
+
+The directory layout should look as follows.
+
+```
+.
+├── 01-verilator-rtlsim
+│   └── run
+├── 02-iverilog-rtlsim
+│   └── run
+├── 03-tinyflow-synth
+│   ├── run
+│   └── run.py
+├── 04-iverilog-ffglsim
+│   └── run
+└── 05-tinyflow-pnr
+    ├── run
+    └── run.py
+```
+
+Each step is a directory with a run script and possibly other scripts.
+The key difference from the `run.py` and `run` scripts we used
+previously, is that these scripts are templated using the Jinja2
+templating system:
+
+ - <https://jinja.palletsprojects.com>
+
+Open the `run.py` script in the `03-tinyflow-synth` step template.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/steps/03-tinyflow-synth
+% code run.py
+```
+
+Notice how the `run.py` script is templated based on the design name.
+
+```python
+db.read_verilog("{{top_dir}}/rtl/{{design_name}}.v")
+```
+
+The `{{ }}` directive is the standard syntax for template variable
+substitution using Jinja2. The pyhflow program takes as input a design
+YAML file which specifies how to fill in these template variables. Take a
+look at the provided design YAML for the full ader.
+
+```bash
+% cd $HOME/ece6745/lab4/asic/designs
+% code fa.py
+```
+
+The contents should look as follows.
+
+```
+steps:
+ - 01-verilator-rtlsim
+ - 02-iverilog-rtlsim
+ - 03-tinyflow-synth
+ - 04-iverilog-ffglsim
+ - 05-tinyflow-pnr
+
+top_dir      : ../../..
+design_name  : FullAdder
+test         : FullAdder-test
+
+block_width  : 30.0
+block_height : 30.0
+io_locs: |
+  'a'    : (  0.0, 21.6),
+  'b'    : (  0.0, 14.4),
+  'cin'  : (  0.0,  7.2),
+  'cout' : (29.52, 21.6),
+  'sum'  : (29.52,  7.2),
+```
+
+This design YAML file specifies the generated flow should use five steps
+and also includes the design name, test name, and floorplan information.
+All pyhflow does is use the YAML file to figure out what to substitute
+into the templated steps and then copy the run scripts into the current
+working directory. You can also override parameters on pyhflow command
+line.
+
+Let's now use pyhflow to easily automate the entire process of pushing a
+full adder through the tiny flow.
+
+```bash
+% cd $HOME/ece6745/lab4/asic
+% mkdir -p build-fa
+% cd build-fa
+% pyhflow ../designs/fa.yml
+% ./01-verilator-rtlsim/run
+% ./02-iverilog-rtlsim/run
+% ./03-tinyflow-synth/run
+% ./04-iverilog-ffglsim/run
+% ./05-tinyflow-pnr/run
+```
+
+pyhflow also creates a `run-flow` script which will run all the steps
+further simplifying the process.
+
+```bash
+% cd $HOME/ece6745/lab4/asic
+% mkdir -p build-fa
+% cd build-fa
+% pyhflow ../designs/fa.yml
+% ./run-flow
+```
+
