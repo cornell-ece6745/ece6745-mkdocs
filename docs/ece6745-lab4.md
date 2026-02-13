@@ -144,7 +144,7 @@ Let's create a back-end library view, an empty database, and a small
 floorplan with 3 rows and 21 sites per row.
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.floorplan(3, 24)
@@ -547,7 +547,7 @@ provided a synthesized `FullAdder_cout` design from lecture. Let's load
 it and verify what was created:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> db.get_cells()
@@ -611,7 +611,7 @@ rows and columns. Once you are done, you can test your implementation
 using the `FullAdder_cout` design from lecture:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -682,7 +682,7 @@ try a different random placement.
 Once you are done, test your implementation in the REPL:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -754,7 +754,7 @@ To test, set up the design, then manually add a route to one net and
 check if the same lines collide with a different net:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -809,7 +809,7 @@ Go ahead and implement `manhattan_route_m2` in `single_route_unopt.py`.
 To test, pick a net and route between its first two pins:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -871,7 +871,7 @@ To test, try the same two nets from Section 5.2 but using
 version can route on different layers:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -925,7 +925,7 @@ Go ahead and implement `single_route_unopt` in `single_route_unopt.py`.
 To test, route a single net by name:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -959,7 +959,7 @@ Go ahead and implement `multi_route_unopt` in `multi_route_unopt.py`.
 To test, route all nets in the design:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -1002,7 +1002,7 @@ The algorithm works as follows:
 Go ahead and implement `add_filler` in `add_filler.py`. To test:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
@@ -1020,11 +1020,11 @@ You should see the empty sites in the GUI filled in after running
 --------------------------------------------------------------------------
 
 The final step is to write out the layout as a GDS file. This is
-provided for you -- simply call `db.stream_out` with the path to the
-standard cell GDS library and the desired output filename:
+provided for you -- simply call `db.write_gds` with the desired output
+filename:
 
 ```python
-tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
@@ -1034,7 +1034,7 @@ tinyflow-pnr> multi_route_unopt(db, view)
 tinyflow-pnr> add_filler(db, view)
 tinyflow-pnr> db.check_design()
 tinyflow-pnr> db.report_summary()
-tinyflow-pnr> db.stream_out('../../stdcells/stdcells.gds', 'FA_cout.gds')
+tinyflow-pnr> db.write_gds('FA_cout.gds')
 ```
 
 This merges your placed and routed design with the standard cell
@@ -1052,7 +1052,7 @@ TODO: End-to-end batch flow. Write run.py script.
 ```
 
 ```python
-view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 db = TinyBackEndDB(view)
 db.read_verilog('../XX-tinyflow-synth/post-synth.v')
 db.enable_gui()
@@ -1064,7 +1064,7 @@ add_filler(db, view)
 
 db.check_design()
 db.report_summary()
-db.stream_out('../../stdcells/stdcells.gds', 'out.gds')
+db.write_gds('out.gds')
 ```
 
 TODO: Run batch script, view GDS output in KLayout.
