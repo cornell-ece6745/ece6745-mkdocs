@@ -201,11 +201,11 @@ tinyflow-pnr> db.get_grid_size_j()
     tinyflow-pnr> db.get_num_rows()
     3
     tinyflow-pnr> db.get_num_cols()
-    21
+    24
     tinyflow-pnr> db.get_grid_size_i()
     25
     tinyflow-pnr> db.get_grid_size_j()
-    22
+    25
     ```
 
 The site grid has `num_rows` rows and `num_cols` sites per row --
