@@ -19,7 +19,20 @@ flow are shown below.
 1. Logging Into `ecelinux`
 --------------------------------------------------------------------------
 
-TODO: Same boilerplate as lab3. Clone lab4 repo, copy stdcells views.
+Follow the same process as previous labs. Find a free workstation and log
+into the workstation using your NetID and standard NetID password. Then
+complete the following steps.
+
+ - Start VS Code
+ - Install the Remote-SSH extension, Surfer, and Verilog extensions
+ - Use View > Command Palette to execute Remote-SSH: Connect Current Window to Host...
+ - Enter netid@ecelinux-XX.ece.cornell.edu where XX is an ecelinux server number
+ - Use View > Explorer to open your home directory on ecelinux
+ - Use View > Terminal to open a terminal on ecelinux
+ - Start MS Remote Desktop
+
+Now use the following commands to clone the repo we will be using for
+today's lab.
 
 ```bash
 % source setup-ece6745.sh
@@ -31,9 +44,65 @@ TODO: Same boilerplate as lab3. Clone lab4 repo, copy stdcells views.
 % tree
 ```
 
-TODO: repo tree structure
+Your repo contains the following files.
 
-TODO: copy stdcells (stdcells-be.yml, stdcells.gds, behavioral view, gate-level netlist from lab3)
+```
+.
+├── README.md
+├── asic
+│   └── build-fa
+│       ├── 00-verilator-rtlsim
+│       ├── 01-iverilog-rtlsim
+│       ├── 02-tinyflow-synth
+│       ├── 03-iverilog-ffglsim
+│       ├── 04-tinyflow-pnr
+│       ├── 05-klayout-drc
+│       └── 06-klayout-lvs
+├── rtl
+│   ├── FullAdder_cout.v
+│   └── FullAdder_cout-post-synth.v
+├── stdcells
+└── tinyflow
+    ├── pnr
+    │   ├── StdCellBackEndView.py
+    │   ├── TinyBackEndDB.py
+    │   ├── TinyBackEndGUI.py
+    │   ├── add_filler.py
+    │   ├── floorplan.py
+    │   ├── multi_route_unopt.py
+    │   ├── place_unopt.py
+    │   └── single_route_unopt.py
+    ├── tinyflow-synth
+    └── tinyflow-pnr
+```
+
+Our back-end flow uses the back-end view and GDS library you developed
+in Project 1, Part A. You will also need your synthesis tool for the
+end-to-end flow. Copy these files into the lab4 directory.
+
+```bash
+% cd ${HOME}/ece6745/lab4
+% cp ../../project1-groupXX/stdcells/stdcells-be.yml stdcells/
+% cp ../../project1-groupXX/stdcells/stdcells.gds stdcells/
+% cp -r ../../project1-groupXX/tinyflow/synth tinyflow/synth
+```
+
+where `XX` is your group number. We provide `FullAdder_cout.v` (the
+RTL) and `FullAdder_cout-post-synth.v` (a pre-synthesized gate-level
+netlist) in the `rtl/` directory so you can test the back-end flow
+directly.
+
+To make it easier to cut-and-paste commands from this handout onto the
+command line, you can tell Bash to ignore the `%` character using the
+following command:
+
+```bash
+% alias %=""
+```
+
+Now you can cut-and-paste a sequence of commands from this tutorial
+document and Bash will not get confused by the `%` character which begins
+each line.
 
 2. Data Structure: Back-End Database
 --------------------------------------------------------------------------
