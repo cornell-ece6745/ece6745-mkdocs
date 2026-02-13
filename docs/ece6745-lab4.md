@@ -81,9 +81,8 @@ the lab4 directory.
 
 ```bash
 % cd ${HOME}/ece6745/lab4
-% cp ${HOME}/ece6745/project1-groupXX/stdcells/stdcells-be.yml stdcells
-% cp ${HOME}/ece6745/project1-groupXX/stdcells/stdcells.gds    stdcells
-% cp -r ${HOME}/ece6745/project1-groupXX/tinyflow/synth        tinyflow
+% cp -r ${HOME}/ece6745/project1-groupXX/stdcells/stdcells .
+% cp -r ${HOME}/ece6745/project1-groupXX/tinyflow/synth tinyflow
 ```
 
 where `XX` is your group number. We provide `FullAdder_cout.v` (the RTL)
@@ -109,9 +108,11 @@ As discussed in lecture, the back end takes a gate-level netlist and
 produces a physical layout. The key data structure is the back end
 database which manages **cells** (standard cell instances), **IO ports**
 (block boundary pins), **nets** (connections between pins), a **2D site
-grid of sites**, and a **3D routing grid of nodes**. The PnR algorithms -- 
-floorplanning, placement, and routing -- read and modify this database. We provide students the database, and students are responsible for writing the algorithms. Similar to the front end, we have a REPL for interactive exploration of the back end
-database and algorithms.
+grid of sites**, and a **3D routing grid of nodes**. The PnR algorithms
+-- floorplanning, placement, and routing -- read and modify this
+database. We provide students the database, and students are responsible
+for writing the algorithms. Similar to the front end, we have a REPL for
+interactive exploration of the back end database and algorithms.
 
 In this section, we will manually build a small design from scratch in
 the REPL to understand how these data structures work together. We will
