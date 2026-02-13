@@ -664,11 +664,12 @@ The algorithm works as follows:
 3. Randomly assign each cell to a unique placement grid position, placing
    it at (row, placement_col * max_width)
 
-!!! note "Function: `place_unopt(db, seed=0)`"
+!!! note "Function: `place_unopt(db, view, seed=0)`"
 
     **Args:**
 
     - `db` -- TinyBackEndDB with floorplan initialized
+    - `view` -- StdCellBackEndView (unused, for consistency)
     - `seed` -- Random seed
 
     **Returns:** None (modifies db in place)
@@ -687,7 +688,7 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> place_unopt(db, view, seed=42)
 tinyflow-pnr> db.get_cells()[0].is_placed()
 tinyflow-pnr> db.get_cells()[0].get_place()
 ```
@@ -759,7 +760,7 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> place_unopt(db, view, seed=42)
 tinyflow-pnr> net_a = db.get_net('a')
 tinyflow-pnr> net_b = db.get_net('b')
 tinyflow-pnr> lines = [Line((10, 0, 2), (10, 5, 2))]
@@ -814,7 +815,7 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> place_unopt(db, view, seed=42)
 
 # Try routing g's first two pins
 tinyflow-pnr> net_g = db.get_net('g')
@@ -876,7 +877,7 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> place_unopt(db, view, seed=42)
 
 # Try routing g's first two pins
 tinyflow-pnr> net_g = db.get_net('g')
@@ -930,7 +931,7 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> place_unopt(db, view, seed=42)
 tinyflow-pnr> single_route_unopt(db, 'a')
 tinyflow-pnr> db.get_net('a').get_route()
 ```
@@ -946,10 +947,11 @@ The algorithm works as follows:
 3. Track which nets failed to route
 4. Return `True` if all nets routed, `False` otherwise
 
-!!! note "Function: `multi_route_unopt(db)`"
+!!! note "Function: `multi_route_unopt(db, view)`"
     **Args:**
 
     - `db` -- TinyBackEndDB with placed design
+    - `view` -- StdCellBackEndView (unused, for consistency)
 
     **Returns:** True if all nets routed, False otherwise
 
@@ -963,8 +965,8 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
-tinyflow-pnr> multi_route_unopt(db)
+tinyflow-pnr> place_unopt(db, view, seed=42)
+tinyflow-pnr> multi_route_unopt(db, view)
 ```
 
 With your implementation, ***it is possible that not all nets route
@@ -989,10 +991,11 @@ The algorithm works as follows:
 3. For each site, check if it is unoccupied using `site._get_occupancy()`
 4. If unoccupied, mark it as filler using `site.add_filler()`
 
-!!! note "Function: `add_filler(db)`"
+!!! note "Function: `add_filler(db, view)`"
     **Args:**
 
     - `db` -- TinyBackEndDB with placed and routed design
+    - `view` -- StdCellBackEndView (unused, for consistency)
 
     **Returns:** None (modifies db in place)
 
@@ -1005,9 +1008,9 @@ tinyflow-pnr> db.enable_gui()
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
-tinyflow-pnr> multi_route_unopt(db)
-tinyflow-pnr> add_filler(db)
+tinyflow-pnr> place_unopt(db, view, seed=42)
+tinyflow-pnr> multi_route_unopt(db, view)
+tinyflow-pnr> add_filler(db, view)
 ```
 
 You should see the empty sites in the GUI filled in after running
@@ -1026,9 +1029,9 @@ tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
-tinyflow-pnr> place_unopt(db, seed=42)
-tinyflow-pnr> multi_route_unopt(db)
-tinyflow-pnr> add_filler(db)
+tinyflow-pnr> place_unopt(db, view, seed=42)
+tinyflow-pnr> multi_route_unopt(db, view)
+tinyflow-pnr> add_filler(db, view)
 tinyflow-pnr> db.check_design()
 tinyflow-pnr> db.report_summary()
 tinyflow-pnr> db.stream_out('../../stdcells/stdcells.gds', 'FA_cout.gds')
@@ -1055,10 +1058,9 @@ db.read_verilog('../XX-tinyflow-synth/post-synth.v')
 db.enable_gui()
 
 floorplan_fixed(db, view, 30.0, 30.0, io_locs)
-place_unopt(db)
-promote_pins(db)
-multi_route_unopt(db)
-add_filler(db)
+place_unopt(db, view)
+multi_route_unopt(db, view)
+add_filler(db, view)
 
 db.check_design()
 db.report_summary()
