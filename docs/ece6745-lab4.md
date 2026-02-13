@@ -55,9 +55,7 @@ Your repo contains the following files.
 │       ├── 01-iverilog-rtlsim
 │       ├── 02-tinyflow-synth
 │       ├── 03-iverilog-ffglsim
-│       ├── 04-tinyflow-pnr
-│       ├── 05-klayout-drc
-│       └── 06-klayout-lvs
+│       └── 04-tinyflow-pnr
 ├── rtl
 │   ├── FullAdder_cout.v
 │   └── FullAdder_cout-post-synth.v
@@ -76,21 +74,21 @@ Your repo contains the following files.
     └── tinyflow-pnr
 ```
 
-Our back-end flow uses the back-end view and GDS library you developed
-in Project 1, Part A. You will also need your synthesis tool for the
-end-to-end flow. Copy these files into the lab4 directory.
+Our back-end flow uses the back-end and layout views from the sandard
+standard-cell library you developed in Project 1, Part A. You will also
+need your synthesis tool for the end-to-end flow. Copy these files into
+the lab4 directory.
 
 ```bash
 % cd ${HOME}/ece6745/lab4
-% cp ../../project1-groupXX/stdcells/stdcells-be.yml stdcells/
-% cp ../../project1-groupXX/stdcells/stdcells.gds stdcells/
-% cp -r ../../project1-groupXX/tinyflow/synth tinyflow/synth
+% cp ${HOME}/ece6745/project1-groupXX/stdcells/stdcells-be.yml stdcells
+% cp ${HOME}/ece6745/project1-groupXX/stdcells/stdcells.gds    stdcells
+% cp -r ${HOME}/ece6745/project1-groupXX/tinyflow/synth        tinyflow
 ```
 
-where `XX` is your group number. We provide `FullAdder_cout.v` (the
-RTL) and `FullAdder_cout-post-synth.v` (a pre-synthesized gate-level
-netlist) in the `rtl/` directory so you can test the back-end flow
-directly.
+where `XX` is your group number. We provide `FullAdder_cout.v` (the RTL)
+and `FullAdder_cout-post-synth.v` (a pre-synthesized gate-level netlist)
+in the `rtl` directory so you can test the back-end flow directly.
 
 To make it easier to cut-and-paste commands from this handout onto the
 command line, you can tell Bash to ignore the `%` character using the
@@ -483,14 +481,14 @@ The route should now appear in the routing panel of the GUI. You can
 verify the node occupancy along the route:
 
 ```python
-tinyflow-pnr> db.get_occupancy(src[0], src[1], 2)
+tinyflow-pnr> db.get_occupancy(src_i, src_j, 2)
 tinyflow-pnr> net_w.get_route()
 ```
 
 ??? info "Expected output"
 
     ```
-    tinyflow-pnr> db.get_occupancy(src[0], src[1], 2)
+    tinyflow-pnr> db.get_occupancy(src_i, src_j, 2)
     <Net w, 2 pins>
     tinyflow-pnr> net_w.get_route()
     [Line((4, 4, 1) -> (4, 4, 2)), Line((4, 4, 2) -> (4, 6, 2)), Line((4, 6, 2) -> (20, 6, 2)), Line((20, 6, 2) -> (20, 6, 1))]
@@ -549,7 +547,7 @@ it and verify what was created:
 ```python
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> db.get_cells()
 tinyflow-pnr> db.get_ioports()
 tinyflow-pnr> db.get_nets()
@@ -614,7 +612,7 @@ using the `FullAdder_cout` design from lecture:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> db.get_num_rows()
@@ -685,7 +683,7 @@ Once you are done, test your implementation in the REPL:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -757,7 +755,7 @@ check if the same lines collide with a different net:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -812,7 +810,7 @@ To test, pick a net and route between its first two pins:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -874,7 +872,7 @@ version can route on different layers:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -928,7 +926,7 @@ To test, route a single net by name:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -962,7 +960,7 @@ To test, route all nets in the design:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -1005,7 +1003,7 @@ Go ahead and implement `add_filler` in `add_filler.py`. To test:
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -1026,7 +1024,7 @@ filename:
 ```python
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
 tinyflow-pnr> db = TinyBackEndDB(view)
-tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> db.read_verilog('../../rtl/FullAdder_cout-post-synth.v')
 tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
 tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, view, seed=42)
@@ -1041,7 +1039,7 @@ This merges your placed and routed design with the standard cell
 layouts and writes the combined result to a GDS file. Open
 `FA_cout.gds` in KLayout to inspect the final physical layout.
 
-8. TinyFlow Back End
+8. TinyFlow Front and Back End
 --------------------------------------------------------------------------
 
 TODO: End-to-end batch flow. Write run.py script.
