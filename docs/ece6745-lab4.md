@@ -7,14 +7,14 @@ a gate-level netlist of standard cells and produces a placed and routed
 layout. The complete TinyFlow standard-cell and ASIC design flow is shown
 below with the back end highlighted in red.
 
-TODO: tinyflow diagram with back end highlighted
+![](img/lab4-tinyflow.png)
 
 The back end includes floorplanning, placement, routing, and filler cell
 insertion. In this lab, we will be implementing unoptimized versions of
 placement and routing. The key algorithms in the unoptimized back-end
 flow are shown below.
 
-TODO: back-end flow diagram
+![](img/lab4-pnr-flow.png){ width=50% }
 
 1. Logging Into `ecelinux`
 --------------------------------------------------------------------------
