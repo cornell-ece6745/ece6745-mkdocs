@@ -152,7 +152,7 @@ metal layer. The 3D view below shows how the routing grid stacks on top
 of the site grid, extending across multiple metal layers (M1 to M6) with
 vertical connections (vias) between layers.
 
-![](img/lab4-3d-view.png){ width=50% }
+![](img/lab4-3d-view.png)
 
 Let's try this in TinyFlow. We first create a back-end library view and
 an empty database, then call `floorplan` to set up a small chip with 3
