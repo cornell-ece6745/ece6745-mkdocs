@@ -107,12 +107,10 @@ each line.
 
 As discussed in lecture, the back end takes a gate-level netlist and
 produces a physical layout. The key data structure is the back-end
-database which manages cells (standard cell instances), nets (connections
-between pins), a 2D site grid of sites, and a 3D routing grid of
-nodes. The PnR algorithms -- floorplanning, placement, and routing --
-read and modify this database. We provide students the database, and
-students are responsible for writing the algorithms. Similar to the
-frontend, we have a REPL for interactive exploration of the back-end
+database which manages **cells** (standard cell instances), **IO ports**
+(chip boundary pins), **nets** (connections between pins), a **2D site
+grid of sites**, and a **3D routing grid of nodes**. The PnR algorithms -- 
+floorplanning, placement, and routing -- read and modify this database. We provide students the database, and students are responsible for writing the algorithms. Similar to the frontend, we have a REPL for interactive exploration of the back-end
 database and algorithms.
 
 In this section, we will manually build a small design from scratch in
@@ -138,8 +136,27 @@ routing grid is a 3D array of nodes where wires can be routed across
 multiple metal layers. Both are created when we call `floorplan` on the
 database.
 
-Let's create a back-end library view, an empty database, and a small
-floorplan with 3 rows and 21 sites per row.
+The figure below shows a top-down view of these two grids. Given the
+chip's overall dimensions (left), the floorplan divides the area into a
+2D grid of **sites** (center). Each site is one standard-cell slot. On
+top of that, a finer **routing grid** (right) provides nodes at every
+track pitch where wires and vias can be placed. The routing grid has
+many more rows than the site grid because sites are much taller than the
+track pitch.
+
+![](img/lab4-topdown-grids.png)
+
+The routing grid is actually 3D. Each node has coordinates `(i, j, k)`
+where `i` and `j` identify a position on the chip and `k` selects the
+metal layer. The 3D view below shows how the routing grid stacks on top
+of the site grid, extending across multiple metal layers (M1 to M6) with
+vertical connections (vias) between layers.
+
+![](img/lab4-3d-view.png){ width=50% }
+
+Let's try this in TinyFlow. We first create a back-end library view and
+an empty database, then call `floorplan` to set up a small chip with 3
+rows and 24 sites per row.
 
 ```python
 tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
