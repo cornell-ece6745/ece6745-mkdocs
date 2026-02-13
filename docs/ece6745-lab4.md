@@ -399,13 +399,13 @@ to `inv2.A`. We will add each line segment one at a time so you can see
 the route build up in the GUI:
 
 ```python
-tinyflow-pnr> src = inv1.get_pin('Y').get_node()
-tinyflow-pnr> dst = inv2.get_pin('A').get_node()
+tinyflow-pnr> src_i, src_j, _ = inv1.get_pin('Y').get_node()
+tinyflow-pnr> dst_i, dst_j, _ = inv2.get_pin('A').get_node()
 tinyflow-pnr> net_w = db.get_net('w')
-tinyflow-pnr> net_w.add_route_segments([Line((src[0], src[1], 1), (src[0], src[1], 2))])
-tinyflow-pnr> net_w.add_route_segments([Line((src[0], src[1], 2), (src[0], dst[1], 2))])
-tinyflow-pnr> net_w.add_route_segments([Line((src[0], dst[1], 2), (dst[0], dst[1], 2))])
-tinyflow-pnr> net_w.add_route_segments([Line((dst[0], dst[1], 2), (dst[0], dst[1], 1))])
+tinyflow-pnr> net_w.add_route_segments([Line((src_i, src_j, 1), (src_i, src_j, 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((src_i, src_j, 2), (src_i, dst_j, 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((src_i, dst_j, 2), (dst_i, dst_j, 2))])
+tinyflow-pnr> net_w.add_route_segments([Line((dst_i, dst_j, 2), (dst_i, dst_j, 1))])
 ```
 
 ![](img/lab4-gui-manual-route.png){ width=50% }
@@ -573,7 +573,7 @@ In an optimized flow, placement also minimizes wire length and improves
 timing. In this lab, we will implement `place_unopt`, which randomly
 assigns cells to grid positions without any optimization. In the
 project, we will build on this random placement using simulated annealing
-to iteratively improve cell positions.
+to iteratively improve cell positions for wire length.
 
 ### 4.1. Random placement
 
@@ -609,12 +609,15 @@ Go ahead and implement `place_unopt` in `place_unopt.py`. You can use
 placed or cell's placed location. You can pass in a different seed to
 try a different random placement.
 
-Once you are done, test your implementation in the REPL. This assumes
-you have already run the Section 3.1 commands to load the design and
-initialize the floorplan:
+Once you are done, test your implementation in the REPL:
 
 ```python
-# Assumes view, db, and floorplan from Section 3.1
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
 tinyflow-pnr> place_unopt(db, seed=42)
 tinyflow-pnr> db.get_cells()[0].is_placed()
 tinyflow-pnr> db.get_cells()[0].get_place()
@@ -658,6 +661,14 @@ A point is a collision only if it is occupied by a different net. Points
 occupied by the current net are allowed since a net can cross its own
 wires.
 
+The algorithm works as follows:
+
+1. For each Line in the list, get all grid points using
+   `line.get_points()`
+2. For each point, check occupancy using `db.get_occupancy(i, j, k)`
+3. If occupied by a different net, return `False`
+4. If all points are clear (or occupied by the same net), return `True`
+
 !!! note "Function: `check_lines(db, net, lines)`"
     **Args:**
 
@@ -669,14 +680,21 @@ wires.
 
 Go ahead and implement `check_lines` in `single_route_unopt.py`.
 
-To test, manually add a route to one net, then check if the same lines
-collide with a different net:
+To test, set up the design, then manually add a route to one net and
+check if the same lines collide with a different net:
 
 ```python
-tinyflow-pnr> net_a = db.get_net('??')
-tinyflow-pnr> net_b = db.get_net('??')
-tinyflow-pnr> lines = [Line((??, ??, 2), (??, ??, 2))]
-tinyflow-pnr> net_a.add_route_segment(lines)
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
+tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> net_a = db.get_net('a')
+tinyflow-pnr> net_b = db.get_net('b')
+tinyflow-pnr> lines = [Line((10, 0, 2), (10, 5, 2))]
+tinyflow-pnr> net_a.add_route_segments(lines)
 tinyflow-pnr> check_lines(db, net_b, lines)
 tinyflow-pnr> check_lines(db, net_a, lines)
 ```
@@ -686,13 +704,16 @@ The first check should return `False` since the nodes are occupied by
 to cross its own wires.
 
 
-### 5.2. Manhattan Route (2D, Single Layer)
+### 5.2. Manhattan Route on M2
 
 Now we implement a simple routing function that only routes on the M2
 layer. Given two pin locations on M1, `manhattan_route_m2` connects them
-with an L-shaped route on M2. An L-shaped (manhattan) route uses at most
-two wire segments that meet at a right angle: one in the x direction and
-one in the y direction.
+with an L-shaped route on M2. Recall from Section 2 that a route is
+made up of Line segments. To go from one pin to another, we need four
+Lines: a via up from M1 to M2 at the source, a horizontal wire on M2,
+a vertical wire on M2, and a via down from M2 to M1 at the destination.
+The two wire segments form an L-shape (manhattan route) that meets at a
+right angle.
 
 The algorithm first tries one L-shape ordering, then the other:
 
@@ -715,17 +736,54 @@ The algorithm first tries one L-shape ordering, then the other:
     **Returns:** True if route found and committed, False if both orderings blocked
 
 Go ahead and implement `manhattan_route_m2` in `single_route_unopt.py`.
+To test, pick a net and route between its first two pins:
 
-TODO: REPL exercises -- route between two points, observe in GUI.
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
+tinyflow-pnr> place_unopt(db, seed=42)
 
-### 5.3. Manhattan Route (3D, Multi-Layer)
+# Try routing g's first two pins
+tinyflow-pnr> net_g = db.get_net('g')
+tinyflow-pnr> start = net_g.pins[0].get_node()
+tinyflow-pnr> end = net_g.pins[1].get_node()
+tinyflow-pnr> manhattan_route_m2(db, net_g, start, end)
+tinyflow-pnr> net_g.get_route()
+
+# Try routing _net_10's first two pins
+tinyflow-pnr> net_n10 = db.get_net('_net_10')
+tinyflow-pnr> start = net_n10.pins[0].get_node()
+tinyflow-pnr> end = net_n10.pins[1].get_node()
+tinyflow-pnr> manhattan_route_m2(db, net_n10, start, end)
+```
+
+The first route (`g`) should return `True`. In the GUI, the start and
+end pins should now show a filled circle (the via) where there was
+previously an empty square, and you should see the L-shaped wire
+segments connecting them. The second route (`_net_10`) should return
+`False` because its path crosses `g`'s route on M2.
+
+![](img/lab4-gui-mh_route_m2.png){ width=50% }
+
+### 5.3. Manhattan Route (Multi-Layer)
 
 Now we generalize `manhattan_route_m2` to try multiple metal layers.
 Instead of only routing on M2, `manhattan_route` tries each routing
-layer from M6 down to M2. For each layer, it tries both L-shape
-orderings (x-then-y and y-then-x) just like before. If a layer is
-blocked, it moves on to the next layer. If all layers and orderings
-are exhausted, it returns `False`.
+layer from M6 down to M2. We try higher layers first with the hope
+that routing on upper layers leaves the lower layers free for later
+nets, reducing the chance of congestion.
+
+The algorithm works as follows:
+
+1. For each layer from M6 down to M2:
+2. Try x-then-y: construct 4 Lines (via up, x-wire, y-wire, via down).
+   Use `check_lines` to test. If clear, commit and return `True`.
+3. Try y-then-x: construct 4 Lines. Check and commit if clear.
+4. If all layers and orderings fail, return `False`.
 
 !!! note "Function: `manhattan_route(db, net, start, end)`"
     **Args:**
@@ -738,19 +796,52 @@ are exhausted, it returns `False`.
     **Returns:** True if route found and committed, False if all options blocked
 
 Go ahead and implement `manhattan_route` in `single_route_unopt.py`.
+To test, try the same two nets from Section 5.2 but using
+`manhattan_route` instead. Both should succeed since the multi-layer
+version can route on different layers:
 
-TODO: REPL exercises.
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
+tinyflow-pnr> place_unopt(db, seed=42)
+
+# Try routing g's first two pins
+tinyflow-pnr> net_g = db.get_net('g')
+tinyflow-pnr> start = net_g.pins[0].get_node()
+tinyflow-pnr> end = net_g.pins[1].get_node()
+tinyflow-pnr> manhattan_route(db, net_g, start, end)
+
+# Try routing _net_10's first two pins
+tinyflow-pnr> net_n10 = db.get_net('_net_10')
+tinyflow-pnr> start = net_n10.pins[0].get_node()
+tinyflow-pnr> end = net_n10.pins[1].get_node()
+tinyflow-pnr> manhattan_route(db, net_n10, start, end)
+```
+
+Both should return `True`. The first net routes on the highest
+available layer (M6), and the second net finds a different free layer
+since they no longer compete for M2.
 
 ### 5.4. Single-Net Routing (`single_route_unopt`)
 
-Now we put the pieces together to route a single net. So far,
-`manhattan_route` connects two pins. But a net can have more than two
-pins. For example, a net driving a fan-out of three gates has four pins
-(one driver and three loads). `single_route_unopt` takes a net name,
-gets all of its pin locations, and connects them sequentially: pin 0 to
-pin 1, pin 1 to pin 2, and so on. If any pair fails to route, it
-returns `False`. If all pairs succeed, it marks the net as routed and
-returns `True`.
+Now we put the pieces together to route a single net. A net can have
+more than two pins (e.g., a fan-out net). `single_route_unopt` connects
+all pins sequentially using `manhattan_route`. Note that if a pair
+fails partway through, the previously routed segments are still
+committed -- the net's route will be incomplete but the partial
+segments remain on the grid.
+
+The algorithm works as follows:
+
+1. Get the net by name and collect all pin locations
+2. For each consecutive pair of pins (pin 0→1, pin 1→2, etc.), call
+   `manhattan_route` to connect them
+3. If any pair fails, return `False`
+4. If all pairs succeed, mark the net as routed and return `True`
 
 !!! note "Function: `single_route_unopt(db, net_name)`"
     **Args:**
@@ -761,14 +852,30 @@ returns `True`.
     **Returns:** True if routing succeeded, False otherwise
 
 Go ahead and implement `single_route_unopt` in `single_route_unopt.py`.
+To test, route a single net by name:
 
-TODO: REPL exercise -- route a single net by name, verify in GUI.
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
+tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> single_route_unopt(db, 'a')
+tinyflow-pnr> db.get_net('a').get_route()
+```
 
 ### 5.5. Multi-Net Routing (`multi_route_unopt`)
 
-Finally, we route all nets in the design. `multi_route_unopt` iterates
-over every net with two or more pins and calls `single_route_unopt` for
-each one. It tracks which nets failed to route and reports the results.
+Finally, we route all nets in the design.
+
+The algorithm works as follows:
+
+1. Get all nets from the database
+2. For each net with two or more pins, call `single_route_unopt`
+3. Track which nets failed to route
+4. Return `True` if all nets routed, `False` otherwise
 
 !!! note "Function: `multi_route_unopt(db)`"
     **Args:**
@@ -778,8 +885,23 @@ each one. It tracks which nets failed to route and reports the results.
     **Returns:** True if all nets routed, False otherwise
 
 Go ahead and implement `multi_route_unopt` in `multi_route_unopt.py`.
+To test, route all nets in the design:
 
-TODO: REPL exercise -- route all nets, check results.
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
+tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> multi_route_unopt(db)
+```
+
+With your implementation, ***it is possible that not all nets route
+successfully***. This is expected -- with a random unoptimized placement,
+some nets may fail to route due to congestion. Try a different seed to
+see how placement affects routability.
 
 6. Algorithm: Add Filler
 --------------------------------------------------------------------------
@@ -790,6 +912,14 @@ design rules and maintain continuous power rails. `add_filler` walks
 through every site in the site grid and marks any unoccupied site
 as a filler cell.
 
+The algorithm works as follows:
+
+1. Get the site grid using `db.get_core()`, which returns a 2D array
+   of sites
+2. Iterate through every site in the grid
+3. For each site, check if it is unoccupied using `site._get_occupancy()`
+4. If unoccupied, mark it as filler using `site.add_filler()`
+
 !!! note "Function: `add_filler(db)`"
     **Args:**
 
@@ -797,14 +927,49 @@ as a filler cell.
 
     **Returns:** None (modifies db in place)
 
-Go ahead and implement `add_filler` in `add_filler.py`. You can access
-the site grid using `db.get_core()`, which returns a 2D array of
-sites. Each site has `site._get_occupancy()` to check if a cell is
-placed there, and `site.add_filler()` to mark it as a filler cell.
+Go ahead and implement `add_filler` in `add_filler.py`. To test:
 
-TODO: REPL exercise.
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
+tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> multi_route_unopt(db)
+tinyflow-pnr> add_filler(db)
+```
 
-7. TinyFlow Back End
+You should see the empty sites in the GUI filled in after running
+`add_filler`.
+
+7. Layout Writer
+--------------------------------------------------------------------------
+
+The final step is to write out the layout as a GDS file. This is
+provided for you -- simply call `db.stream_out` with the path to the
+standard cell GDS library and the desired output filename:
+
+```python
+tinyflow-pnr> view = StdCellBackEndView.parse_lef('../../stdcells/stdcells-be.yml')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('FA-cout-post-synth.v')
+tinyflow-pnr> io_locs = { 'a': (0.0, 7.2), 'b': (0.0, 14.4), 'cin': (0.0, 21.6), 'cout': (28.8, 14.4) }
+tinyflow-pnr> floorplan_fixed(db, view, 28.8, 28.8, io_locs)
+tinyflow-pnr> place_unopt(db, seed=42)
+tinyflow-pnr> multi_route_unopt(db)
+tinyflow-pnr> add_filler(db)
+tinyflow-pnr> db.check_design()
+tinyflow-pnr> db.report_summary()
+tinyflow-pnr> db.stream_out('../../stdcells/stdcells.gds', 'FA_cout.gds')
+```
+
+This merges your placed and routed design with the standard cell
+layouts and writes the combined result to a GDS file. Open
+`FA_cout.gds` in KLayout to inspect the final physical layout.
+
+8. TinyFlow Back End
 --------------------------------------------------------------------------
 
 TODO: End-to-end batch flow. Write run.py script.
