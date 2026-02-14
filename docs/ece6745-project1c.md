@@ -174,7 +174,7 @@ algorithms.
 Implement both fixed floorplan and automatic floorplan algorithms in the
 `tinyflow/pnr/floorplan.py` file.
 
-### 3.1. Fixed Floorplan
+### 2.1. Fixed Floorplan
 
 The fixed floorplan is useful if we know ahead of time the size of the
 final block and the position of the input and output pins. This kind of
@@ -202,7 +202,14 @@ floorplanning will be used for the actual tapeout.
     um to the appropriate units when calling `db.floorplan(width,height)`
     and `db.get_ioport(name).place(i,j)`
 
-### 3.2. Automatic Floorplan
+Run the fixed floorplan tests to verify your implementation:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/floorplan_test.py -v -k fixed
+```
+
+### 2.2. Automatic Floorplan
 
 The automatic floorplan is useful for design-space exploration where we
 want to rapidly place-and-route a design without knowing ahead of time
@@ -237,7 +244,22 @@ the right edge of the block.
     place the input/output pins. Carefully consider the units when
     specifying all widths, heights, and locations.
 
-4. Algorithm: Optimized Placement
+Run the automatic floorplan tests to verify your implementation:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/floorplan_test.py -v -k auto
+```
+
+Once you have implemented both floorplan algorithms, run all of the
+floorplan tests to verify your implementation:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/floorplan_test.py -v
+```
+
+3. Algorithm: Optimized Placement
 --------------------------------------------------------------------------
 
 Implement a simulated annealing placement algorithm that attempts to
@@ -252,7 +274,7 @@ use this max width to set the size of each location in the placement
 grid. Although this is less area efficient, it significantly simplifies
 placement since we are guaranteed placed cells will not overlap.
 
-### 4.1. Half-Perimeter Wire Length (HPWL)
+### 3.1. Half-Perimeter Wire Length (HPWL)
 
 We will be using the total half-perimeter wire length (HPWL) as our cost
 metric for any given placement. The HPWL for a net is calculated by:
@@ -265,15 +287,24 @@ Implement the `hpwl` function in `tinyflow/pnr/place.py`.
 
 !!! note "Function: `hpwl(db)`"
 
-    **Goal:** Compute total HPWL (half-perimeter wirelength) using bounding box per net
+    **Goal:** Compute total HPWL (half-perimeter wirelength) using
+    bounding box per net. Use pin locations in routing grid units
+    (from `pin.get_node()`).
 
     **Args:**
 
     - `db`: TinyBackEndDB with placement
 
-    **Returns:** HPWL
+    **Returns:** HPWL (`int`)
 
-### 4.2. Initial Placement
+Run the HPWL tests to verify your implementation:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/place_test.py -v -k hpwl
+```
+
+### 3.2. Initial Placement
 
 For simulated annealing we want to start with a random initial placement.
 Remember we are placing cells on the coarser _placement grid_. The seed
@@ -293,7 +324,14 @@ cells are never overlap. Implement the `place_initial` function in
 
     **Returns:** None (modifies db in place)
 
-### 4.3. Simulated Annealing Placement
+Run the initial placement tests to verify your implementation:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/place_test.py -v -k initial
+```
+
+### 3.3. Simulated Annealing Placement
 
 This function should assume we have already done the initial placement.
 The function should iterate for a given number of iterations. Each
@@ -302,15 +340,17 @@ iteration should:
  - Initialize the temperature with the given initial temperature
  - Randomly select a cell
  - Randomly select a location in the coarser placement grid
- - If the selected location is empty, consider moving the cell to the
-    selected location
- - If the selected location is not empty, consider swaping the cell to
-    the selected location
- - Determine the change in the overall cost (i.e., total half-perimeter
-   wire length) due to the move or swap
- - If the cost is negative then accept the move or swap
- - If the cost is positive then only accept the move or swap with
+ - If the selected location is empty, perform the move by calling
+   `cell.set_place()` to place the cell at the new location
+ - If the selected location is not empty, perform the swap by first
+   calling `set_unplace()` on both cells to free their sites, then
+   calling `set_place()` on both cells at their new locations
+ - Compute the new total HPWL cost after the move or swap
+ - If the change in cost is negative, accept the move or swap
+ - If the change in cost is positive, only accept the move or swap with
    probability $e^{-\Delta c/T}$
+ - If the move or swap is not accepted, revert by calling
+   `set_unplace()` and `set_place()` to restore the original positions
  - Decrease the temperature by the cooling rate
  - If the temperature is less than the given final temperature stop
 
@@ -319,7 +359,7 @@ want to penalize a net with a very small HPWL to try and avoid cells from
 being bunched too close together causing significant routing congestion.
 Implement the `place_anneal` function in `tinyflow/pnr/place.py`.
 
-!!! note "Function: `place_anneal(db, view, initial_temp, cooling rate, final_temp, max_iter)`"
+!!! note "Function: `place_anneal(db, seed, initial_temp, cooling_rate, final_temp, max_iter)`"
 
     **Goal:** Simulated annealing optimization to minimize wirelength.
 
@@ -334,7 +374,14 @@ Implement the `place_anneal` function in `tinyflow/pnr/place.py`.
 
     **Returns:** None (modifies db in place)
 
-### 4.4. Placement
+Run the simulated annealing tests to verify your implementation:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/place_test.py -v -k anneal
+```
+
+### 3.4. Placement
 
 Now that we have an initial placement algorithm and the simulated
 annealing we can put them together in the placement function which should
@@ -351,6 +398,14 @@ function in `tinyflow/pnr/place.py`.
     - `seed`: Random seed for reproducibility (None = don't reseed)
 
     **Returns:** None (modifies db in place)
+
+Once you have implemented all placement functions, run all of the
+placement tests to verify your implementation:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/place_test.py -v
+```
 
 6. Testing
 --------------------------------------------------------------------------
@@ -370,9 +425,9 @@ You can also run all the tests at once.
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnrh/tests
+% pytest ../pnr/tests
 ```
 
 Just because all of the test passes does not mean your implementation is
-correct. You are encoraged to add more tests.
+correct. You are encouraged to add more tests.
 
