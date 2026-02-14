@@ -150,7 +150,7 @@ algorithms.
 
 ![](img/lab4-pnr-flow.png){ width=60% }
 
- - Gate-Level Netlist Reader:** Parses Verilog gate-level netlist into
+ - **Gate-Level Netlist Reader:** Parses Verilog gate-level netlist into
    directed acyclic graph of standard cells
 
  - **Floorplan:** Creates grid of sites and positions input/output pins
@@ -185,6 +185,7 @@ floorplanning will be used for the actual tapeout.
     **Goal:** Initialize floorplan with fixed dimensions and IO locations.
 
     **Args:**
+
     - `db`: TinyBackEndDB containing cells to place
     - `view`: StdCellBackEndView containing site dimensions
     - `width_um`: Chip width in micrometers
@@ -219,6 +220,7 @@ the right edge of the block.
     utilization. Also places IO pins along the chip edges.
 
     **Args:**
+
     - `db`: TinyBackEndDB containing cells to place
     - `view`: StdCellBackEndView containing site dimensions
     - `target_utilization`: Fraction of area used (0.0 to 1.0)
@@ -261,29 +263,41 @@ metric for any given placement. The HPWL for a net is calculated by:
 To find the total HPWL simple add together the HPWL for every net.
 Implement the `hpwl` function in `tinyflow/pnr/place.py`.
 
-!!! note "Function: `hpwl(db, view, initial_temp, cooling rate,
-    final_temp, max_iter, density_factor)`
+!!! note "Function: `hpwl(db)`"
 
-    **Goal:** Simulated annealing optimization to minimize wirelength.
+    **Goal:** Compute total HPWL (half-perimeter wirelength) using bounding box per net
 
     **Args:**
-    - `db`: TinyBackEndDB with initial placement
+
+    - `db`: TinyBackEndDB with placement
+
+    **Returns:** HPWL
+
+### 4.2. Initial Placement
+
+For simulated annealing we want to start with a random initial placement.
+Remember we are placing cells on the coarser _placement grid_. The seed
+can be used to create different random initial placements which might be
+useful if we are unable to route a specific placement. Ensure that two
+cells are never overlap. Implement the `place_initial` function in
+`tinyflow/pnr/place.py`.
+
+!!! note "Function: `place_initial(db, seed)`"
+
+    **Goal:** Random initial cell placement.
+
+    **Args:**
+
+    - `db`: TinyBackEndDB with floorplan initialized
     - `seed`: Random seed for reproducibility (None = don't reseed)
-    - `initial_temp`: Starting temperature
-    - `cooling_rate`: T *= cooling_rate each iteration
-    - `final_temp`: Stop when T < final_temp
-    - `max_iter`: Maximum iterations
-    - `density_factor`: Weight for density penalty in cost function
 
     **Returns:** None (modifies db in place)
 
+### 4.3. Simulated Annealing Placement
 
-
-
-for every net 
-
-Start by randomly placing all cells into the coarser placement grid. Then
-iterate for a given number of iterations. Each iteration should:
+This function should assume we have already done the initial placement.
+The function should iterate for a given number of iterations. Each
+iteration should:
 
  - Initialize the temperature with the given initial temperature
  - Randomly select a cell
@@ -300,23 +314,65 @@ iterate for a given number of iterations. Each iteration should:
  - Decrease the temperature by the cooling rate
  - If the temperature is less than the given final temperature stop
 
-Note that students may want to incorporate a density factor into their
-cost function to try and encourage spacing out the cells more than what
-would otherwise result from just using HPWL as the cost metric.
+Note that students can experiment with different cost functions. They may
+want to penalize a net with a very small HPWL to try and avoid cells from
+being bunched too close together causing significant routing congestion.
+Implement the `place_anneal` function in `tinyflow/pnr/place.py`.
 
-!!! note "Function: `place_anneal(db, view, initial_temp, cooling rate,
-    final_temp, max_iter, density_factor)`
+!!! note "Function: `place_anneal(db, view, initial_temp, cooling rate, final_temp, max_iter)`"
 
     **Goal:** Simulated annealing optimization to minimize wirelength.
 
     **Args:**
+
     - `db`: TinyBackEndDB with initial placement
     - `seed`: Random seed for reproducibility (None = don't reseed)
     - `initial_temp`: Starting temperature
     - `cooling_rate`: T *= cooling_rate each iteration
     - `final_temp`: Stop when T < final_temp
     - `max_iter`: Maximum iterations
-    - `density_factor`: Weight for density penalty in cost function
 
     **Returns:** None (modifies db in place)
+
+### 4.4. Placement
+
+Now that we have an initial placement algorithm and the simulated
+annealing we can put them together in the placement function which should
+just call `place_init` and then `place_anneal`. Implement the `place`
+function in `tinyflow/pnr/place.py`.
+
+!!! note "Function: `place(db, seed)`"
+
+    **Goal:**   Run complete placement: initial placement, SA optimization.
+
+    **Args:**
+
+    - `db`: TinyBackEndDB with initial placement
+    - `seed`: Random seed for reproducibility (None = don't reseed)
+
+    **Returns:** None (modifies db in place)
+
+6. Testing
+--------------------------------------------------------------------------
+
+You can run the tests from your build directory like this.
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/floorplan_test.py -v
+% pytest ../pnr/tests/place_test.py -v
+% pytest ../pnr/tests/single_route_test.py -v
+% pytest ../pnr/tests/multi_route_test.py -v
+% pytest ../pnr/tests/add_filler_test.py -v
+```
+
+You can also run all the tests at once.
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnrh/tests
+```
+
+Just because all of the test passes does not mean your implementation is
+correct. You are encoraged to add more tests.
 
