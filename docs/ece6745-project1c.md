@@ -240,7 +240,8 @@ the right edge of the block.
 
 Implement a simulated annealing placement algorithm that attempts to
 optimize overall wirelength in the `tinyflow/pnr/place.py` file. Use the
-total half-perimeter wire length as the cost estimate for a placement.
+total half-perimeter wire length (HPWL) as the cost estimate for a
+placement.
 
 Instead of placing cells on the site grid, your algorithm should place
 cells on the coarser _placement grid_. To determine the placement grid,
@@ -248,6 +249,38 @@ first find the max width across all standard cells in the design. Then
 use this max width to set the size of each location in the placement
 grid. Although this is less area efficient, it significantly simplifies
 placement since we are guaranteed placed cells will not overlap.
+
+### 4.1. Half-Perimeter Wire Length (HPWL)
+
+We will be using the total half-perimeter wire length (HPWL) as our cost
+metric for any given placement. The HPWL for a net is calculated by:
+
+ - Find the minimal bounding box around all pins in the net
+ - The HPWL is the height plus width of the bounding box
+
+To find the total HPWL simple add together the HPWL for every net.
+Implement the `hpwl` function in `tinyflow/pnr/place.py`.
+
+!!! note "Function: `hpwl(db, view, initial_temp, cooling rate,
+    final_temp, max_iter, density_factor)`
+
+    **Goal:** Simulated annealing optimization to minimize wirelength.
+
+    **Args:**
+    - `db`: TinyBackEndDB with initial placement
+    - `seed`: Random seed for reproducibility (None = don't reseed)
+    - `initial_temp`: Starting temperature
+    - `cooling_rate`: T *= cooling_rate each iteration
+    - `final_temp`: Stop when T < final_temp
+    - `max_iter`: Maximum iterations
+    - `density_factor`: Weight for density penalty in cost function
+
+    **Returns:** None (modifies db in place)
+
+
+
+
+for every net 
 
 Start by randomly placing all cells into the coarser placement grid. Then
 iterate for a given number of iterations. Each iteration should:
@@ -267,17 +300,23 @@ iterate for a given number of iterations. Each iteration should:
  - Decrease the temperature by the cooling rate
  - If the temperature is less than the given final temperature stop
 
+Note that students may want to incorporate a density factor into their
+cost function to try and encourage spacing out the cells more than what
+would otherwise result from just using HPWL as the cost metric.
+
 !!! note "Function: `place_anneal(db, view, initial_temp, cooling rate,
     final_temp, max_iter, density_factor)`
 
-    **Goal:** Determine chip dimensions based on cell area and
-    utilization. Also places IO pins along the chip edges.
+    **Goal:** Simulated annealing optimization to minimize wirelength.
 
     **Args:**
-    - `db`: TinyBackEndDB containing cells to place
-    - `view`: StdCellBackEndView containing site dimensions
-    - `target_utilization`: Fraction of area used (0.0 to 1.0)
-    - `aspect_ratio`: Physical width / height (1.0 = square chip)
+    - `db`: TinyBackEndDB with initial placement
+    - `seed`: Random seed for reproducibility (None = don't reseed)
+    - `initial_temp`: Starting temperature
+    - `cooling_rate`: T *= cooling_rate each iteration
+    - `final_temp`: Stop when T < final_temp
+    - `max_iter`: Maximum iterations
+    - `density_factor`: Weight for density penalty in cost function
 
     **Returns:** None (modifies db in place)
 
