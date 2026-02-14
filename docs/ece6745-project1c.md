@@ -341,7 +341,7 @@ iteration should:
  - Randomly select a cell
  - Randomly select a location in the coarser placement grid
  - If the selected location is empty, perform the move by calling
-   `cell.set_place()` to place the cell at the new location
+   `cell.set_unplace()` then `cell.set_place()` at the new location
  - If the selected location is not empty, perform the swap by first
    calling `set_unplace()` on both cells to free their sites, then
    calling `set_place()` on both cells at their new locations
@@ -407,27 +407,138 @@ placement tests to verify your implementation:
 % pytest ../pnr/tests/place_test.py -v
 ```
 
-6. Testing
+4. Testing
 --------------------------------------------------------------------------
 
-You can run the tests from your build directory like this.
+Once you have implemented all algorithms, run all of the back-end tests
+at once to verify everything works together.
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnr/tests/floorplan_test.py -v
-% pytest ../pnr/tests/place_test.py -v
-% pytest ../pnr/tests/single_route_test.py -v
-% pytest ../pnr/tests/multi_route_test.py -v
-% pytest ../pnr/tests/add_filler_test.py -v
+% pytest ../pnr/tests -v
 ```
 
-You can also run all the tests at once.
-
-```bash
-% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnr/tests
-```
-
-Just because all of the test passes does not mean your implementation is
+Just because all of the tests pass does not mean your implementation is
 correct. You are encouraged to add more tests.
+
+5. API Reference
+--------------------------------------------------------------------------
+
+This section provides a quick reference for the classes and methods you
+will use when implementing the floorplan and placement algorithms.
+
+!!! info "Coordinate Systems"
+
+    There are two coordinate systems used in the back end:
+
+    - **Site grid** uses `(row, col)` coordinates. Each cell occupies
+      one or more sites in a row. Cell placement uses site grid
+      coordinates (e.g., `cell.set_place(row, col)`).
+
+    - **Routing grid** uses `(i, j, k)` coordinates. `i` corresponds
+      to the row direction (vertical), `j` corresponds to the column
+      direction (horizontal), and `k` is the metal layer (1=M1, 2=M2,
+      etc.). The routing grid is finer than the site grid — there are
+      multiple routing tracks per site row in the `i` direction. Pin
+      locations and I/O port placement use routing grid coordinates
+      (e.g., `pin.get_node()` returns `(i, j, k)`).
+
+### 5.1. StdCellBackEndView (`view`)
+
+The library view provides technology information (site dimensions, layer
+info, cell definitions).
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `view.get_site()` | `Site` | Get the site definition |
+| `view.get_site().get_width()` | `int` | Site width in lambda |
+| `view.get_site().get_height()` | `int` | Site height in lambda |
+| `view.get_cell(ref)` | `Cell` | Get library cell by reference name |
+| `view.get_cell(ref).get_width()` | `int` | Cell width in lambda |
+| `view.get_layer('metal1')` | `Layer` | Get a metal layer |
+| `view.get_layer(name).get_track_pitch()` | `int` | Track pitch in lambda |
+| `view.get_lambda_um()` | `float` | Lambda unit in micrometers (0.09) |
+
+### 5.2. TinyBackEndDB (`db`)
+
+The backend database manages cells, nets, I/O ports, and the site
+and routing grids.
+
+**Floorplan and grid:**
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `db.floorplan(num_rows, num_cols)` | None | Initialize site grid (units: sites) |
+| `db.get_num_rows()` | `int` | Number of rows in site grid |
+| `db.get_num_cols()` | `int` | Number of sites per row |
+| `db.get_grid_size_i()` | `int` | Routing grid size in i (vertical tracks) |
+| `db.get_grid_size_j()` | `int` | Routing grid size in j (horizontal tracks) |
+| `db.get_core()` | `list[list[Site]]` | 2D site grid |
+
+**Cells:**
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `db.get_cells()` | `tuple[Cell]` | Get all cell instances |
+| `db.get_cell(name)` | `Cell` | Get a cell by instance name |
+
+**Nets:**
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `db.get_nets()` | `tuple[Net]` | Get all nets |
+| `db.get_net(name)` | `Net` | Get a net by name |
+
+**I/O ports:**
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `db.get_ioport(name)` | `IOPort` | Get an I/O port by name |
+| `db.get_in_ports()` | `tuple[IOPort]` | Get all input ports |
+| `db.get_out_ports()` | `tuple[IOPort]` | Get all output ports |
+
+**Placement helpers:**
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `db.get_placement()` | `dict` | Get current placement as `{name: (row, col)}` |
+| `db.apply_placement(dict)` | None | Apply a saved placement (unplaces all first) |
+
+### 5.3. Cell
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `cell.get_name()` | `str` | Instance name |
+| `cell.get_width()` | `int` | Width in sites |
+| `cell.get_place()` | `list` | Current placement `[row, col]` (site coords) |
+| `cell.is_placed()` | `bool` | Whether the cell is placed |
+| `cell.set_place(row, col)` | None | Place cell at site coordinates |
+| `cell.set_unplace()` | None | Remove cell from placement |
+| `cell.pins` | `list[Pin]` | List of pins on this cell |
+
+### 5.4. Pin
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `pin.get_name()` | `str` | Pin name |
+| `pin.get_node()` | `(i, j, k)` | Routing grid coordinates (None if unplaced) |
+| `pin.net` | `Net` | The net this pin belongs to |
+
+### 5.5. IOPort
+
+IOPort is a subclass of Pin. It represents an I/O port at the chip
+boundary.
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `ioport.place(i, j)` | None | Place at routing grid edge coordinates |
+| `ioport.get_node()` | `(i, j, k)` | Routing grid coordinates (k = 2, i.e., M2) |
+| `ioport.name` | `str` | Port name |
+
+### 5.6. Net
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `net.net_name` | `str` | Net name |
+| `net.pins` | `list[Pin]` | List of connected pins (includes IOPorts) |
 
