@@ -106,8 +106,8 @@ nav:
 
   - 'Projects':
     - 'Project 1: TinyFlow Tape-Out':
-      - "Part A: TinyFlow Standard Cells": ece6745-project1-partA.md
-      - "Part B: TinyFlow Front End": ece6745-project1-partB.md
+      - "Part A: TinyFlow Standard Cells": ece6745-project1a.md
+      - "Part B: TinyFlow Front End": ece6745-project1b.md
 
   - 'Misc':
     - 'Tinyflow 180nm Design Rules Manual': ece6745-tinyflow-180nm-drm.md
