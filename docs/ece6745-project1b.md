@@ -78,22 +78,25 @@ the following files.
 ```
 .
 ├── asic
-│   ├── build-fa
-│   │   ├── 01-verilator-rtlsim
-│   │   ├── 02-iverilog-rtlsim
-│   │   ├── 03-tinyflow-synth
-│   │   │   └── run.py
-│   │   └── 04-iverilog-ffglsim
-│   ├── ...
-│   └── stdcells-fe.yml
+│   └── build-fa
+│       ├── 01-verilator-rtlsim
+│       ├── 02-iverilog-rtlsim
+│       ├── 03-tinyflow-synth
+│       │   └── run.py
+│       └── 04-iverilog-ffglsim
 ├── rtl
 │   ├── FullAdder.v
 │   └── test
 │       └── FullAdder-test.v
 ├── stdcells
 │   ├── stdcells.v
+│   ├── stdcells.sp
+│   ├── stdcells.gds
+│   ├── stdcells-rcx.sp
 │   ├── stdcells-fe.yml
-│   └── ...
+│   ├── stdcells-be.yml
+│   └── verilog-test
+│       └── ...
 └── tinyflow
     ├── conftest.py
     ├── pytest.ini
