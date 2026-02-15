@@ -277,12 +277,13 @@ placement since we are guaranteed placed cells will not overlap.
 ### 3.1. Half-Perimeter Wire Length (HPWL)
 
 We will be using the total half-perimeter wire length (HPWL) as our cost
-metric for any given placement. The HPWL for a net is calculated by:
+metric for any given placement. The HPWL is computed over all placed
+cells and IO ports. For each net:
 
- - Find the minimal bounding box around all pins in the net
+ - Find the minimal bounding box around all placed pins in the net
  - The HPWL is the height plus width of the bounding box
 
-To find the total HPWL simple add together the HPWL for every net.
+To find the total HPWL simply add together the HPWL for every net.
 Implement the `hpwl` function in `tinyflow/pnr/place.py`.
 
 !!! note "Function: `hpwl(db)`"
