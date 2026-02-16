@@ -202,12 +202,26 @@ floorplanning will be used for the actual tapeout.
     um to the appropriate units when calling `db.floorplan(width,height)`
     and `db.get_ioport(name).place(i,j)`
 
-Run the fixed floorplan tests to verify your implementation:
+To test your floorplan interactively with the REPL and GUI, you will
+need a gate-level netlist as input. Run `FullAdder.v` through Part B's
+synthesis first to generate `asic/playground/03-tinyflow-synth/post-synth.v`.
+Then try your fixed floorplan:
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnr/tests/floorplan_test.py -v -k fixed
+% ../tinyflow-pnr
 ```
+
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> io_locs = { '<port_name>': (<x_um>, <y_um>), ... }
+tinyflow-pnr> floorplan_fixed(db, view, <width_um>, <height_um>, io_locs)
+```
+
+You should see the site grid and IO ports appear in the GUI.
 
 ### 2.2. Automatic Floorplan
 
@@ -244,15 +258,27 @@ the right edge of the block.
     place the input/output pins. Carefully consider the units when
     specifying all widths, heights, and locations.
 
-Run the automatic floorplan tests to verify your implementation:
+Try your automatic floorplan interactively using the REPL with the GUI:
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnr/tests/floorplan_test.py -v -k auto
+% ../tinyflow-pnr
 ```
 
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> floorplan_auto(db, view, 0.3, 1.0)
+```
+
+You should see the floorplan grid and IO ports appear in the GUI. Try
+different utilization and aspect ratio values to see how they affect the
+floorplan.
+
 Once you have implemented both floorplan algorithms, run all of the
-floorplan tests to verify your implementation:
+floorplan tests:
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
@@ -298,12 +324,25 @@ Implement the `hpwl` function in `tinyflow/pnr/place.py`.
 
     **Returns:** HPWL (`int`)
 
-Run the HPWL tests to verify your implementation:
+Try computing HPWL interactively using the REPL with the GUI:
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnr/tests/place_test.py -v -k hpwl
+% ../tinyflow-pnr
 ```
+
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> floorplan_auto(db, view, 0.3, 1.0)
+tinyflow-pnr> hpwl(db)
+```
+
+The IO ports are already placed by `floorplan_auto`. Try manually
+placing cells using `cell.set_place(row, col)` and calling
+`hpwl(db)` to see how your HPWL changes. You can also call `cell.set_unplace()` and `cell.set_place()` to move cells around and re-evaluate the HPWL. 
 
 ### 3.2. Initial Placement
 
@@ -325,12 +364,18 @@ cells are never overlap. Implement the `place_initial` function in
 
     **Returns:** None (modifies db in place)
 
-Run the initial placement tests to verify your implementation:
+Try your initial placement in the REPL:
 
-```bash
-% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnr/tests/place_test.py -v -k initial
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> floorplan_auto(db, view, 0.3, 1.0)
+tinyflow-pnr> place_initial(db, seed=0)
 ```
+
+You should see the cells randomly placed in the GUI.
 
 ### 3.3. Simulated Annealing Placement
 
@@ -375,12 +420,21 @@ Implement the `place_anneal` function in `tinyflow/pnr/place.py`.
 
     **Returns:** None (modifies db in place)
 
-Run the simulated annealing tests to verify your implementation:
+Try simulated annealing in the REPL:
 
-```bash
-% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
-% pytest ../pnr/tests/place_test.py -v -k anneal
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> floorplan_auto(db, view, 0.3, 1.0)
+tinyflow-pnr> place_initial(db, seed=0)
+tinyflow-pnr> place_anneal(db, seed=0)
 ```
+
+You should see the cells move in the GUI as simulated annealing
+optimizes the placement. The HPWL should decrease compared to the
+initial placement.
 
 ### 3.4. Placement
 
@@ -400,8 +454,24 @@ function in `tinyflow/pnr/place.py`.
 
     **Returns:** None (modifies db in place)
 
-Once you have implemented all placement functions, run all of the
-placement tests to verify your implementation:
+Once you have implemented all placement functions, try running the
+complete placement in a fresh REPL session:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% ../tinyflow-pnr
+```
+
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> floorplan_auto(db, view, 0.3, 1.0)
+tinyflow-pnr> place(db)
+```
+
+You should see the cells being placed and then optimized in the GUI. Then run all of the placement tests to verify your implementation:
 
 ```bash
 % cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
