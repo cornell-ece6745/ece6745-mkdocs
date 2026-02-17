@@ -483,7 +483,292 @@ You should see the cells being placed and then optimized in the GUI. Then run al
 % pytest ../pnr/tests/place_test.py -v
 ```
 
-4. Testing
+4. Algorithm: Routing
+--------------------------------------------------------------------------
+
+After placement, we need to connect the pins of each net using metal
+wires. Routing operates on a 3D routing grid where `(i, j)` are the
+spatial coordinates and `k` is the metal layer. Each layer serves a
+different purpose:
+
+ - **M1 (k=1):** Intra-cell routing only (pins live here) — do not
+   route on M1
+ - **M2–M4 (k=2–4):** Inter-cell routing layers — route here
+ - **M5–M6 (k=5-6):** Power grid — do not use
+
+A wire segment on the same layer is a _planar_ move. Changing layers
+at the same `(i, j)` location is a _via_. Each node `(i, j, k)` in
+the routing grid can only be occupied by one net at a time. Use
+`db.get_occupancy(i, j, k)` to check if a node is available; it
+returns `None` if free, or the occupying `Net` if taken.
+
+Routing is decomposed into three functions that build on each other:
+
+ - **`bfs_to_tree`** finds a path on M2–M4 from a starting node to
+   an existing routing tree using BFS and commits the path to the
+   routing grid. This is the core pathfinding building block.
+
+ - **`single_route`** routes all pins of a single net. It is
+   responsible for adding M1-to-M2 via segments at each cell pin
+   (since pins live on M1 but BFS operates on M2-M4). It connects
+   pins incrementally by growing a routing tree; each unconnected
+   pin is BFS-routed to the nearest tree node.
+
+ - **`multi_route`** routes all nets in the design by calling
+   `single_route` for each net. If a net fails to route, it rips up
+   all routing and retries with a different net ordering.
+
+Implement these functions in `tinyflow/pnr/single_route.py` and
+`tinyflow/pnr/multi_route.py` as described below.
+
+!!! info "IO Port Occupancy"
+
+    When an IO port is placed, it occupies its node on M2 in the
+    routing grid, preventing other nets from using that location.
+    However, it does not automatically add a via. Your routing code
+    must still add the via segments to connect to the IO port.
+
+### 4.1. BFS to Tree
+
+The core building block for routing is a BFS (breadth-first search)
+that finds a path from a starting node to any node in an existing
+routing tree. The BFS explores the 3D routing grid on layers M2–M4,
+making planar moves (same layer, adjacent `i` or `j`) and via moves
+(same `i,j`, adjacent `k`). A node is blocked if it is occupied by a
+different net. Nodes occupied by the current net (i.e., already part
+of the routing tree) are valid targets; reaching any of them means
+we have connected to the tree.
+
+Implement the `bfs_to_tree` function in `tinyflow/pnr/single_route.py`.
+
+!!! note "Function: `bfs_to_tree(db, net, start, tree)`"
+
+    **Goal:** BFS from `start` to any node in `tree`, avoiding
+    nodes occupied by other nets.
+
+    **Args:**
+
+    - `db`: TinyBackEndDB for occupancy checks
+    - `net`: Current net (allowed to pass through own routes)
+    - `start`: Starting `(i, j, k)` tuple
+    - `tree`: Set of `(i, j, k)` tuples representing the current
+      routing tree
+
+    **Returns:** Path as list of `(i, j, k)` tuples from `start`
+    to tree, or `None` if no path exists. On success, the path is
+    also committed as `Line` segments to the net.
+
+    **Hint:** Use a standard BFS with a queue and parent dictionary.
+    Each node has up to six neighbors and should stay within layers
+    2-4. Use `db.get_occupancy(i, j, k)` to
+    check if a neighbor is blocked by another net. Backtrace through
+    the parent dictionary to obtain the path. Convert the path to
+    `Line` segments with `Line(path[n], path[n+1])` and commit with
+    `net.add_route_segments(lines)`.
+
+Try your BFS interactively using the REPL with the GUI:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% ../tinyflow-pnr
+```
+
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> floorplan_auto(db, view, 0.3, 1.0)
+tinyflow-pnr> place(db, seed=0)
+tinyflow-pnr> net = db.get_net('<net_name>')
+tinyflow-pnr> start = (<i>, <j>, 2)
+tinyflow-pnr> tree = {(<i_t>, <j_t>, 2)}
+tinyflow-pnr> path = bfs_to_tree(db, net, start, tree)
+```
+
+Pick a net and two of its pin locations (elevated to M2) as the start
+and tree. You should see the BFS path appear in the GUI. You can use
+`db.clear_all_routing()` to clear and try again easily.
+
+### 4.2. Single-Net Routing
+
+Given a net, `single_route` connects all of its pins by growing a
+routing tree. Cell pins live on M1, but BFS operates on M2-M4, so
+you need to work with the M2 "elevated" pin locations for BFS and
+add the M1-to-M2 via segments separately.
+
+The algorithm works as follows:
+
+ - Collect the pin locations for the net. For cell pins on M1, add
+   the M1-to-M2 via `Line` segment and use the M2 location
+   `(i, j, 2)` as the BFS routing point
+ - Initialize the routing tree with the first pin
+ - For each remaining unconnected pin, use `bfs_to_tree` to find
+   a path from the pin to the tree (this also commits the path)
+ - Grow the tree with the returned path so subsequent pins can
+   connect to any node routed so far
+
+Implement the `single_route` function in
+`tinyflow/pnr/single_route.py`.
+
+!!! note "Function: `single_route(db, net_name)`"
+
+    **Goal:** Route a single net by connecting all pins using
+    tree-growing BFS.
+
+    **Args:**
+
+    - `db`: TinyBackEndDB with placed design
+    - `net_name`: Name of the net to route
+
+    **Returns:** `True` if routing succeeded, `False` otherwise.
+
+    **Hint:** Use a `set` for the tree and `tree.update(path)` to
+    grow it after each successful BFS. `bfs_to_tree` handles
+    committing the path to the routing grid. You still need to
+    commit the M1-to-M2 via segments separately using
+    `net.add_route_segments()`.
+
+Try routing a single net in the REPL:
+
+```python
+tinyflow-pnr> db.clear_all_routing()
+tinyflow-pnr> single_route(db, '<net_name>')
+```
+
+You should see the full route for that net appear in the GUI, including
+the M1-to-M2 vias at each pin. Use `db.clear_all_routing()` to clear
+and try different nets.
+
+!!! tip "Heuristic: Connect Closest Pin First"
+
+    Instead of connecting pins in arbitrary order, you can improve
+    route quality by always connecting the closest unconnected pin
+    to the tree next (using Manhattan distance). This tends to
+    produce shorter routes and reduce congestion.
+
+### 4.3. Multi-Net Routing
+
+The goal of `multi_route` is to route all nets in the design using
+`single_route`. The order in which nets are routed matters: nets
+routed first have more available routing resources, while nets routed
+later may be blocked by earlier routes.
+
+The algorithm works as follows:
+
+ - Sort nets by HPWL (shortest first) using `net_hpwl` as the sort
+   key, since shorter nets are easier to route and less likely to
+   block others
+ - Route each net using `single_route`
+ - If a net fails to route, rip up all routing using
+   `db.clear_all_routing()`, move the failed net to the front of the
+   list, and retry
+ - If all retries are exhausted, return `False`
+
+Implement the `multi_route` function and the `net_hpwl` helper
+function in `tinyflow/pnr/multi_route.py`.
+
+!!! note "Function: `net_hpwl(net)`"
+
+    **Goal:** Compute HPWL for a single net (used for sorting).
+
+    **Args:**
+
+    - `net`: A single `Net` object
+
+    **Returns:** HPWL for this net (`int`)
+
+!!! note "Function: `multi_route(db, max_retries)`"
+
+    **Goal:** Route all nets in the design.
+
+    **Args:**
+
+    - `db`: TinyBackEndDB with placed design
+    - `max_retries`: Maximum rip-up and retry attempts
+
+    **Returns:** `True` if all nets routed, `False` otherwise.
+
+    **Hint:** Use `db.clear_all_routing()` to rip up all routes
+    before each retry attempt. Only route nets with two or more
+    pins. Use `list.remove()` and `list.insert(0, ...)` to move
+    the failed net to the front.
+
+Try routing all nets in the REPL:
+
+```python
+tinyflow-pnr> db.clear_all_routing()
+tinyflow-pnr> multi_route(db)
+```
+
+You should see all nets get routed in the GUI.
+
+Once you have implemented the routing algorithms, run all of the
+routing tests:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/single_route_test.py -v
+% pytest ../pnr/tests/multi_route_test.py -v
+```
+
+5. Algorithm: Fill
+--------------------------------------------------------------------------
+
+After placement and routing, any sites in the core that are not occupied
+by a standard cell need to be filled with FILL cells. Filler cells
+ensure there are no gaps in the layout. They maintain continuous
+n-well and power rail connections across the chip.
+
+The algorithm is straightforward: iterate through every site in the
+core grid and mark any empty site as filler. Implement the `add_filler`
+function in `tinyflow/pnr/add_filler.py`.
+
+!!! note "Function: `add_filler(db)`"
+
+    **Goal:** Insert filler cells into all empty sites.
+
+    **Args:**
+
+    - `db`: TinyBackEndDB with placed and routed design
+
+    **Returns:** None (modifies db in place)
+
+    **Hint:** Use `db.get_core()` to get the 2D site grid. See
+    the Site API reference (Section 7.8) for methods to check and
+    mark sites. After filling, count the filler sites and call
+    `db.set_filler_count(count)`.
+
+Try adding filler interactively using the REPL with the GUI:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% ../tinyflow-pnr
+```
+
+```python
+tinyflow-pnr> view = StdCellBackEndView(be='../../stdcells/stdcells-be.yml', gds='../../stdcells/stdcells.gds')
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.read_verilog('../../asic/playground/03-tinyflow-synth/post-synth.v')
+tinyflow-pnr> db.enable_gui()
+tinyflow-pnr> floorplan_auto(db, view, 0.3, 1.0)
+tinyflow-pnr> place(db, seed=0)
+tinyflow-pnr> multi_route(db)
+tinyflow-pnr> add_filler(db)
+```
+
+You should see filler cells appear in all empty sites in the GUI. Every
+site should now be either occupied by a standard cell or marked as
+filler.
+
+Once you have implemented the fill algorithm, run the filler tests:
+
+```bash
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../pnr/tests/add_filler_test.py -v
+```
+
+6. Testing
 --------------------------------------------------------------------------
 
 Once you have implemented all algorithms, run all of the back-end tests
@@ -497,11 +782,11 @@ at once to verify everything works together.
 Just because all of the tests pass does not mean your implementation is
 correct. You are encouraged to add more tests.
 
-5. API Reference
+7. API Reference
 --------------------------------------------------------------------------
 
 This section provides a quick reference for the classes and methods you
-will use when implementing the floorplan and placement algorithms.
+will use when implementing the back-end algorithms.
 
 !!! info "Coordinate Systems"
 
@@ -519,7 +804,7 @@ will use when implementing the floorplan and placement algorithms.
       locations and I/O port placement use routing grid coordinates
       (e.g., `pin.get_node()` returns `(i, j, k)`).
 
-### 5.1. StdCellBackEndView (`view`)
+### 7.1. StdCellBackEndView (`view`)
 
 The library view provides technology information (site dimensions, layer
 info, cell definitions).
@@ -535,7 +820,7 @@ info, cell definitions).
 | `view.get_layer(name).get_track_pitch()` | `int` | Track pitch in lambda |
 | `view.get_lambda_um()` | `float` | Lambda unit in micrometers (0.09) |
 
-### 5.2. TinyBackEndDB (`db`)
+### 7.2. TinyBackEndDB (`db`)
 
 The backend database manages cells, nets, I/O ports, and the site
 and routing grids.
@@ -580,7 +865,15 @@ and routing grids.
 | `db.get_placement()` | `dict` | Get current placement as `{name: (row, col)}` |
 | `db.apply_placement(dict)` | None | Apply a saved placement (unplaces all first) |
 
-### 5.3. Cell
+**Routing:**
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `db.get_occupancy(i, j, k)` | `Net` or `None` | Get the net occupying a routing node, or `None` if free |
+| `db.clear_all_routing()` | None | Clear all routing and restore pin/IO occupancy |
+| `db.set_filler_count(count)` | None | Set filler cell count |
+
+### 7.3. Cell
 
 | Method/Attribute | Returns | Description |
 |--------|---------|-------------|
@@ -592,7 +885,7 @@ and routing grids.
 | `cell.set_unplace()` | None | Remove cell from placement |
 | `cell.pins` | `list[Pin]` | List of pins on this cell |
 
-### 5.4. Pin
+### 7.4. Pin
 
 | Method/Attribute | Returns | Description |
 |--------|---------|-------------|
@@ -600,7 +893,7 @@ and routing grids.
 | `pin.get_node()` | `(i, j, k)` | Routing grid coordinates (None if unplaced) |
 | `pin.net` | `Net` | The net this pin belongs to |
 
-### 5.5. IOPort
+### 7.5. IOPort
 
 IOPort is a subclass of Pin. It represents an I/O port at the chip
 boundary.
@@ -611,10 +904,33 @@ boundary.
 | `ioport.get_node()` | `(i, j, k)` | Routing grid coordinates (k = 2, i.e., M2) |
 | `ioport.name` | `str` | Port name |
 
-### 5.6. Net
+### 7.6. Net
 
 | Method/Attribute | Returns | Description |
 |--------|---------|-------------|
 | `net.net_name` | `str` | Net name |
 | `net.pins` | `list[Pin]` | List of connected pins (includes IOPorts) |
+| `net.add_route_segments(lines)` | None | Commit a list of `Line` segments to the routing grid |
+
+### 7.7. Line
+
+A `Line` represents a wire segment between two adjacent nodes in the
+routing grid.
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `Line(start, end)` | `Line` | Create a segment from `(i,j,k)` to `(i,j,k)` |
+| `line.start` | `(i,j,k)` | Start node |
+| `line.end` | `(i,j,k)` | End node |
+
+### 7.8. Site
+
+Sites are accessed from `db.get_core()` which returns a 2D list
+indexed as `core[row][col]`.
+
+| Method/Attribute | Returns | Description |
+|--------|---------|-------------|
+| `site._get_occupancy()` | `Cell` or `None` | Get the cell occupying this site, or `None` if empty |
+| `site.is_fill()` | `bool` | Whether this site is marked as filler |
+| `site.add_filler()` | None | Mark this site as filler |
 
