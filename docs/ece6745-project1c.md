@@ -306,10 +306,12 @@ We will be using the total half-perimeter wire length (HPWL) as our cost
 metric for any given placement. The HPWL is computed over all placed
 cells and IO ports. For each net:
 
- - Find the minimal bounding box around all placed pins in the net
- - The HPWL is the height plus width of the bounding box
+ - Collect all placed pins (skip pins whose cell is not yet placed)
+ - Find the minimal bounding box around these pins
+ - The HPWL for that net is the height plus width of the bounding box
 
-To find the total HPWL simply add together the HPWL for every net.
+Nets with fewer than two placed pins contribute zero (no wires!). To
+find the total HPWL simply add together the HPWL for every net.
 Implement the `hpwl` function in `tinyflow/pnr/place.py`.
 
 !!! note "Function: `hpwl(db)`"
@@ -323,6 +325,9 @@ Implement the `hpwl` function in `tinyflow/pnr/place.py`.
     - `db`: TinyBackEndDB with placement
 
     **Returns:** HPWL (`int`)
+
+    **Hint:** `pin.get_node()` returns `(None, None, None)` if the
+    pin's cell is not placed. Use this to skip unplaced pins.
 
 Try computing HPWL interactively using the REPL with the GUI:
 
