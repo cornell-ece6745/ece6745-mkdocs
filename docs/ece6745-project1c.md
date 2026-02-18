@@ -521,12 +521,12 @@ Routing is decomposed into three functions that build on each other:
 Implement these functions in `tinyflow/pnr/single_route.py` and
 `tinyflow/pnr/multi_route.py` as described below.
 
-!!! info "IO Port Occupancy"
+!!! info "Cell Pin's M2 Occupancy"
 
-    When an IO port is placed, it occupies its node on M2 in the
-    routing grid, preventing other nets from using that location.
+    When a cell is placed, the placement also occupies the cell pin's nodes on M2 in the
+    routing grid, preventing other nets from using that location since this is the only escape for pins to reach M2.
     However, it does not automatically add a via. Your routing code
-    must still add the via segments to connect to the IO port.
+    must still add the via segments to connect to the cell's pin on the M1.
 
 ### 4.1. BFS to Tree
 
