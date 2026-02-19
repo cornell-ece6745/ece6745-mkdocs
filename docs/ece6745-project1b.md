@@ -704,7 +704,8 @@ You can also run all the tests at once.
 % pytest ../synth/tests
 ```
 
-All tests should pass when your implementation is correct.
+Just because all of the test passes does not mean your implementation is
+correct. You are encoraged to add more tests.
 
 7. TinyFlow Front-End
 --------------------------------------------------------------------------
