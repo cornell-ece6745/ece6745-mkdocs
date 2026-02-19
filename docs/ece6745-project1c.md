@@ -794,7 +794,509 @@ at once to verify everything works together.
 Just because all of the tests pass does not mean your implementation is
 correct. You are encouraged to add more tests.
 
-7. API Reference
+7. TinyFlow Front and Back End
+--------------------------------------------------------------------------
+
+The complete TinyFlow includes both the front-end and back-end. The
+front-end flow consists of four steps: two-state simulation, four-state
+simulation, synthesis, and fast-functional gate-level simulation. The
+back-end flow consists of three steps: place-and-route, design rule
+checking, and layout-vs-schematic. In this final part, we push the full
+adder design through all steps of the flow to illustrate going from
+Verilog RTL to a gate-level netlist to layout. We first manually run each
+step before showing how we can automate running the flow.
+
+### 7.1. Front-End Manual Flow
+
+We need to first run the front-end flow as in project 1B to generate the
+gate-level netlist. We provide the Verilog RTL in `rtl/FullAdder.v` and a
+basic testbench in `rtl/test/FullAdder-test.v`. These are the same as in
+the project 1B. Run the two-state simulation with Verilator.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/01-verilator-rtlsim
+% verilator --top Top --timing --binary -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./obj_dir/FullAdder-test
+```
+
+Now run four-state simulation with Icarus Verilog.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/02-iverilog-rtlsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../rtl/FullAdder.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+Create a `run.py` script for synthesis.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/03-tinyflow-synth
+% code run.py
+```
+
+Populate the script with the commands to perform optimized technology
+mapping and static timing analysis using your work Project 1B.
+
+```python
+# Load the standard-cell front-end view and create front-end database
+
+view = StdCellFrontEndView.parse_lib("../../../stdcells/stdcells-fe.yml")
+db = TinyFrontEndDB(view)
+
+# Read Verilog file into the database
+
+db.read_verilog("../../../rtl/FullAdder.v")
+
+# Optimized technology mapping
+
+techmap(db, view)
+
+# Static timing analysis with output load of 10fF
+
+output_load = 10
+sta(db, view, output_load)
+
+# Check design for issues
+
+db.check_design()
+
+# Output reports
+
+db.report_area()
+db.report_timing()
+db.report_summary()
+
+# Write front-end database to a Verilog gate-level netlist
+
+db.write_verilog("post-synth.v")
+```
+
+Now go ahead and run synthesis.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/03-tinyflow-synth
+% ../../../tinyflow/tinyflow-synth -f run.py
+```
+
+Finally run fast-functional gate-level simulation to ensure the
+gate-level netlist is correct.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/04-iverilog-ffglsim
+% iverilog -g2012 -o FullAdder-test \
+    ../../../stdcells/stdcells.v ../03-tinyflow-synth/post-synth.v \
+    ../../../rtl/test/FullAdder-test.v
+% ./FullAdder-test
+```
+
+### 7.2. Place and Route
+
+Let's first run the back-end flow interactively, and then we will create
+a corresponding `run.py` script. Start the place-and-route REPL.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/05-tinyflow-pnr
+% ../../../tinyflow/tinyflow-pnr
+```
+
+Now load the standard view, create the tiny back-end database, and start
+the GUI.
+
+```python
+tinyflow-pnr> view = StdCellBackEndView(
+                be  = '../../../stdcells/stdcells-be.yml',
+                gds = '../../../stdcells/stdcells.gds',
+              )
+tinyflow-pnr> db = TinyBackEndDB(view)
+tinyflow-pnr> db.enable_gui()
+```
+
+Read the gate-level netlist Verilog file into the database.
+
+```python
+tinyflow-pnr> db.read_verilog('../03-tinyflow-synth/post-synth.v')
+```
+
+Create an automated floorplan.
+
+```python
+tinyflow-pnr> floorplan_auto(db, view, 0.5, 1.0)
+```
+
+Place and route the design and insert filler cells.
+
+```python
+tinyflow-pnr> place(db)
+tinyflow-pnr> multi_route(db)
+tinyflow-pnr> add_filler(db)
+```
+
+Check the design for issues and output a summary report.
+
+```python
+tinyflow-pnr> db.check_design()
+tinyflow-pnr> db.report_summary()
+```
+
+If the design is not able to route then you might need to try replacing
+the design with a different seed and/or decreasing the density during
+automated floorplanning. Write the tiny back-end database to a SPICE
+netlist and GDS layout file and exit the REPL.
+
+```python
+tinyflow-pnr> db.write_spice('post-pnr-rcx.sp')
+tinyflow-pnr> db.write_gds('post-pnr.gds')
+tinyflow-pnr> exit()
+```
+
+You can now view the final layout using Klayout.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/05-tinyflow-pnr
+% klayout post-pnr.gds
+```
+
+Choose _Display > Top Level Only_ to hide the internals of each standard
+cell and show just the placement and routing of the standard cells. Try
+hiding and showing different metal layers to better visualize the
+routing. Spend some time appreciating all your hard work!
+
+Create a `run.py` script to make it easier to run place-and-route.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/05-tinyflow-pnr
+% code run.py
+```
+
+Populate the script with the above commands. Note that we do not enable
+the GUI when using a `run.py` script. Now rerun place-and-route using
+this `run.py` script.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/05-tinyflow-pnr
+% ../../../tinyflow/tinyflow-pnr -f run.py
+```
+
+### 7.3. Design Rule Checking
+
+Although we have already ensured our standard cells are DRC clean, we
+also need to check to ensure the final layout for entire full adder is
+DRC clean. We can do that interactively using Klayout or using the
+command line like this:
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/06-tinyflow-drc
+% tinyflow-batch-drc ../05-tinyflow-pnr/post-pnr.gds
+```
+
+### 7.4. Layout vs. Schematic
+
+Similarly, although we have already ensured our standard cells are LVS
+clean, we also need to check to ensure the final layout for entire full
+adder is LVS clean. We can do that interactively using Klayout or using
+the command line like this:
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/playground/07-tinyflow-lvs
+% tinyflow-batch-lvs ../05-tinyflow-pnr/post-pnr.gds ../05-tinyflow-pnr/post-pnr-rcx.sp
+```
+
+### 7.5. Tiny Automated Flow
+
+In the previous sections, we manually commands entering commands for each
+tool to take a design from RTL to layout. Using `run.py` scripts can
+help, and we could even create `run` Bash scripts to further automate the
+flow. However, truly agile hardware design demands more sophisticated
+automation to simplify rapidly exploring the design space of one or more
+designs. In this section, we will introduce a tool called pyhflow which
+takes as input step templates and a design YAML and generates appropriate
+flow scripts.
+
+pyflow is based on the idea of step templates which are located in the
+asic/steps directory.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/steps
+% tree
+```
+
+The directory layout should look as follows.
+
+```
+.
+├── 01-verilator-rtlsim
+│   └── run
+├── 02-iverilog-rtlsim
+│   └── run
+├── 03-tinyflow-synth
+│   ├── run
+│   └── run.py
+├── 04-iverilog-ffglsim
+│   └── run
+├── 05-tinyflow-pnr
+│   ├── run
+│   └── run.py
+├── 06-klayout-drc
+│   └── run
+├── 07-klayout-lvs
+│   └── run
+└── 08-summarize-results
+    └── run
+```
+
+Each step is a directory with a run script and possibly other scripts.
+The key difference from the `run.py` and `run` scripts we used
+previously, is that these scripts are templated using the Jinja2
+templating system:
+
+ - <https://jinja.palletsprojects.com>
+
+Open the `run.py` script in the `03-tinyflow-synth` step template.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/steps/03-tinyflow-synth
+% code run.py
+```
+
+Notice how the `run.py` script is templated based on the design name.
+
+```python
+db.read_verilog("{{top_dir}}/rtl/{{design_name}}.v")
+```
+
+The `{{ }}` directive is the standard syntax for template variable
+substitution using Jinja2. The pyhflow program takes as input a design
+YAML file which specifies how to fill in these template variables. Take a
+look at the provided design YAML for the full ader.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic/designs
+% code fa.yml
+```
+
+The contents should look as follows.
+
+```
+steps:
+ - 01-verilator-rtlsim
+ - 02-iverilog-rtlsim
+ - 03-tinyflow-synth
+ - 04-iverilog-ffglsim
+ - 05-tinyflow-pnr
+ - 06-klayout-drc
+ - 07-klayout-lvs
+ - 08-summarize-results
+
+top_dir     : ../../..
+design_name : FullAdder
+test        : FullAdder-test
+
+techmap     : optimized
+place       : optimized
+
+floorplan              : auto
+floorplan_density      : 0.5
+floorplan_aspect_ratio : 1.0
+```
+
+This design YAML file specifies the generated flow should use eight steps
+and also includes the design name, test name, and floorplan information.
+You can choose to use your unoptimized technology mapping algorithm and
+simply random placement as a baseline. All pyhflow does is use the YAML
+file to figure out what to substitute into the templated steps and then
+copy the run scripts into the current working directory. You can also
+override parameters on pyhflow command line.
+
+Let's now use pyhflow to easily automate the entire process of pushing a
+full adder through the tiny flow.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic
+% mkdir -p build-fa
+% cd build-fa
+% pyhflow ../designs/fa.yml
+% ./01-verilator-rtlsim/run
+% ./02-iverilog-rtlsim/run
+% ./03-tinyflow-synth/run
+% ./04-iverilog-ffglsim/run
+% ./05-tinyflow-pnr/run
+% ./06-klayout-drc/run
+% ./07-klayout-lvs/run
+% ./08-summarize-results/run
+```
+
+pyhflow also creates a `run-flow` script which will run all the steps
+further simplifying the process.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic
+% mkdir -p build-fa
+% cd build-fa
+% pyhflow ../designs/fa.yml
+% ./run-flow
+
+ timestamp            = 2026-02-18 16:27:36
+ design_name          = FullAdder
+ techmap              = optimized
+ place                = optimized
+ rtlsim_2state        = passed
+ rtlsim_4state        = passed
+ synth_num_stdcells   = 20
+ synth_area           = 38912 lambda^2
+ synth_critical_path  = 319.604 ps
+ ffglsim              = passed
+ pnr_area             = 1069.978 um^2
+ pnr_num_placed_cells = 20/20
+ pnr_num_routed_nets  = 23/23
+ pnr_check_design     = passed
+ drc_check_design     = passed
+ lvs_check_design     = passed
+```
+
+Now try taking the four-bit ripple-carry adder from RTL to a gate-level
+netlist to layout using the tiny automated flow.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic
+% mkdir -p build-addrc-4b
+% cd build-addrc-4b
+% pyhflow ../designs/addrc-4b.yml
+% ./run-flow
+
+ timestamp            = 2026-02-18 16:28:09
+ design_name          = AdderRippleCarry_4b
+ techmap              = optimized
+ place                = optimized
+ rtlsim_2state        = passed
+ rtlsim_4state        = passed
+ synth_num_stdcells   = 77
+ synth_area           = 158208 lambda^2
+ synth_critical_path  = 814.604 ps
+ ffglsim              = passed
+ pnr_area             = 2575.411 um^2
+ pnr_num_placed_cells = 77/77
+ pnr_num_routed_nets  = 85/85
+ pnr_check_design     = passed
+ drc_check_design     = passed
+ lvs_check_design     = passed
+```
+
+8. TinyFlow Tapeout
+--------------------------------------------------------------------------
+
+Once your entire Tiny Flow is working, you can now implement a project of
+your choice as a Tiny Flow block. Each Tiny Flow block is limited to
+100x100um with exactly eight inputs pins and exactly eight output pins in
+a fixed floorplan. The course staff will the compose all of the Tiny Flow
+blocks into a single chip for a shared tapeout on TSMC 180nm. Each group
+will have a chance to test their Tiny Flow block on the shared tapeout in
+the fall. Here are some project ideas:
+
+ - 3-bit ALU (add, sub, lt, gt)
+ - 8-bit comparator (outputs indicate lt, gt, eq)
+ - 8-bit popcount (output is number of ones in the input)
+ - 3-bit multiplier (output is 6-bit product, 4-bit multiplier is probably too big)
+ - 4-bit variable shifter (1-bit indicates left/right, 2-bits indicate amount to shift)
+ - 4-bit variable rotator (1-bit indicates left/right, 2-bits indicate amount to shift)
+ - 8-bit parity generator
+ - 4-bit binary to seven-segment display
+ - 8-bit absolute value
+ - 4-bit min-max unit (top 4-bits of output is max, bottom 4-bits of output is min)
+ - 3-bit median of three
+ - [hamming(7,4) encoder](https://en.wikipedia.org/wiki/Hamming(7,4))
+ - [8-bit S-box](https://en.wikipedia.org/wiki/Rijndael_S-box)
+
+Students can implement any project they want as long as it meets the
+following requirements:
+
+ - no unused inputs, no undriven outputs
+ - exhaustive Verilog test bench
+ - passes all tests for 2-state RTL simulation
+ - passes all tests for 4-state RTL simulation
+ - passes generic gates are technology mapped
+ - passes synthesis check design
+ - passes all tests for fast-function gate-level simulation
+ - uses standard 100x100um fixed floorplan
+ - all cells are successfully placed
+ - all nets are successfully placed
+ - passes pnr check design
+ - passes DRC check design
+ - passes LVS check design
+
+We have included an example of what a Tiny Flow block might look like in
+your repo. Take a look at the code in `TapeoutExample.v`. **Notice that
+all inputs must be used and all outputs must be driven!** Let's say you
+do use in0 but you do not use in7. Then you could do something like this:
+
+```
+  assign in7_ = ~(in7 & in7);
+  assign in0_ = in7_ | in0;
+```
+
+This way in7 will be used but will not impact the output. If you do not
+use an output then simply assign one of the outputs you do use to the
+unused output to ensure all outputs are always driven. **If your Tiny
+Flow block has unused inputs and/or undriven outputs it will not be
+included on the shared tapeout.**
+
+You can try pushing this example through your Tiny Flow as follows.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic
+% mkdir -p build-tapeout-example
+% cd build-tapeout-example
+% pyhflow ../designs/tapeout-example.yml
+% ./run-flow
+
+ timestamp            = 2026-02-18 20:43:29
+ design_name          = TapeoutExample
+ techmap              = optimized
+ place                = optimized
+ rtlsim_2state        = passed
+ rtlsim_4state        = passed
+ synth_num_stdcells   = 109
+ synth_area           = 207360 lambda^2
+ synth_critical_path  = 971.452 ps
+ ffglsim              = passed
+ pnr_area             = 9729.331 um^2
+ pnr_num_placed_cells = 109/109
+ pnr_num_routed_nets  = 117/117
+ pnr_check_design     = passed
+ drc_check_design     = passed
+ lvs_check_design     = passed
+```
+
+![](img/project1c-tinyflow-block.png)
+
+Notice that the block is 100x100um. The eight input pins are in fixed
+locations along the left edge and the eight output pins are in fixed
+locations on the right edge.
+
+You must implement your Tiny Flow project in `TapeoutGroupXX` where `XX`
+is your group number. To include your Tiny Flow project on the TinyFlow
+tapeout you must copy the final post-pnr layout and extracted schematic
+into this subdirectory, add them to your repository, and push them to
+GitHub like this.
+
+```bash
+% cd $HOME/ece6745/project1-groupXX/asic
+% mkdir build-tapeout-groupXX
+% cd build-tapeout-groupXX
+% pyhflow ../designs/tapeout-groupXX.yml
+% cp 05-tinyflow-pnr/post-pnr.gds ../tapeout
+% cp 05-tinyflow-pnr/post-pnr-rcx.sp ../tapeout
+% git add ../tapeout
+% git commit -m "tapeout ready"
+% git push
+```
+
+Where `XX` is your group number.
+
+9. API Reference
 --------------------------------------------------------------------------
 
 This section provides a quick reference for the classes and methods you
