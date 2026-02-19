@@ -521,12 +521,24 @@ Routing is decomposed into three functions that build on each other:
 Implement these functions in `tinyflow/pnr/single_route.py` and
 `tinyflow/pnr/multi_route.py` as described below.
 
-!!! info "Cell Pin's M2 Occupancy"
+!!! info "Pin Occupancy Reservation"
 
-    When a cell is placed, the placement also occupies the cell pin's nodes on M2 in the
-    routing grid, preventing other nets from using that location since this is the only escape for pins to reach M2.
-    However, it does not automatically add a via. Your routing code
-    must still add the via segments to connect to the cell's pin on the M1.
+    Cell pins live on M1 and IO port pins live on M2. When a cell is
+    placed, the backend database automatically reserves M1 through M4
+    at each pin location in the occupancy grid. When an IO port is
+    placed, it reserves M2 through M4. This creates a pillar of
+    occupied nodes so that other nets will route around the pin rather
+    than across it. Without this reservation, a net could route across
+    a pin's M2 node without knowing a pin is directly below on M1, and
+    when we later try to route that pin upward, there would be no
+    escape path. Nodes belonging to the pin's own net can still pass
+    through.
+
+    You do not need to do anything to handle this reservation. It is
+    already reflected in `db.get_occupancy(i, j, k)`, so your BFS will
+    naturally route around these pillars. Your routing code only needs
+    to add the M1-to-M2 via segments to connect each cell pin up to
+    the routing layers.
 
 ### 4.1. BFS to Tree
 
