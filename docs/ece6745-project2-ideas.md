@@ -115,3 +115,15 @@ some project ideas.
    an accelerator is useful for task scheduling, network packet
    prioritization, and graph algorithms like Dijkstra's shortest path.
 
+ - **Prefix Sum Accelerator:** Create an accelerator that computes
+   the prefix sum of a small vector of integers. The processor
+   writes a small input vector into several accelerator registers
+   (for example, eight 32-bit values written to eight registers).
+   The processor then writes a control register to start the
+   operation. After completion, the processor reads back the
+   prefix-sum results from the accelerator registers. The
+   accelerator computes the inclusive prefix sum of the input
+   vector. It can be evaluated by comparing area and latency
+   against a software implementation running on the TinyRV2
+   processor.
+
