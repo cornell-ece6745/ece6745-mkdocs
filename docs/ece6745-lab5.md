@@ -194,6 +194,7 @@ Each compilation flow will have its own build directory.
 ```bash
 % cd ${HOME}/ece6745/lab5/app
 % mkdir build-native
+% cd build-native
 % ../configure
 % make ubmark-gcd-test
 % ./ubmark-gcd-test
