@@ -65,10 +65,6 @@ today's lab.
 % tree
 ```
 
-Your repo contains the following files.
-
-```
-```
 To make it easier to cut-and-paste commands from this handout onto the
 command line, you can tell Bash to ignore the `%` character using the
 following command:
