@@ -317,6 +317,7 @@ corresponding TinyRV2 assembly.
 ```bash
 % cd ${HOME}/ece6745/lab5/app
 % mkdir build
+% cd build
 % ../configure --host=riscv64-unknown-elf
 % make ubmark-gcd.o
 % tinyrv2-objdump ubmark-gcd.o
