@@ -99,3 +99,19 @@ some project ideas.
    Students can compare area, delay, power, and error metrics against
    an exact multiplier to explore the accuracy-vs-efficiency trade-off.
 
+ - **FIR Filter Accelerator:** Create an accelerator for a finite
+   impulse response (FIR) filter. An N-tap FIR filter computes a
+   weighted sum of the N most recent input samples using fixed
+   coefficients. The processor writes the filter coefficients and
+   input samples packed into accelerator registers and reads back
+   the filtered output.
+
+ - **Priority Queue Accelerator:** Create an accelerator for a
+   hardware priority queue that supports insert and extract-min
+   (or extract-max) operations. The processor writes a key-value
+   pair to an accelerator register to insert an element and reads
+   from another register to extract the highest-priority element.
+   The accelerator maintains a sorted structure internally. Such
+   an accelerator is useful for task scheduling, network packet
+   prioritization, and graph algorithms like Dijkstra's shortest path.
+
