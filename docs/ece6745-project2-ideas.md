@@ -91,11 +91,10 @@ some project ideas.
  - **Integer Square Root Accelerator:** Create an accelerator that can
    find the square root of an integer value using an iterative approach.
 
- - **Approximate Multiplier Accelerator:** Create an accelerator for
-   approximate integer multiplication using a log-based approach.
-   Instead of computing A×B directly, the accelerator computes log2(A) +
-   log2(B) and applies the antilog. This hopefully yields area and
-   power savings at the cost of a small, bounded error. Target a
+ - **Approximate Multiplier:** Create an approximate integer multiplier using
+   a log-based approach. Instead of computing A×B directly, the accelerator
+   computes log2(A) + log2(B) and applies the antilog. This hopefully yields
+   area and power savings at the cost of a small, bounded error. Target a
    4-bit × 4-bit multiplier producing an 8-bit approximate product.
    Students can compare area, delay, power, and error metrics against
    an exact multiplier to explore the accuracy-vs-efficiency trade-off.
