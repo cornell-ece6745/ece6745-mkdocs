@@ -103,6 +103,7 @@ nav:
     - 'Lab 2: Standard-Cell Inverter': ece6745-lab2.md
     - 'Lab 3: TinyFlow Front End': ece6745-lab3.md
     - 'Lab 4: TinyFlow Back End': ece6745-lab4.md
+    - 'Lab 5: TinyRV2 Accelerators': ece6745-lab5.md
 
   - 'Projects':
     - 'Project 1: TinyFlow Tape-Out':
