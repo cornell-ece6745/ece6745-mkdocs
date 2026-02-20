@@ -910,7 +910,7 @@ the GUI.
 tinyflow-pnr> view = StdCellBackEndView(
                 be     = '../../../stdcells/stdcells-be.yml',
                 gds    = '../../../stdcells/stdcells.gds',
-                rcx_sp = '../../../stdcells/stdcells-rcx.gds',
+                rcx_sp = '../../../stdcells/stdcells-rcx.sp',
               )
 tinyflow-pnr> db = TinyBackEndDB(view)
 tinyflow-pnr> db.enable_gui()
