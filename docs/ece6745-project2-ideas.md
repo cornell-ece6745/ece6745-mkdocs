@@ -127,3 +127,20 @@ some project ideas.
    against a software implementation running on the TinyRV2
    processor.
 
+ - **Viterbi Decoder Accelerator:** Create an accelerator that
+   implements a Viterbi decoder for convolutional error-correcting
+   codes used in wireless communication systems. The Viterbi algorithm
+   performs maximum likelihood sequence decoding by evaluating possible
+   state transitions in a trellis and selecting the most likely
+   transmitted bit sequence based on accumulated error metrics.
+
+ - **TCAM-Based Lookup Accelerator:** Create an accelerator that
+   implements a ternary content-addressable memory (TCAM) similar
+   to those used in network routers and switches for fast packet
+   classification and routing-table lookup. The processor writes
+   key–value entries into the accelerator using control registers
+   to configure the lookup table. To perform a lookup, the processor
+   writes an input key or simplified packet header to the accelerator,
+   which compares the key against all stored entries in parallel
+   and returns the index or associated value of a matching rule.
+  
