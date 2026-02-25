@@ -143,4 +143,22 @@ some project ideas.
    writes an input key or simplified packet header to the accelerator,
    which compares the key against all stored entries in parallel
    and returns the index or associated value of a matching rule.
-  
+
+ - **Vector Engine:** Create a multi-lane vector engine that can support
+   arithmetic and possibly vector masked operations. Focus on support
+   just a few key vector instructions to study the peformance, area,
+   and energy trade-offs compared to a scalar processor. Possibly
+   broader the study to include more interesting vector instructions
+   for reductions or cross-lane communication. You will not be able to
+   implement vector memory operations, so you will need to slowly move
+   data between the scalar register file and the vector register file
+   before doing fast computations using vector-vector operations.
+
+ - **Coarse-Grain Reconfigurable Array:** Create a CGRA with some number
+   of PEs connected using nearest neighbor communication. Each PE can
+   support a limited number of arithmetic and potentially conditional
+   operations. You can configure the PEs, then stream data from the
+   processor into the CGRA for computation. Store incremental results
+   within the CGRA and then retrieve the final results by reading
+   accelerator registers.
+
