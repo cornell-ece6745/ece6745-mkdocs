@@ -831,58 +831,60 @@ Use VS Code to open the implementation and look at the static elaboration
 logic to instantiate a pipeline of registered incrementers. The Verilog
 RTL implementation looks as follows:
 
-    `ifndef TUT3_VERILOG_REGINCR_REG_INCR_NSTAGE_V
-    `define TUT3_VERILOG_REGINCR_REG_INCR_NSTAGE_V
+```verilog
+`ifndef TUT3_VERILOG_REGINCR_REG_INCR_NSTAGE_V
+`define TUT3_VERILOG_REGINCR_REG_INCR_NSTAGE_V
 
-    `include "tut3_verilog/regincr/RegIncr.v"
+`include "tut3_verilog/regincr/RegIncr.v"
 
-    module tut3_verilog_regincr_RegIncrNstage
-    #(
-      parameter nstages = 2
-    )(
-      input  logic       clk,
-      input  logic       reset,
-      input  logic [7:0] in_,
-      output logic [7:0] out
+module tut3_verilog_regincr_RegIncrNstage
+#(
+  parameter nstages = 2
+)(
+  input  logic       clk,
+  input  logic       reset,
+  input  logic [7:0] in_,
+  output logic [7:0] out
+);
+
+  // This defines an _array_ of signals. There are p_nstages+1 signals
+  // and each signal is 8 bits wide. We will use this array of
+  // signals to hold the output of each registered incrementer stage.
+
+  logic [7:0] reg_incr_out [nstages+1];
+
+  // Connect the input port of the module to the first signal in the
+  // reg_incr_out signal array.
+
+  assign reg_incr_out[0] = in_;
+
+  // Instantiate the registered incrementers and make the connections
+  // between them using a generate block.
+
+  genvar i;
+  generate
+  for ( i = 0; i < nstages; i = i + 1 ) begin: gen
+
+    tut3_verilog_regincr_RegIncr reg_incr
+    (
+      .clk   (clk),
+      .reset (reset),
+      .in_   (reg_incr_out[i]),
+      .out   (reg_incr_out[i+1])
     );
 
-      // This defines an _array_ of signals. There are p_nstages+1 signals
-      // and each signal is 8 bits wide. We will use this array of
-      // signals to hold the output of each registered incrementer stage.
+  end
+  endgenerate
 
-      logic [7:0] reg_incr_out [nstages+1];
+  // Connect the last signal in the reg_incr_out signal array to the
+  // output port of the module.
 
-      // Connect the input port of the module to the first signal in the
-      // reg_incr_out signal array.
+  assign out = reg_incr_out[nstages];
 
-      assign reg_incr_out[0] = in_;
+endmodule
 
-      // Instantiate the registered incrementers and make the connections
-      // between them using a generate block.
-
-      genvar i;
-      generate
-      for ( i = 0; i < nstages; i = i + 1 ) begin: gen
-
-        tut3_verilog_regincr_RegIncr reg_incr
-        (
-          .clk   (clk),
-          .reset (reset),
-          .in_   (reg_incr_out[i]),
-          .out   (reg_incr_out[i+1])
-        );
-
-      end
-      endgenerate
-
-      // Connect the last signal in the reg_incr_out signal array to the
-      // output port of the module.
-
-      assign out = reg_incr_out[nstages];
-
-    endmodule
-
-    `endif /* TUT3_VERILOG_REGINCR_REG_INCR_NSTAGE_V */
+`endif /* TUT3_VERILOG_REGINCR_REG_INCR_NSTAGE_V */
+```
 
 Before running the tests, let's take a look at how we are doing the
 testing in the corresponding test script. Use VS Code to open up
