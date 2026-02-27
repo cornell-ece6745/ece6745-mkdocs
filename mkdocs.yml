@@ -104,6 +104,7 @@ nav:
     - 'Lab 3: TinyFlow Front End': ece6745-lab3.md
     - 'Lab 4: TinyFlow Back End': ece6745-lab4.md
     - 'Lab 5: TinyRV2 Accelerators': ece6745-lab5.md
+    - 'Lab 5: Commercial Front-End Flow': ece6745-lab6.md
 
   - 'Projects':
     - 'Project 1: TinyFlow Tape-Out':
