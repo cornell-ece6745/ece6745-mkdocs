@@ -86,7 +86,7 @@ following command:
 2. Standard-Cell Library
 --------------------------------------------------------------------------
 
-As know there are six views for any standard cell library:
+As we know, there are six views for any standard cell library:
 
  - **Behavioral View:** Logical function of the standard cell, used for
      gate-level simulation
@@ -111,7 +111,7 @@ As know there are six views for any standard cell library:
 
 Let's now take a look at each view for an INVX1, NAND2X1, and DFFX1
 standard cell in the TSMC 180nm standard-cell library. The specific cell
-names for these two standard cells are shown below.
+names for these three standard cells are shown below.
 
  - INVX1 -> INVD1BWP7T
  - NAND2X1 -> ND2D1BWP7T
@@ -129,7 +129,7 @@ Notice how the INVX1 and NAND2X1 standard cells are implemented using
 Verilog primitives and include extra `specify` blocks which can be used
 to model delay in back-annotated gate-level simulation. The DFFX1 is
 actually quite complicated and is implemented using a custom primitive.
-The DFFX1 also includes explicitly timing checks which can be used to
+The DFFX1 also includes explicit timing checks which can be used to
 ensure there are no setup or hold time violations during back-annotated
 gate-level simulation.
 
@@ -145,7 +145,7 @@ Are the transistor channel lengths and widths as expected?
 
 The **layout view** is in a GDS file (`stdcells.gds`). Use Klayout to
 take a look and find the implementation of the INVX1, NAND2X1, and DFFX1
-standard cells. Rememember, you can right click on the cell name and
+standard cells. Remember, you can right click on the cell name and
 choose _Show As New Top_ to display that cell.
 
 ```bash
@@ -185,7 +185,7 @@ front-end view for the INVX1 and NAND2X1 standard cells:
  - non-linear delay models for propagation delay
  - non-linear delay models for rise/fall time
 
-For the DFFX1 standard cell see if you can find the non-linear deal
+For the DFFX1 standard cell see if you can find the non-linear delay
 information:
 
  - non-linear delay models for setup time
@@ -248,7 +248,7 @@ Take a look at the provided PyMTL wrapper for the ripple carry adder.
 % code AdderRippleCarry_4b.py
 ```
 
-The wrapper simply specifies the inpout and output ports of the design.
+The wrapper simply specifies the input and output ports of the design.
 All of this should be familar from your work in ECE 4750 and completing
 Tutorial 3.
 
@@ -260,7 +260,7 @@ adder.
 % code AdderRippleCarry_4b_test.py
 ```
 
-We define a test harness which instantiates and elabroates the design
+We define a test harness which instantiates and elaborates the design
 under test in the constructor and provides a `check` method to set inputs
 and check outputs. The provided test case exhaustively tests all inputs.
 This test bench is very similar to the Verilog test bench you used in
@@ -292,14 +292,14 @@ over to the `asic` directory. Let's go ahead and rerun the PyMTL test but
 with two key new command line options. `--test-verilog` will include all
 Verilog dependencies into a single Verilog file (also called "pickling")
 suitable for use with the ASIC flow. `--dump-vtb` will generate a Verilog
-test benches which replay the PyMTLt test; we can use these Verilog test
+test benches which replay the PyMTL test; we can use these Verilog test
 benches for two-state RTL simulation, fast-functional gate-level
 simulation, and back-annotated gate-level simulation.
 
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/01-pymtl-rtlsim
 % pytest ${HOME}/ece6745/lab6/sim/addrc4b/test/AdderRippleCarry_4b_test.py --test-verilog --dump-vtb
-``
+```
 
 Take a look at the generated pickled Verilog file and test bench.
 
@@ -389,7 +389,7 @@ The run script for the second step is located here.
 % code run
 ```
 
-Go ahead and put the following into the run script for the PyMTL 2-State
+Go ahead and put the following into the run script for the VCS 4-State
 RTL Simulation step.
 
 ```bash
@@ -409,7 +409,7 @@ Now you can easily rerun the step like this.
 % ./02-synopsys-vcs-rtlsim/run
 ```
 
-### 3.4. Synthesis
+### 3.3. Synthesis
 
 We use Synopsys Design Compiler (DC) to synthesize Verilog RTL models
 into a gate-level netlist where all of the gates are from the standard
@@ -497,7 +497,7 @@ dc_shell> set_max_delay 1.0 -from [all_inputs] -to [all_outputs]
 
 **Synthesize the Design**
 
-Finaly, the `compile` comamnd will do the logic optimization and
+Finally, the `compile` command will do the logic optimization and
 technology mapping.
 
 ```
@@ -514,7 +514,7 @@ dc_shell> write -format ddc     -hierarchy -output post-synth.ddc
 dc_shell> write -format verilog -hierarchy -output post-synth.v
 ```
 
-We can also generate usful reports about area and static timing analysis.
+We can also generate useful reports about area and static timing analysis.
 Prof. Batten will spend some time explaining these reports:
 
 ```
@@ -555,7 +555,7 @@ You can use the following steps to open the `.ddc` file generated during
 synthesis.
 
  - Choose _File > Read_ from the menu
- - Open the `post-synth.dcc` file
+ - Open the `post-synth.ddc` file
 
 You can use the following steps to view the gate-level schematic for the
 design:
@@ -573,7 +573,7 @@ module or gate and choosing _Edit > Properties_ from the menu. Then look
 for `ref_name`.
 
 You can use the following steps to view a histogram of path slack, and
-also to open a gave-level schematic of just the critical path.
+also to open a gate-level schematic of just the critical path.
 
  - Choose _Timing > Path Slack_ from the menu
  - Click _OK_ in the pop-up window
@@ -583,7 +583,7 @@ also to open a gave-level schematic of just the critical path.
 The `run.tcl` script for the third step is located here.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-synth
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-dc-synth
 % code run.tcl
 ```
 
@@ -592,7 +592,7 @@ Go ahead and put all of the above Synopsys DC commands (i.e., the
 with `exit`. Then you can run all of these commands as follows.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-synth
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-dc-synth
 % dc_shell-xg-t -f run.tcl
 ```
 
@@ -600,12 +600,12 @@ You can further automate the process by using a run script to run
 Synopsys DC compiler. The run script for the third step is located here.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-synth
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-dc-synth
 % code run
 ```
 
-Go ahead and put the following into the run script for the PyMTL 2-State
-RTL Simulation step.
+Go ahead and put the following into the run script for the Synthesis
+step.
 
 ```bash
 dc_shell-xg-t -f run.tcl
@@ -615,7 +615,7 @@ Now you can easily rerun the step like this.
 
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground
-% ./03-synopsys-synth/run
+% ./03-synopsys-dc-synth/run
 ```
 
 **Optimized Synthesis**
@@ -627,13 +627,13 @@ script and then rerun synthesis like this.
 
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground
-% ./03-synopsys-synth/run
+% ./03-synopsys-dc-synth/run
 ```
 
 Look at the resulting post-synthesis gate-level netlist.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-dc-synth
 % code post-synth.v
 ```
 
@@ -645,7 +645,7 @@ ahead and look up these standard cells in the standard cell databook PDF.
 Good ASIC designers are always paranoid and _never_ trust their tools.
 How do we know that the synthesized gate-level netlist is correct? One
 way we can check is to rerun our test suite on the gate-level model. We
-can do this using Synopsys VCS for fast-functional gatel-level
+can do this using Synopsys VCS for fast-functional gate-level
 simulation. _Fast-functional_ refers to the fact that this simulation
 will not take account any of the gate delays. All gates will take zero
 time and all signals will still change on the rising clock edge just like
@@ -667,7 +667,7 @@ takes as input the Verilog for the standard-cell library and the Verilog
 for the post-synthesis gate-level netlist. You should see a `simv` binary
 which is the compiled RTL simulator which you can run as follows.
 
-```
+```bash
 % cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/04-synopsys-vcs-ffglsim
 % ./simv
 ```
@@ -675,7 +675,7 @@ which is the compiled RTL simulator which you can run as follows.
 It should pass the test. Now let's look at the resulting waveforms using
 Surfer.
 
-```
+```bash
 % cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/04-synopsys-vcs-ffglsim
 % code waves.vcd
 ```
@@ -712,10 +712,10 @@ Now you can easily rerun the step like this.
 
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground
-% ./03-synopsys-vcs-fflsim/run
+% ./04-synopsys-vcs-ffglsim/run
 ```
 
-7. Registered Incrementer
+4. Registered Incrementer
 --------------------------------------------------------------------------
 
 Our goal in this section is to generate a gate-level netlist for
@@ -727,7 +727,7 @@ We will take an incremental design approach. We will start by
 implementing and testing a single registered incrementer, and then we
 will write a generic multi-stage registered incrementer.
 
-### 7.1. 2-State RTL Sim
+### 4.1. 2-State RTL Sim
 
 Let's run all of the tests for the registered incrementer:
 
@@ -739,7 +739,7 @@ Let's run all of the tests for the registered incrementer:
 The tests will fail because we need to finish the implementation. Let's
 start by focusing on the basic registered incrementer module.
 
-```
+```bash
 % cd ${HOME}/ece6745/lab6/sim/build
 % pytest ../tut3_verilog/regincr/test/RegIncr_test.py
 ```
@@ -911,7 +911,7 @@ which takes a list of values on the command line and sends these values
 through the pipeline. Let's see the simulator in action:
 
 ```bash
-% cd $TOPDIR/sim/build
+% cd ${HOME}/ece6745/lab6/sim/build
 % ../tut3_verilog/regincr/regincr-sim -s 0xff 0x20 0x30 0x40 0x00
 ```
 
@@ -919,7 +919,7 @@ The simulator will generate the pickled Verilog file we want to
 push through the ASIC front-end flow.
 
 ```bash
-% cd $TOPDIR/sim/build
+% cd ${HOME}/ece6745/lab6/sim/build
 % less RegIncr4stage__pickled.v
 ```
 
@@ -930,7 +930,7 @@ pickled Verilog file and the Verilog test bench.
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground/regincr/01-pymtl-rtlsim
 % ${HOME}/ece6745/lab6/sim/tut3_verilog/regincr/regincr-sim -s 0xff 0x20 0x30 0x40 0x00
-``
+```
 
 Take a look at the generated pickled Verilog file and test bench.
 
@@ -943,7 +943,7 @@ Take a look at the generated pickled Verilog file and test bench.
 
 Feel free to create a run script to make it easier to rerun this step.
 
-### 7.2. 4-State RTL Sim
+### 4.2. 4-State RTL Sim
 
 Now we can use Synopsys VCS to run 4-state RTL simulation just like in
 the previous section.
@@ -960,9 +960,9 @@ the previous section.
 
 Feel free to create a run script to make it easier to rerun this step.
 
-### 7.3. Synthesis
+### 4.3. Synthesis
 
-Start the Synospys DC REPL so we can synthesize the registered
+Start the Synopsys DC REPL so we can synthesize the registered
 incrementer.
 
 ```bash
@@ -971,7 +971,7 @@ incrementer.
 ```
 
 Use what you learned in the previous section to setup, analyze,
-elaborate, contrain, synthesize, and write outputs for your design.
+elaborate, constrain, synthesize, and write outputs for your design.
 
 To constrain our design, we will need similar constraints as before.
 
@@ -1022,7 +1022,7 @@ after this block on the chip as shown in the following figure.
 ![](img/tut06-output-delays.png)
 
 We need to include reasonable setup and hold time constraints for the
-output ports so Synopsys DC can factor these into into its timing
+output ports so Synopsys DC can factor these into its timing
 analysis. Here we choose a setup time constraint of 50ps meaning the
 output data must be stable 50ps before the rising edge of the clock, and
 we choose a hold time constraint of 0ps meaning the outputs can change
@@ -1035,7 +1035,7 @@ dc_shell> set_output_delay -clock clk -min 0.000 [all_outputs]
 
 Finally we also need to constraint any combinational paths which go
 directly from the input ports to the output ports. Here we constrain such
-paths to be no longer than one cycle cycle.
+paths to be no longer than one cycle.
 
 ```
 dc_shell> set_max_delay 1.0 -from [all_inputs -exclude_clock_ports] -to [all_outputs]
@@ -1053,13 +1053,13 @@ dc_shell> compile_ultra -no_autoungroup -gate_clock
 
 Feel free to create run scripts to make it easier to rerun this step.
 
-### 7.4. FFGL Sim
+### 4.4. FFGL Sim
 
-Now we can use Synopsys VCS to run 4-state RTL simulation just like in
-the previous section.
+Now we can use Synopsys VCS to run fast-functional gate-level simulation
+just like in the previous section.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/regincr/02-synopsys-vcs-rtlsim
+% cd ${HOME}/ece6745/lab6/asic/playground/regincr/04-synopsys-vcs-ffglsim
 % vcs -sverilog -xprop=tmerge -override_timescale=1ns/1ps -top Top \
     +delay_mode_zero \
     +vcs+dumpvars+waves.vcd \
@@ -1072,7 +1072,7 @@ the previous section.
 
 Feel free to create a run script to make it easier to rerun this step.
 
-8. GCD Accelerator
+5. GCD Accelerator
 --------------------------------------------------------------------------
 
 Our goal in this section is to generate a gate-level netlist for
@@ -1086,7 +1086,7 @@ accelerator which can be integrated with a TinyRV2 processor.
 
 ![](img/project2-proc-xcel.png)
 
-### 7.1. 2-State RTL Sim
+### 5.1. 2-State RTL Sim
 
 Let's run all of the tests for the GCD accelerator:
 
@@ -1099,7 +1099,7 @@ We have also included a simulator which we can use for evaluating the
 accelerator.
 
 ```bash
-% cd $TOPDIR/sim/build
+% cd ${HOME}/ece6745/lab6/sim/build
 % ../lab5_xcel/gcd-xcel-sim --impl rtl --trace --stats
 ```
 
@@ -1111,7 +1111,7 @@ to generate the pickled Verilog file and two Verilog test benches.
 % cd ${HOME}/ece6745/lab6/asic/playground/gcd-xcel/01-pymtl-rtlsim
 % ${HOME}/ece6745/lab6/sim/lab5_xcel/test/GcdXcel_test.py -k random_3x9 --test-verilog --dump-vtb
 % ${HOME}/ece6745/lab6/sim/lab5_xcel/gcd-xcel-sim --impl rtl --translate --dump-vtb
-``
+```
 
 Take a look at the generated pickled Verilog file and test bench.
 
@@ -1126,7 +1126,7 @@ Once generated test bench will serve as a test of correctness and the
 other generated test bench will be used for evaluation. Feel free to
 create a run script to make it easier to rerun this step.
 
-### 7.2. 4-State RTL Sim
+### 5.2. 4-State RTL Sim
 
 Now we can use Synopsys VCS to run 4-state RTL simulation just like in
 the previous section. We first run the test.
@@ -1151,12 +1151,13 @@ Then we can run the evaluation.
     ../01-pymtl-rtlsim/GcdXcel_noparam__pickled.v \
     ../01-pymtl-rtlsim/GcdXcel_noparam_gcd-xcel-sim-rtl-random_tb.v
 % ./simv-eval
+```
 
 Feel free to create a run script to make it easier to rerun this step.
 
-### 7.3. Synthesis
+### 5.3. Synthesis
 
-Start the Synospys DC REPL so we can synthesize the GCD accelerator.
+Start the Synopsys DC REPL so we can synthesize the GCD accelerator.
 
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground/gcd-xcel/03-synopsys-dc-synth
@@ -1164,7 +1165,7 @@ Start the Synospys DC REPL so we can synthesize the GCD accelerator.
 ```
 
 Use what you learned in the previous section to setup, analyze,
-elaborate, contrain, synthesize, and write outputs for your design. The
+elaborate, constrain, synthesize, and write outputs for your design. The
 constraints should be the same as what was used with the registered
 incrementer.
 
@@ -1175,13 +1176,13 @@ meets timing!**
 
 Feel free to create run scripts to make it easier to rerun this step.
 
-### 7.4. FFGL Sim
+### 5.4. FFGL Sim
 
-Now we can use Synopsys VCS to run 4-state RTL simulation just like in
-the previous section. We first run the test.
+Now we can use Synopsys VCS to run fast-functional gate-level simulation
+just like in the previous section. We first run the test.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/gcd-xcel/02-synopsys-vcs-rtlsim
+% cd ${HOME}/ece6745/lab6/asic/playground/gcd-xcel/04-synopsys-vcs-ffglsim
 % vcs -sverilog -xprop=tmerge -override_timescale=1ns/1ps -top Top \
     +delay_mode_zero \
     +vcs+dumpvars+waves.vcd -o simv-test \
@@ -1195,7 +1196,7 @@ the previous section. We first run the test.
 Then we can run the evaluation.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/gcd-xcel/02-synopsys-vcs-rtlsim
+% cd ${HOME}/ece6745/lab6/asic/playground/gcd-xcel/04-synopsys-vcs-ffglsim
 % vcs -sverilog -xprop=tmerge -override_timescale=1ns/1ps -top Top \
     +delay_mode_zero \
     +vcs+dumpvars+waves.vcd -o simv-eval \
@@ -1204,6 +1205,7 @@ Then we can run the evaluation.
     ../03-synopsys-dc-synth/post-synth.v \
     ../01-pymtl-rtlsim/GcdXcel_noparam_gcd-xcel-sim-rtl-random_tb.v | tee -a run.log
 % ./simv-eval
+```
 
 Feel free to create a run script to make it easier to rerun this step.
 
