@@ -972,8 +972,7 @@ is because the delay of every gate and wire is now modeled.
 ### 3.5. Mentor Calibre for Design Rules Check (DRC)
 
 We use Mentor Calibre for DRC verification as described in the
-introduction. The runset file (`main_drc.rs`) is already provided and
-configures Calibre with the design-specific settings.
+introduction.
 
 Change to the working directory:
 
@@ -981,10 +980,46 @@ Change to the working directory:
 % cd $TOPDIR/asic/playground/09-mentor-calibre-drc
 ```
 
+Create `main_drc.rs` with the following content. The runset file configures
+several block-level waivers that disable DRC checks which are expected to
+fail for small block-level designs:
+
+ - **PO.R.3**: Minimum poly area check - small designs may not have enough
+   poly to meet this requirement
+ - **Mx.R.1** (M1-M6): Minimum metal area coverage - we waive this since we
+   do not perform metal fill at the block level
+ - **DRM.R.1**: Generic DRC rule that always fails to remind users to check
+   the final design against the design rules manual before tapeout
+
+```
+drc.rulesFile.value = "${TSMC_180NM}/main_drc.rule"
+drc.runDir.value = "main_drc"
+drc.recipeEditor.setUserRecipes(
+  "<user_recipes>$$
+    <recipe>$$
+      <name>Block-Level Waivers</name>$$
+      <operations>$$
+        <group_select>rule_file</group_select>$$
+        <check_unselect>PO.R.3</check_unselect>$$
+        <check_unselect>M1.R.1</check_unselect>$$
+        <check_unselect>M2.R.1</check_unselect>$$
+        <check_unselect>M3.R.1</check_unselect>$$
+        <check_unselect>M4.R.1</check_unselect>$$
+        <check_unselect>M5.R.1</check_unselect>$$
+        <check_unselect>M6.R.1</check_unselect>$$
+        <check_unselect>DRM.R.1</check_unselect>$$
+      </operations>$$
+    </recipe>$$
+  </user_recipes>$$"
+)
+drc.recipeEditor.setActiveRecipe("Block-Level Waivers")
+drc.layout.layoutFile.value = "../../05-cadence-innovus-pnr/post-pnr.gds"
+drc.layout.topCell.value = "RegIncr4stage"
+```
+
 Run the main DRC check:
 
 ```bash
-% cd $TOPDIR/asic/playground/09-mentor-calibre-drc
 % calibre -gui -drc -runset main_drc.rs -batch
 ```
 
@@ -1019,7 +1054,7 @@ are being performed.
 ### 3.6. Mentor Calibre for Layout Versus Schematic (LVS)
 
 We use Mentor Calibre for LVS verification as described in the
-introduction. The runset file (`lvs.rs`) is already provided.
+introduction.
 
 Change to the working directory:
 
@@ -1032,7 +1067,6 @@ so that Calibre can compare it against the extracted layout. We use the
 `v2lvs` tool for this conversion:
 
 ```bash
-% cd $TOPDIR/asic/playground/10-mentor-calibre-lvs
 % v2lvs -v ../05-cadence-innovus-pnr/post-pnr.v \
     -o post-pnr.sp \
     -lsr ${TSMC_180NM}/stdcells.sp \
@@ -1048,10 +1082,20 @@ Here is an explanation of the v2lvs options:
  - **`-s`**: SPICE subcircuit definition file
  - **`-log`**: Log file for conversion messages
 
-Now run Calibre LVS:
+Create `lvs.rs` with the following content:
+
+```
+lvs.rulesFile.value = "${TSMC_180NM}/lvs.rule"
+lvs.runDir.value = "lvs_results"
+lvs.layout.layoutFile.value = "../../05-cadence-innovus-pnr/post-pnr.gds"
+lvs.layout.topCell.value = "RegIncr4stage"
+lvs.source.sourceFile.value = "../post-pnr.sp"
+lvs.source.topCell.value = "RegIncr4stage"
+```
+
+Run Calibre LVS:
 
 ```bash
-% cd $TOPDIR/asic/playground/10-mentor-calibre-lvs
 % calibre -gui -lvs -runset lvs.rs -batch
 ```
 
