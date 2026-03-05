@@ -28,21 +28,24 @@ Continue working with your group from Part A and B. You can confirm your
 group on Canvas (Click on People, then Groups, then search for your name
 to find your project group).
 
-!!! warning "All students must contribute to all parts!"
+!!! warning "All students must contribute to and understand all submitted work!"
 
-    It is not acceptable for one student to do all of Part A+B and a
+    It is not acceptable for one student to do all of part A+B and a
     different student to do all of part C. It is not acceptable for one
     student to exclusively work on one algorithm while the other student
     exclusively works on a different algorithm. All students must
-    contribute to all parts. The instructors will also survey the Git
-    commit log on GitHub to confirm that all students are contributing
-    equally. If you are using a "pair programming" style, then both
-    students must take turns using their own account so both students
-    have representative Git commits. Students should create commits after
-    finishing each step of the project, so their contribution is clear in
-    the Git commit log. **A student's whose contribution is limited as
-    represented by the Git commit log will receive a significant
-    deduction to their project score.**
+    contribute to and understand all parts. The instructors will also
+    survey the Git commit log on GitHub to confirm that all students are
+    contributing equally. If you are using a "pair programming" style,
+    then both students must take turns using their own account so both
+    students have representative Git commits. Students should create
+    commits after finishing each step of the project, so their
+    contribution is clear in the Git commit log. It is fine for the Git
+    commit log to indicate that a student took the lead on one algorithm,
+    but the student is still responsible for reviewing and undrestanding
+    all algorithms included as part of the submission. **A student's
+    whose contribution is limited as represented by the Git commit log
+    will receive a significant deduction to their project score.**
 
 This handout assumes that you have read and understand the course
 tutorials and that you have attended the lab sections. To get started,
@@ -1297,7 +1300,68 @@ GitHub like this.
 
 Where `XX` is your group number.
 
-9. API Reference
+9. Project Submission
+--------------------------------------------------------------------------
+
+To submit your code you simply push your code to GitHub. You can push
+your code as many times as you like before the deadline. Students are
+responsible for going to the GitHub website for your repository, browsing
+the source code, and confirming that the code they want to submit is on
+GitHub. Be sure to verify your code is passing all of
+your simulations on `ecelinux`.
+
+Here is how we will be testing your final code submission for Part C.
+First, we will create a build directory.
+
+```bash
+% mkdir -p ${HOME}/ece6745
+% cd ${HOME}/ece6745
+% git clone git@github.com:cornell-ece6745/project1-groupXX
+```
+
+Then we will run all of the tests for the synthesis and pnr flows
+
+```bash
+% mkdir -p ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% cd ${HOME}/ece6745/project1-groupXX/tinyflow/build
+% pytest ../synth
+% pytest ../pnr
+```
+
+Then we will verify that we can succesfully push the full adder through
+your TinyFlow using pyhflow.
+
+```bash
+% mkdir -p $HOME/ece6745/project1-groupXX/asic/build-fa
+% cd $HOME/ece6745/project1-groupXX/asic/build-fa
+% pyhflow ../designs/ca.yml
+% ./run-flow
+```
+
+Then we will verify that we can succesfully push the ripple carry adder
+through your TinyFlow using pyhflow.
+
+```bash
+% mkdir -p $HOME/ece6745/project1-groupXX/asic/build-addrc-4b
+% cd $HOME/ece6745/project1-groupXX/asic/build-addrc-4b
+% pyhflow ../designs/addrc-4b.yml
+% ./run-flow
+```
+
+Finally we will verify that we can successfully push your tapeout block
+through your TinyFlow using pyhflow and that the result matches what you
+have copied into the tapeout directory
+
+```bash
+% mkdir -p $HOME/ece6745/project1-groupXX/asic/build-tapeout-groupXX
+% cd $HOME/ece6745/project1-groupXX/asic/build-tapeout-groupXX
+% pyhflow ../designs/tapeout-groupXX.yml
+% ./run-flow
+% diff 05-tinyflow-pnr/post-pnr.gds ../tapeout/post-pnr.gds
+% diff 05-tinyflow-pnr/post-pnr-rcx.sp ../tapeout/post-pnr-rcx.sp
+```
+
+10. API Reference
 --------------------------------------------------------------------------
 
 This section provides a quick reference for the classes and methods you
@@ -1319,7 +1383,7 @@ will use when implementing the back-end algorithms.
       locations and I/O port placement use routing grid coordinates
       (e.g., `pin.get_node()` returns `(i, j, k)`).
 
-### 7.1. StdCellBackEndView (`view`)
+### 10.1. StdCellBackEndView (`view`)
 
 The library view provides technology information (site dimensions, layer
 info, cell definitions).
@@ -1335,7 +1399,7 @@ info, cell definitions).
 | `view.get_layer(name).get_track_pitch()` | `int` | Track pitch in lambda |
 | `view.get_lambda_um()` | `float` | Lambda unit in micrometers (0.09) |
 
-### 7.2. TinyBackEndDB (`db`)
+### 10.2. TinyBackEndDB (`db`)
 
 The backend database manages cells, nets, I/O ports, and the site
 and routing grids.
@@ -1388,7 +1452,7 @@ and routing grids.
 | `db.clear_all_routing()` | None | Clear all routing and restore pin/IO occupancy |
 | `db.set_filler_count(count)` | None | Set filler cell count |
 
-### 7.3. Cell
+### 10.3. Cell
 
 | Method/Attribute | Returns | Description |
 |--------|---------|-------------|
@@ -1400,7 +1464,7 @@ and routing grids.
 | `cell.set_unplace()` | None | Remove cell from placement |
 | `cell.pins` | `list[Pin]` | List of pins on this cell |
 
-### 7.4. Pin
+### 10.4. Pin
 
 | Method/Attribute | Returns | Description |
 |--------|---------|-------------|
@@ -1408,7 +1472,7 @@ and routing grids.
 | `pin.get_node()` | `(i, j, k)` | Routing grid coordinates (None if unplaced) |
 | `pin.net` | `Net` | The net this pin belongs to |
 
-### 7.5. IOPort
+### 10.5. IOPort
 
 IOPort is a subclass of Pin. It represents an I/O port at the chip
 boundary.
@@ -1419,7 +1483,7 @@ boundary.
 | `ioport.get_node()` | `(i, j, k)` | Routing grid coordinates (k = 2, i.e., M2) |
 | `ioport.name` | `str` | Port name |
 
-### 7.6. Net
+### 10.6. Net
 
 | Method/Attribute | Returns | Description |
 |--------|---------|-------------|
@@ -1427,7 +1491,7 @@ boundary.
 | `net.pins` | `list[Pin]` | List of connected pins (includes IOPorts) |
 | `net.add_route_segments(lines)` | None | Commit a list of `Line` segments to the routing grid |
 
-### 7.7. Line
+### 10.7. Line
 
 A `Line` represents a wire segment between two adjacent nodes in the
 routing grid.
@@ -1438,7 +1502,7 @@ routing grid.
 | `line.start` | `(i,j,k)` | Start node |
 | `line.end` | `(i,j,k)` | End node |
 
-### 7.8. Site
+### 10.8. Site
 
 Sites are accessed from `db.get_core()` which returns a 2D list
 indexed as `core[row][col]`.

@@ -28,21 +28,24 @@ Continue working with your group from Part A. You can confirm your
 group on Canvas (Click on People, then Groups, then search for your name
 to find your project group).
 
-!!! warning "All students must contribute to all parts!"
+!!! warning "All students must contribute to and understand all submitted work!"
 
     It is not acceptable for one student to do all of Part A and a
     different student to do all of part B. It is not acceptable for one
     student to exclusively work on one algorithm while the other student
     exclusively works on a different algorithm. All students must
-    contribute to all parts. The instructors will also survey the Git
-    commit log on GitHub to confirm that all students are contributing
-    equally. If you are using a "pair programming" style, then both
-    students must take turns using their own account so both students
-    have representative Git commits. Students should create commits after
-    finishing each step of the project, so their contribution is clear in
-    the Git commit log. **A student's whose contribution is limited as
-    represented by the Git commit log will receive a significant
-    deduction to their project score.**
+    contribute to and understand all parts. The instructors will also
+    survey the Git commit log on GitHub to confirm that all students are
+    contributing equally. If you are using a "pair programming" style,
+    then both students must take turns using their own account so both
+    students have representative Git commits. Students should create
+    commits after finishing each step of the project, so their
+    contribution is clear in the Git commit log. It is fine for the Git
+    commit log to indicate that a student took the lead on one algorithm,
+    but the student is still responsible for reviewing and undrestanding
+    all algorithms included as part of the submission. **A student's
+    whose contribution is limited as represented by the Git commit log
+    will receive a significant deduction to their project score.**
 
 This handout assumes that you have read and understand the course
 tutorials and that you have attended the lab sections. To get started,
