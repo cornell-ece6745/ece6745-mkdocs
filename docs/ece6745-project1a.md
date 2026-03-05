@@ -28,19 +28,23 @@ All parts must be done in a group of 2-3 students. You can confirm your
 group on Canvas (Click on People, then Groups, then search for your name
 to find your project group).
 
-!!! warning "All students must contribute to all parts!"
+!!! warning "All students must contribute to and understand all submitted work!"
 
-    It is not acceptable for one student to do all of Part A and a
+    It is not acceptable for one student to do all of part A and a
     different student to do all of part B. It is not acceptable for one
     student to exclusively work on the layout while the other student
     exclusively works on SPICE characterization. All students must
-    contribute to all parts. The instructors will also survey the Git
-    commit log on GitHub to confirm that all students are contributing
-    equally. If you are using a "pair programming" style, then both
-    students must take turns using their own account so both students
-    have representative Git commits. Students should create commits after
-    finishing each step of the project, so their contribution is clear in
-    the Git commit log. **A student whose contribution is limited as
+    contribute and understand all aspects of all parts. The instructors
+    will also survey the Git commit log on GitHub to confirm that all
+    students are contributing equally. If you are using a "pair
+    programming" style, then both students must take turns using their
+    own account so both students have representative Git commits.
+    Students should create commits after finishing each step of the
+    project, so their contribution is clear in the Git commit log. It is
+    fine for the Git commit log to indicate that a student took the lead
+    on one standard cell but the student is still responsible for
+    reviewing and undrestanding all standard cells included as part of
+    the submission. **A student whose contribution is limited as
     represented by the Git commit log will receive a significant
     deduction to their project score.**
 
