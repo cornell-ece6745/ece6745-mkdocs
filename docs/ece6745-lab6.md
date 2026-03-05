@@ -343,7 +343,7 @@ sed -i.bak -e 's/    ,//' AdderRippleCarry_4b_test_exhaustive_tb.v
 Now you can easily rerun the step like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
 % ./01-pymtl-rtlsim/run
 ```
 
@@ -405,7 +405,7 @@ vcs -sverilog -xprop=tmerge -override_timescale=1ns/1ps -top Top \
 Now you can easily rerun the step like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
 % ./02-synopsys-vcs-rtlsim/run
 ```
 
@@ -471,7 +471,7 @@ the design. We use a load capacitance of 5fF which is roughly the input
 capacitance of a small standard cell in TSMC 180nm.
 
 ```
-set_load 0.005 [all_outputs]
+dc_shell> set_load 0.005 [all_outputs]
 ```
 
 Now we need to tell Synopsys DC what the cell is going to be driving the
@@ -480,7 +480,7 @@ that it creates a very large input capacitance for the block driving this
 design. Here we use an INVX1 standard cell as the driving cell.
 
 ```
-set_driving_cell -lib_cell INVD1BWP7T [all_inputs]
+dc_shell> set_driving_cell -lib_cell INVD1BWP7T [all_inputs]
 ```
 
 Finally, we need to constrain the delay from every input to every output.
@@ -614,7 +614,7 @@ dc_shell-xg-t -f run.tcl
 Now you can easily rerun the step like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
 % ./03-synopsys-dc-synth/run
 ```
 
@@ -626,7 +626,7 @@ optimization. So replace `compile` with `compile_ultra` in your `run.tcl`
 script and then rerun synthesis like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
 % ./03-synopsys-dc-synth/run
 ```
 
@@ -711,7 +711,7 @@ vcs -sverilog -xprop=tmerge -override_timescale=1ns/1ps -top Top \
 Now you can easily rerun the step like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground
+% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
 % ./04-synopsys-vcs-ffglsim/run
 ```
 
@@ -745,12 +745,20 @@ start by focusing on the basic registered incrementer module.
 ```
 
 Use VS Code to open the implementation and uncomment the actual
-combinational logic for the increment operation. The Verilog RTL
-implementation should look as follows:
+combinational logic for the increment operation.
+
+```bash
+% cd ${HOME}/ece6745/lab6/sim/tut3_verilog/regincr
+% code RegIncr.v
+```
+
+The Verilog RTL implementation should look as follows:
 
 ```verilog
 `ifndef TUT3_VERILOG_REGINCR_REG_INCR_V
 `define TUT3_VERILOG_REGINCR_REG_INCR_V
+
+`include "vc/trace.v"
 
 module tut3_verilog_regincr_RegIncr
 (
@@ -1109,7 +1117,7 @@ to generate the pickled Verilog file and two Verilog test benches.
 
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground/gcd-xcel/01-pymtl-rtlsim
-% ${HOME}/ece6745/lab6/sim/lab5_xcel/test/GcdXcel_test.py -k random_3x9 --test-verilog --dump-vtb
+% pytest ${HOME}/ece6745/lab6/sim/lab5_xcel/test/GcdXcel_test.py -k random_3x9 --test-verilog --dump-vtb
 % ${HOME}/ece6745/lab6/sim/lab5_xcel/gcd-xcel-sim --impl rtl --translate --dump-vtb
 ```
 
