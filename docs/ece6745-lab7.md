@@ -11,6 +11,11 @@ illustrates the tool flow we will be using in ECE 6745. Notice that the Synopsys
 and Cadence ASIC tools all require various views from the standard-cell library
 which part of the ASIC design kit (ADK).
 
+!!! warning "Mandatory - work in pairs"
+
+    **You MUST work in pairs for this lab, as having too many instances of 
+    Innovus open at once will cause ECELinux to crash!**
+
 ![](img/tut07-asic-flow-back-end.png)
 
 The "back-end" of the flow is highlighted in red and refers to the PyMTL
