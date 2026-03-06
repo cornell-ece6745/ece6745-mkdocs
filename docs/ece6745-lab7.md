@@ -871,7 +871,7 @@ v2lvs -v ../05-cadence-innovus-pnr/post-pnr.v -o post-pnr.sp \
   -lsr ${TSMC_180NM}/stdcells.sp -s ${TSMC_180NM}/stdcells.sp \
   -log v2lvs.log | tee run.log
 
-calibre -gui -drc -runset run.rs -batch | tee -a run.log
+calibre -gui -lvs -runset run.rs -batch | tee -a run.log
 ```
 
 Now you can easily rerun the step like this.
