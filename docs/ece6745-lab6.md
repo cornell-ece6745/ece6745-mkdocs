@@ -27,19 +27,19 @@ simulator, Synopsys DC, and Synopsys VCS:
    0 (logic low), 1 (logic high), X (unknown), or Z (floating).
    Four-state RTL simulation can identify different kinds of bugs than
    two-state simulation such as bugs due to uninitialized state.
-   Gate-level simulation involves simulating every standard-cell gate and
-   helps verify that the Verilog gate-level netlist is functionally
-   correct.
+   Gate-level simulation uses the standard-cell library behavioral view
+   to simulate every standard-cell gate and helps verify that the Verilog
+   gate-level netlist is functionally correct.
 
  - We use **Synopsys Design Compiler (DC)** to synthesize our design,
    which means to transform the Verilog RTL model into a Verilog
    gate-level netlist where all of the gates are selected from the
-   standard-cell library. We need to provide Synopsys DC with abstract
-   logical and timing views of the standard-cell library in `.db` format.
-   In addition to the Verilog gate-level netlist, Synopsys DC can also
-   generate a `.ddc` file which contains information about the gate-level
-   netlist and timing, and this `.ddc` file can be inspected using
-   Synopsys Design Vision (DV).
+   standard-cell library. We need to provide Synopsys DC with the
+   standard-cell library front-end view in `.db` format. In addition to
+   the Verilog gate-level netlist, Synopsys DC can also generate a `.ddc`
+   file which contains information about the gate-level netlist and
+   timing, and this `.ddc` file can be inspected using Synopsys Design
+   Vision (DV).
 
 Extensive documentation is provided by Synopsys and Cadence. We have
 organized this documentation and made it available to you on the Canvas
@@ -597,15 +597,14 @@ with `exit`. Then you can run all of these commands as follows.
 ```
 
 You can further automate the process by using a run script to run
-Synopsys DC compiler. The run script for the third step is located here.
+Synopsys DC. The run script for the third step is located here.
 
 ```bash
 % cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/03-synopsys-dc-synth
 % code run
 ```
 
-Go ahead and put the following into the run script for the Synthesis
-step.
+Go ahead and put the following into the run script for this step.
 
 ```bash
 dc_shell-xg-t -f run.tcl
