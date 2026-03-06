@@ -1076,7 +1076,7 @@ scripts from the previous design.
 ```
 
 Edit the `run` script to use the correct design name. Use your run script
-to perform back-annotated gate-level simulation.
+to perform power analysis simulation.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr
@@ -1102,7 +1102,7 @@ script to perform DRC.
 % ./09-mentor-calibre-drc/run
 ```
 
-### 3.6. LVS
+### 3.7. LVS
 
 Perform LVS on the post-place-and-route design. Start by copying your run
 scripts from the previous design.
@@ -1121,7 +1121,7 @@ script to perform LVS.
 % ./10-mentor-calibre-lvs/run
 ```
 
-### 3.7. Rerun Flow
+### 3.8. Rerun Flow
 
 Now try cleaning the playground and rerun the entire front- and back-end
 flow using your run scripts.
