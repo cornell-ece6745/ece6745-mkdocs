@@ -1311,7 +1311,7 @@ GitHub. Be sure to verify your code is passing all of
 your simulations on `ecelinux`.
 
 Here is how we will be testing your final code submission for Part C.
-First, we will create a build directory.
+First, we will clone your repo.
 
 ```bash
 % mkdir -p ${HOME}/ece6745
@@ -1348,7 +1348,7 @@ through your TinyFlow using pyhflow.
 % ./run-flow
 ```
 
-Finally we will verify that we can successfully push your tapeout block
+Finally, we will verify that we can successfully push your tapeout block
 through your TinyFlow using pyhflow and that the result matches what you
 have copied into the tapeout directory
 
