@@ -1060,7 +1060,7 @@ gate-level simulation.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr
-% ./07-synopsys-vcs-balgsim/run
+% ./07-synopsys-vcs-baglsim/run
 ```
 
 ### 3.5. Power Analysis
@@ -1121,7 +1121,7 @@ script to perform LVS.
 % ./10-mentor-calibre-lvs/run
 ```
 
-### 2.8. Rerun Flow
+### 3.7. Rerun Flow
 
 Now try cleaning the playground and rerun the entire front- and back-end
 flow using your run scripts.
