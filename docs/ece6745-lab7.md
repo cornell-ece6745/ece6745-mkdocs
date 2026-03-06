@@ -613,7 +613,7 @@ Run the compiled simulator:
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/addrc4b/07-synopsys-vcs-baglsim
-% ./simv
+% ./simv-test
 ```
 
 The simulation should pass all tests. View the waveforms:
