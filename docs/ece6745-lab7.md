@@ -631,7 +631,7 @@ is because the delay of every gate and wire is now modeled.
 The run script for this step is located here.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/07-synopsys-vcs-baglsim
+% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b/07-synopsys-vcs-baglsim
 % code run
 ```
 
@@ -659,7 +659,7 @@ vcs -sverilog -xprop=tmerge -override_timescale=1ns/1ps -top Top \
 Now you can easily rerun the step like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
+% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b
 % ./07-synopsys-vcs-baglsim/run
 ```
 
@@ -791,7 +791,7 @@ Take a look at the generated `drc.summary` file.
 The run script for this step is located here.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/09-mentor-calibre-drc
+% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b/09-mentor-calibre-drc
 % code run
 ```
 
@@ -805,7 +805,7 @@ calibre -gui -drc -runset run.rs -batch | tee run.log
 Now you can easily rerun the step like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
+% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b
 % ./09-mentor-calibre-drc/run
 ```
 
@@ -859,7 +859,7 @@ in the course, the provided runscripts will produce LVS-clean layouts.
 The run script for this step is located here.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b/10-mentor-calibre-lvs
+% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b/10-mentor-calibre-lvs
 % code run
 ```
 
@@ -877,7 +877,7 @@ calibre -gui -drc -runset run.rs -batch | tee -a run.log
 Now you can easily rerun the step like this.
 
 ```bash
-% cd ${HOME}/ece6745/lab6/asic/playground/addrc4b
+% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b
 % ./10-mentor-calibre-lvs/run
 ```
 
