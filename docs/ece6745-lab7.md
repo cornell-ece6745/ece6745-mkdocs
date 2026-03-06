@@ -529,7 +529,7 @@ pt_shell> exit
 The `run.tcl` script for this step is located here.
 
 ```bash
-% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b/05-cadence-innovus-pnr
+% cd ${HOME}/ece6745/lab7/asic/playground/addrc4b/06-synopsys-pt-sta
 % code run.tcl
 ```
 
