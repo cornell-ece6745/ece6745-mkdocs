@@ -943,9 +943,9 @@ Start by copying your run scripts from the previous design.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr/05-cadence-innovus-pnr
-% cp ../../addrc/05-cadence-innovus-pnr/setup-timing.tcl .
-% cp ../../addrc/05-cadence-innovus-pnr/run.tcl .
-% cp ../../addrc/05-cadence-innovus-pnr/run .
+% cp ../../addrc4b/05-cadence-innovus-pnr/setup-timing.tcl .
+% cp ../../addrc4b/05-cadence-innovus-pnr/run.tcl .
+% cp ../../addrc4b/05-cadence-innovus-pnr/run .
 ```
 
 We will start by using the Cadence Innovus GUI and then modify our run
@@ -1022,8 +1022,8 @@ by copying your run scripts from the previous design.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr/06-synopsys-pt-sta
-% cp ../../addrc/06-synopsys-pt-sta/run.tcl .
-% cp ../../addrc/06-synopsys-pt-sta/run .
+% cp ../../addrc4b/06-synopsys-pt-sta/run.tcl .
+% cp ../../addrc4b/06-synopsys-pt-sta/run .
 ```
 
 Edit the `run.tcl` script to use the correct design name and to analyze
@@ -1051,7 +1051,7 @@ design. Start by copying your run scripts from the previous design.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr/07-synopsys-vcs-baglsim
-% cp ../../addrc/07-synopsys-vcs-baglsim/run .
+% cp ../../addrc4b/07-synopsys-vcs-baglsim/run .
 ```
 
 Edit the `run` script to use the correct test bench name and to use a
@@ -1071,8 +1071,8 @@ scripts from the previous design.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr/08-synopsys-pt-pwr
-% cp ../../addrc/08-synopsys-pt-pwr/run.tcl .
-% cp ../../addrc/08-synopsys-pt-pwr/run .
+% cp ../../addrc4b/08-synopsys-pt-pwr/run.tcl .
+% cp ../../addrc4b/08-synopsys-pt-pwr/run .
 ```
 
 Edit the `run` script to use the correct design name. Use your run script
@@ -1090,8 +1090,8 @@ scripts from the previous design.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr/09-mentor-calibre-drc
-% cp ../../addrc/09-mentor-calibre-drc/run.rs .
-% cp ../../addrc/09-mentor-calibre-drc/run .
+% cp ../../addrc4b/09-mentor-calibre-drc/run.rs .
+% cp ../../addrc4b/09-mentor-calibre-drc/run .
 ```
 
 Edit the `run.rs` script to use the correct design name. Use your run
@@ -1109,8 +1109,8 @@ scripts from the previous design.
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/regincr/10-mentor-calibre-lvs
-% cp ../../addrc/10-mentor-calibre-lvs/run.rs .
-% cp ../../addrc/10-mentor-calibre-lvs/run .
+% cp ../../addrc4b/10-mentor-calibre-lvs/run.rs .
+% cp ../../addrc4b/10-mentor-calibre-lvs/run .
 ```
 
 Edit the `run.rs` script to use the correct design name. Use your run
