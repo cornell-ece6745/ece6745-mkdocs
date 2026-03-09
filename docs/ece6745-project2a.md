@@ -515,8 +515,8 @@ top of your repo.
 % TOPDIR=$PWD
 ```
 
-First, we will run your tests for your baseline software both natively
-and cross-compiled running on the ISA simulator.
+Then, we will run your tests for your baseline software both natively and
+cross-compiled running on the ISA simulator.
 
 ```
 % mkdir -p $TOPDIR/app/build-native

@@ -114,6 +114,7 @@ nav:
       - "Part C: TinyFlow Back End": ece6745-project1c.md
     - 'Project 2: Xcel Tape-Out':
       - "Part A: Software & Testing": ece6745-project2a.md
+      - "Part B: Accelerator": ece6745-project2b.md
 
   - 'Misc':
     - 'Tinyflow 180nm Design Rules Manual': ece6745-tinyflow-180nm-drm.md

@@ -495,7 +495,7 @@ digits in the timing reports.
 
 ```
 pt_shell> set_app_var target_library "$env(TSMC_180NM)/stdcells.db"
-pt_shell> set_app_var link_library [concat "*" $target_library]
+pt_shell> set_app_var link_library   "* $env(TSMC_180NM)/stdcells.db"
 pt_shell> set_app_var report_default_significant_digits 4
 ```
 
@@ -582,7 +582,7 @@ Run VCS for back-annotated gate-level simulation.
     +define+VTB_OUTPUT_DELAY=0.025 \
     +define+VTB_DUMP_SAIF=activity.saif \
     +vcs+dumpvars+waves.vcd \
-    -o simv-test \
+    -o simv \
     +incdir+../01-pymtl-rtlsim \
     ${TSMC_180NM}/stdcells.v \
     ../05-cadence-innovus-pnr/post-pnr.v \
@@ -613,7 +613,7 @@ Run the compiled simulator:
 
 ```bash
 % cd ${HOME}/ece6745/lab7/asic/playground/addrc4b/07-synopsys-vcs-baglsim
-% ./simv-test
+% ./simv
 ```
 
 The simulation should pass all tests. View the waveforms:
@@ -647,7 +647,7 @@ vcs -sverilog -xprop=tmerge -override_timescale=1ns/1ps -top Top \
   +define+VTB_OUTPUT_DELAY=0.025 \
   +define+VTB_DUMP_SAIF=activity.saif \
   +vcs+dumpvars+waves.vcd \
-  -o simv-test \
+  -o simv \
   +incdir+../01-pymtl-rtlsim \
   ${TSMC_180NM}/stdcells.v \
   ../05-cadence-innovus-pnr/post-pnr.v \
@@ -957,7 +957,7 @@ power grid routing.
 Go ahead and start Cadence Innovus.
 
 ```bash
-% cd ${HOME}/ece6745/lab7/asic/playground/05-cadence-innovus-pnr
+% cd ${HOME}/ece6745/lab7/asic/playground/regincr/05-cadence-innovus-pnr
 % innovus
 ```
 
