@@ -312,3 +312,15 @@ Note that if your tests take a while to run you will need to modify the
 GitHub Actions workflow YAML file to increase the timeout and/or increase
 the `--max-cycles` command line option to `pmx-sim`.
 
+!!! warning "You do not need to finalize your accelerator!"
+
+    Students must submit an initial version of their accelerator but they
+    will almost certainly continue to improve their accelerator as they
+    push towards tape-out. The key is to get a _very simple initial
+    version_ of their accelerator ready for submission. It is ok if this
+    _very simple initial version_ of the accelerator is not optimized, or
+    if the _very simple initial version_ of the accelerator does not
+    support all of the desired functionality. Start small; start simple;
+    then you can continue to incrementally add complexity as you push
+    towards tape-out.
+

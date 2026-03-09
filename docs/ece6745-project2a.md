@@ -214,21 +214,6 @@ accelerator FL model. Finally you will develop the software which drives
 the accelerator and ensure that your accelerator FL model passes all of
 the tests you developed for your baseline software.
 
-!!! warning "You do not need to finalize your software and testing!"
-
-    Students must submit an initial version of their baseline software,
-    accelerator FL model, accelerator software, and associated tests but
-    they will almost certainly continue to improve these parts of the
-    project as they push towards tape-out. The key is to get a _very
-    simple initial version_ of their project ready for submission. It is
-    ok if this _very simple initial version_ of the baseline software is
-    not optimized, or if the _very simple initial version_ of the
-    accelerator FL model does not support all of the desired
-    functionality, or if you have robust intitial testing but know you
-    want to add more testing in the future. Start small; start simple;
-    then you can continue to incrementally add complexity as you push
-    towards tape-out.
-
 2. Baseline Software & Testing
 --------------------------------------------------------------------------
 
@@ -556,4 +541,19 @@ natively and cross-compiled running on the ISA simulator.
 % make proj2-xcel-test
 % ../../sim/pmx/pmx-sim --xcel-impl proj2-fl ./proj2-xcel-test
 ```
+
+!!! warning "You do not need to finalize your software and testing!"
+
+    Students must submit an initial version of their baseline software,
+    accelerator FL model, accelerator software, and associated tests but
+    they will almost certainly continue to improve these parts of the
+    project as they push towards tape-out. The key is to get a _very
+    simple initial version_ of their project ready for submission. It is
+    ok if this _very simple initial version_ of the baseline software is
+    not optimized, or if the _very simple initial version_ of the
+    accelerator FL model does not support all of the desired
+    functionality, or if you have robust intitial testing but know you
+    want to add more testing in the future. Start small; start simple;
+    then you can continue to incrementally add complexity as you push
+    towards tape-out.
 
