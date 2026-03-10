@@ -18,9 +18,10 @@ into complete chip layout in TSMC 180nm. We have some project ideas here:
 The project includes three parts:
 
  - Part A: Software & Testing
- - Part B: Accelerator
- - Part C: Evaluation
- - Part D: Tape-out
+ - Part B: Accelerator RTL Milestone
+ - Part C: Accelerator RTL Design
+ - Part D: ASIC Evaluation
+ - Part E: Tape-out and Report
 
 All parts must be done in a group of 2-3 students. You can confirm your
 group on Canvas (Click on People, then Groups, then search for your name
