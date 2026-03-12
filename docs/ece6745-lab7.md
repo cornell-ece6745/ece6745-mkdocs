@@ -100,9 +100,9 @@ Here is a list of all of the steps we will be working with today.
 10-mentor-calibre-lvs
 ```
 
-Extensive documentation is provided by Synopsys and Cadence. We have
-organized this documentation and made it available to you on the Canvas
-course page:
+Extensive documentation is provided by Synopsys, Cadence, and Siemens. We have
+organized this documentation and made it available to you on the Canvas course
+page:
 
  - <https://www.csl.cornell.edu/courses/ece6745/asicdocs>
 
