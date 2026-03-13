@@ -1351,8 +1351,8 @@ Compare the power reports from Synopsys PT.
 
 ```bash
 % cd ${HOME}/ece6745/lab8/asic
-% cat build-px-null/08-synopsys-pt-pwr/ProcMemXcel_v0_NullXcel_pmx-sim-gcd-rtl-ubmark-gcd-eval.rpt
-% cat build-px-gcd/08-synopsys-pt-pwr/ProcMemXcel_v0_GcdXcel_pmx-sim-null-rtl-ubmark-gcd-xcel-eval.rpt
+% cat build-px-null/08-synopsys-pt-pwr/ProcMemXcel_v0_NullXcel_pmx-sim-null-rtl-ubmark-gcd-eval-detailed.rpt
+% cat build-px-gcd/08-synopsys-pt-pwr/ProcMemXcel_v0_GcdXcel_pmx-sim-gcd-rtl-ubmark-gcd-xcel-eval-detailed.rpt
 ```
 
 Compare the total power and the breakdown into internal, switching, and
@@ -1369,11 +1369,9 @@ Compare the summary results too.
 % cat build-px-gcd/11-summarize-results/run.log
 ```
 
-Think about the tradeoffs involved. Remember that the GCD accelerator
-results in a significant speedup. The GCD accelerator adds area and
-leakage power, but for workloads that use GCD it could significantly
-reduce the number of cycles required and thus reduce the total energy
-consumed. This is a classic area/energy tradeoff in hardware design.
+Think about the tradeoffs involved in terms of execution time in cycles,
+cycle time (i.e., clock period), area, and energy. Should we add the GCD
+accelerator to our system-on-chip?
 
 5. Processor with Caches
 --------------------------------------------------------------------------
