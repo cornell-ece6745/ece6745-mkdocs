@@ -1259,7 +1259,7 @@ Run the steps one at a time to make sure there are no errors. Do not just
 use `run-flow`.
 
 ```bash
-% cd ${HOME}/ece6745/lab8/asic/build-proc-null-xcel
+% cd ${HOME}/ece6745/lab8/asic/build-px-null
 % ./01-pymtl-rtlsim/run
 % ./02-synopsys-vcs-rtlsim/run
 % ./03-synopsys-dc-synth/run
