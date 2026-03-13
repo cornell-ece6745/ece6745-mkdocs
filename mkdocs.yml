@@ -106,6 +106,7 @@ nav:
     - 'Lab 5: TinyRV2 Accelerators': ece6745-lab5.md
     - 'Lab 6: Commercial Front-End Flow': ece6745-lab6.md
     - 'Lab 7: Commercial Back-End Flow': ece6745-lab7.md
+    - 'Lab 8: Commercial Block Flow': ece6745-lab8.md
 
   - 'Projects':
     - 'Project 1: TinyFlow Tape-Out':
