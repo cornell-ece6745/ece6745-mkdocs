@@ -30,8 +30,8 @@ to find your project group).
 !!! warning "All students must contribute to and understand all submitted work!"
 
     It is not acceptable for one student to do all of part A and a
-    different student to do all of part B. It is not acceptable for one
-    student to only focus on one module of part B and not understand
+    different student to do all of part B/C. It is not acceptable for one
+    student to only focus on one module of part B/C and not understand
     anything about the other modules. All students must contribute and
     understand all aspects of all parts. The instructors will also survey
     the Git commit log on GitHub to confirm that all students are
@@ -240,7 +240,7 @@ GitHub. Be sure to verify your code is passing all of your simulations on
 `ecelinux`. Your submission will be assessed for code quality and
 functionalty. You should be continuing to improve your testing strategy.
 
-Here is how we will be testing your final code submission for part B.
+Here is how we will be testing your final code submission for part C.
 First, we will clone your repo and create an environment variable for the
 top of your repo.
 
