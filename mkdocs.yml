@@ -107,6 +107,7 @@ nav:
     - 'Lab 6: Commercial Front-End Flow': ece6745-lab6.md
     - 'Lab 7: Commercial Back-End Flow': ece6745-lab7.md
     - 'Lab 8: Commercial Block Flow': ece6745-lab8.md
+    - 'Lab 9: Commercial Chip Flow': ece6745-lab9.md
 
   - 'Projects':
     - 'Project 1: TinyFlow Tape-Out':
