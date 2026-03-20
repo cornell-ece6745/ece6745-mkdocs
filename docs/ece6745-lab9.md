@@ -840,3 +840,11 @@ To see the final layout with seal ring and fill:
 % klayout -l ${TSMC_180NM}/klayout.lyp post-filled.gds
 ```
 
+6. Todo On Your Own
+--------------------------------------------------------------------------
+
+We have pushed the chip flow files to your project 2 repos. Go ahead and
+implement the chip top-level module for project 2 in the same way you did
+for the GCD accelerator. Then try pushing project 2 through the chip flow
+as you start pushing towards tapeout!
+
