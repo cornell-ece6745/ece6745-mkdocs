@@ -287,13 +287,27 @@ Be sure to use the correct IO cell for each top-level port:
  - `InputIO`: use for all top-level input ports
  - `OutputIO`: use for all top-level output ports
 
+**You must use very specific names for each IO cell! Name the IO
+cells as follows:**
+
+ - `clk_io`
+ - `reset_io`
+ - `cs_io`
+ - `sclk_io`
+ - `mosi_io`
+ - `miso_io`
+ - `mparity_io`
+ - `aparity_io`
+ - `clk_out_io`
+
 The off-chip reset signal arrives asynchronously relative to the on-chip
 clock. Sampling an asynchronous signal with a single flip-flop can cause
 _metastability_ -- the flip-flop output can settle to an unpredictable
 value. The two-flop synchronizer reduces the probability of metastability
 to a negligible level by giving the first flop's output a full clock
 cycle to resolve before the second flop samples it. All downstream logic
-should use the synchronized version of the reset signal.
+should use the synchronized version of the reset signal. You can
+implement the synchronizer using an `always_ff` block.
 
 Configure the SPI Minion parameters as shown below.
 
