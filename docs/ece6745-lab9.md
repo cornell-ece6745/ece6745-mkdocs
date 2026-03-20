@@ -30,6 +30,32 @@ into a full _chip-level_ flow.
     cell SPICE models. The chip flow has 14 steps compared to the block
     flow's 11 steps.
 
+The following diagrams illustrate the primary tools we have already seen
+in the previous labs. Notice that the ASIC tools all require various
+views from the standard-cell library.
+
+![](img/T08-full-flow.png)
+
+We will be adding additional steps for the padring, seal ring, and fill.
+Here is list of all of the steps we will be using in the chip flow.
+
+```
+00-padring-gen
+01-pymtl-rtlsim
+02-synopsys-vcs-rtlsim
+03-synopsys-dc-synth
+04-synopsys-vcs-ffglsim
+05-cadence-innovus-pnr
+06-synopsys-pt-sta
+07-synopsys-vcs-baglsim
+08-synopsys-pt-pwr
+09-mentor-calibre-seal
+10-mentor-calibre-fill
+11-mentor-calibre-drc
+12-mentor-calibre-lvs
+13-summarize-results
+```
+
 Extensive documentation is provided by Synopsys, Cadence, and Siemens for
 these ASIC tools. We have organized this documentation and made it
 available to you on the public course webpage:
@@ -79,131 +105,148 @@ following command:
 % alias %=""
 ```
 
-2. Chip-Level RTL Design
+2. GCD Accelerator Block
 --------------------------------------------------------------------------
 
-Before looking at the ASIC flow, we need to understand how a design is
-structured for chip-level integration. In the block flow, we synthesize
-and place-and-route the accelerator alone. In the chip flow, we wrap the
-accelerator with I/O pads, a reset synchronizer, and an SPI minion to
-create a complete chip-level design. This is the same pattern you will
-replicate for your own Project 2 accelerator.
-
-### 2.1. Chip Top Module
-
-Take a look at the chip top module for the GCD accelerator.
+We need to make sure our GCD accelerator is functionally correct and can
+go through the block flow before we attempt to use the chip flow. Let's
+start by making sure our accelerator is fully functional using RTL
+simulation.
 
 ```bash
-% cd ${HOME}/ece6745/lab9/sim/lab5_xcel
-% code GcdXcelChip.v
+% mkdir -p ${HOME}/ece6745/lab9/sim/build
+% cd ${HOME}/ece6745/lab9/sim/build
+% pytest ../lab5_xcel/test/GcdXcel_test.py
 ```
 
-Here is the module interface:
-
-```verilog
-module lab5_xcel_GcdXcelChip
-(
-  input  logic clk,
-  input  logic reset,
-
-  // SPI interface (off-chip side)
-
-  input  logic cs,
-  input  logic sclk,
-  input  logic mosi,
-  output logic miso,
-
-  // Parity outputs (off-chip side)
-
-  output logic minion_parity,
-  output logic adapter_parity,
-  output logic clk_out
-);
-```
-
-The module has five inputs (`clk`, `reset`, `cs`, `sclk`, `mosi`) and
-four outputs (`miso`, `minion_parity`, `adapter_parity`, `clk_out`).
-The `cs`, `sclk`, and `mosi` signals are the SPI bus from an off-chip
-master. The `miso` signal carries data back to the master. The
-`minion_parity` and `adapter_parity` outputs are for error detection.
-The `clk_out` output drives the on-chip clock back off-chip for
-monitoring.
-
-The first thing the module does is declare on-chip signals and
-instantiate I/O pads:
-
-```verilog
-  InputIO #(.is_clk(1)) clk_io   ( .off_chip( clk   ), .on_chip( on_chip_clk   ) );
-  InputIO               reset_io ( .off_chip( reset ), .on_chip( on_chip_reset ) );
-  InputIO               cs_io    ( .off_chip( cs    ), .on_chip( on_chip_cs    ) );
-  InputIO               sclk_io  ( .off_chip( sclk  ), .on_chip( on_chip_sclk  ) );
-  InputIO               mosi_io  ( .off_chip( mosi  ), .on_chip( on_chip_mosi  ) );
-
-  OutputIO               miso_io            ( .on_chip( on_chip_miso            ), .off_chip( miso            ) );
-  OutputIO               minion_parity_io   ( .on_chip( on_chip_minion_parity   ), .off_chip( minion_parity   ) );
-  OutputIO               adapter_parity_io  ( .on_chip( on_chip_adapter_parity  ), .off_chip( adapter_parity  ) );
-  OutputIO #(.is_clk(1)) clk_out_io         ( .on_chip( on_chip_clk_out         ), .off_chip( clk_out         ) );
-```
-
-Notice the `is_clk` parameter on the clock pads. This tells the pad
-model to use the special clock I/O cell (`PDDW0812SCDG`) instead of the
-standard I/O cell (`PDDW0812CDG`). The clock I/O cell uses a Schmitt trigger to switch states at two different threshold voltages instead of one, to allow for greater noise reduction which is important for high-frequency signals such as the clock.
-
-### 2.2. I/O Pad Behavioral Models
-
-Take a look at the I/O pad behavioral models.
+Now let's make sure our accelerator can go through the block flow.
 
 ```bash
-% cd ${HOME}/ece6745/lab9/sim/io_cells
+% mkdir -p ${HOME}/ece6745/lab9/asic/build-gcd-xcel
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel
+% pyhflow ../designs/lab5-gcd-xcel.yml
+% ./run-flow
+
+ timestamp           = 2026-03-20 10:47:45
+ design_name         = GcdXcel_noparam
+ clock_period        = 3.0
+ vcs-rtlsim          = 18/18 passed
+ synth_setup_slack   = 0.3217 ns
+ synth_num_stdcells  = 461
+ synth_area          = 9112.275 um^2
+ ffglsim             = 18/18 passed
+ pnr_setup_slack     = 0.0442 ns
+ pnr_hold_slack      = 0.0132 ns
+ pnr_clk_ins_src_lat = 0 ns
+ pnr_num_stdcells    = 527
+ pnr_area            = 10146.214 um^2
+ sta_setup_slack     = 0.0500 ns
+ sta_hold_slack      = 0.0140 ns
+ baglsim             = 18/18 passed
+ main_drc_results    = no violations found
+ antenna_drc_results = no violations found
+ lvs                 = no violations found
+
+ GcdXcel_noparam_gcd-xcel-sim-rtl-random
+  - exec_time = 3220 cycles
+  - exec_time = 9660.0000 ns
+  - power     = 2.0170 mW
+  - energy    = 19.4842 nJ
+
+ GcdXcel_noparam_gcd-xcel-sim-rtl-small
+  - exec_time = 458 cycles
+  - exec_time = 1374.0000 ns
+  - power     = 2.9820 mW
+  - energy    = 4.0973 nJ
+
+ GcdXcel_noparam_gcd-xcel-sim-rtl-zeros
+  - exec_time = 157 cycles
+  - exec_time = 471.0000 ns
+  - power     = 3.2430 mW
+  - energy    = 1.5275 nJ
+```
+
+3. Chip-Level RTL Design
+--------------------------------------------------------------------------
+
+Now we are ready to turn our accelerator into a complete chip. We need to
+integrate the accelerator with I/O cells, a reset synchronizer, and an
+SPI minion to create a complete chip-level design. Here is a block-level
+diagram of the chip.
+
+![](img/lab9-gcd-xcel-chip.png)
+
+### 3.1. I/O Cells
+
+Each IO cell includes some ciruitry along with a _bond pad_ which is a
+large rectangle of top-level metal which will be exposed during the chip
+fabrication process. Then during packaging we can use bond wires to
+connect the package to the bond pad. These are the key IO cells we will
+be using:
+
+ - Signal IO Cell (PDDW0812CDG)
+ - Clock IO Cell (PDDW0812SCDG)
+ - IO Vdd (PVDD2CDG)
+ - Core Vdd (PVDD1CDG)
+ - Common Ground (PVSS3CDG)
+
+Let's take a look at the databook for the IO cells.
+
+```bash
+% evince ${TSMC_180NM}/iocells.pdf
+```
+
+Find the entry for the signal IO cell we will be using. Notice that these
+are bidirectional IO cells (i.e., the same cell is can be used as both an
+input and as an output). Then take a look at the layout view for this
+cell.
+
+```bash
+% klayout -l ${TSMC_180NM}/klayout.lyp ${TSMC_180NM}/iocells.gds
+```
+
+Take a look at the I/O cell behavioral models we will be using.
+
+```bash
+% cd ${HOME}/ece6745/lab9/sim/iocells
 % code InputIO.v
-% code OutputIO.v
 ```
 
 Here is the `InputIO` module:
 
 ```verilog
-module InputIO #(
-  parameter is_clk = 0
-) (
-  input  wire off_chip,
-  output wire on_chip
+module iocells_InputIO
+(
+  input  logic off_chip,
+  output logic on_chip
 );
 
   `ifndef SYNTHESIS
     assign on_chip = off_chip;
   `else
-    generate
-      if( is_clk ) begin : CLK_IO
-        PDDW0812SCDG io (
-          .I   ( 1'b0     ),
-          .OEN ( 1'b1     ),
-          .PAD ( off_chip ),
-          .C   ( on_chip  ),
-          .IE  ( 1'b1     ),
-          .PE  ( 1'b1     ),
-          .DS  ( 1'b0     )
-        );
-      end else begin : NOT_CLK_IO
-        PDDW0812CDG io (
-          .I   ( 1'b0     ),
-          .OEN ( 1'b1     ),
-          .PAD ( off_chip ),
-          .C   ( on_chip  ),
-          .IE  ( 1'b1     ),
-          .PE  ( 1'b1     ),
-          .DS  ( 1'b0     )
-        );
-      end
-    endgenerate
+    PDDW0812CDG io
+    (
+      .I   (1'b0),
+      .OEN (1'b1),
+      .PAD (off_chip),
+      .C   (on_chip),
+      .IE  (1'b1),
+      .PE  (1'b1),
+      .DS  (1'b0)
+    );
   `endif
 
 endmodule
 ```
 
-The key pattern here is `ifndef SYNTHESIS`. During simulation, the pad
-is a simple wire passthrough (`assign on_chip = off_chip`). During
-synthesis, it instantiates the real TSMC I/O cell. The I/O cell pins
-are:
+The `off_chip` port will be connected to the pad, bond wire, and package
+off chip. The `on_chip` port will be connected to the logic within the
+chip.
+
+The key pattern here is `ifndef SYNTHESIS`. During simulation, the pad is
+a simple wire passthrough (`assign on_chip = off_chip`). During
+synthesis, it instantiates the real I/O cell for TSMC 180nm. The I/O cell
+pins are:
 
  - `PAD`: The external bond pad connection
  - `C`: The core-side connection
@@ -214,91 +257,71 @@ are:
  - `DS`: Drive strength select
 
 The `OutputIO` module is similar but configures the cell in output mode:
-`OEN` is `1'b0` (output enabled), `I` drives the on-chip signal out,
-and `IE` is `1'b0` (input buffer disabled).
+`OEN` is `1'b0` (output enabled), `I` drives the on-chip signal out, and
+`IE` is `1'b0` (input buffer disabled).
 
-### 2.3. Reset Synchronizer
+When floorplanning the chip we will need to place these IO cells in a
+ring around the outside of the chip into what is called a _padring_.
 
-The chip top module includes a two-flop reset synchronizer:
+### 3.2. Chip Top Module
 
-```verilog
-  logic reset_sync_pre;
-  logic reset_sync;
+You now need to implement the top-level module for the chip.
 
-  always_ff @(posedge on_chip_clk) begin
-    reset_sync_pre <= on_chip_reset;
-    reset_sync     <= reset_sync_pre;
-  end
+```bash
+% cd ${HOME}/ece6745/lab9/sim/lab5_xcel
+% code GcdXcelChip.v
 ```
+
+Your implementation should have four sections:
+
+ - IO Cells: instanatiate nine IO cells, one for each top-level port
+ - Clock and Reset: connect `clk` to `clk_out` and add a reset synchronizer
+ - SPI Minion: instantiate the SPI minion and connect it to `cs`, `sclk`,
+   `mosi`, `miso`, and the GCD accelerator
+ - GCD Accelerator: instantiate the GCD accelerator and connect it to the
+   SPI minion
+
+Be sure to use the correct IO cell for each top-level port:
+
+ - `ClkInputIO`: use for the clock input
+ - `InputIO`: use for all top-level input ports
+ - `OutputIO`: use for all top-level output ports
 
 The off-chip reset signal arrives asynchronously relative to the on-chip
 clock. Sampling an asynchronous signal with a single flip-flop can cause
-_metastability_ -- the flip-flop output can oscillate or settle to an
-unpredictable value. The two-flop synchronizer reduces the probability
-of metastability to a negligible level by giving the first flop's output
-a full clock cycle to resolve before the second flop samples it. All
-downstream logic uses `reset_sync` instead of the raw `on_chip_reset`.
+_metastability_ -- the flip-flop output can settle to an unpredictable
+value. The two-flop synchronizer reduces the probability of metastability
+to a negligible level by giving the first flop's output a full clock
+cycle to resolve before the second flop samples it. All downstream logic
+should use the synchronized version of the reset signal.
 
-### 2.4. SPI Minion
-
-The chip communicates with the outside world via SPI (Serial Peripheral
-Interface). Take a look at the SPI minion module:
-
-```bash
-% cd ${HOME}/ece6745/lab9/sim/spi
-% code minion.v
-```
-
-The SPI minion has two sub-components:
-
- - `Minion_PushPull`: Handles the SPI protocol -- synchronizes the
-   asynchronous `cs`, `sclk`, and `mosi` signals to the chip clock,
-   uses shift registers for serial-to-parallel (MOSI) and
-   parallel-to-serial (MISO) conversion, and generates push/pull
-   enables on SPI transaction boundaries.
-
- - `Minion_Adapter`: Converts the push/pull interface into standard
-   val/rdy streams (`send_msg` for requests arriving from the master,
-   `recv_msg` for responses going back to the master).
-
-The SPI minion is parameterized with `BIT_WIDTH=38` so that each 40-bit
-SPI word carries a complete xcel transaction. The 40-bit SPI word format
-is:
-
-```
-  MOSI (master to chip, 40 bits):
-    {val_wrt(1), val_rd(1), type_(1), addr(5), data(32)}
-
-  MISO (chip to master, 40 bits):
-    {val(1), spc(1), type_(1), 0(5), data(32)}
-```
-
-The two extra bits (`val_wrt`/`val_rd` on MOSI, `val`/`spc` on MISO`)
-are the SPI flow-control bits. The 38-bit payload maps directly to the
-xcel request/response messages.
-
-Back in `GcdXcelChip.v`, the wiring between the SPI minion and the GCD
-accelerator is straightforward:
+Configure the SPI Minion parameters as shown below.
 
 ```verilog
-  // SPI send -> xcel req (direct mapping)
-  assign xcel_req     = spi_send_msg;
-  assign xcel_req_val = spi_send_val;
-  assign spi_send_rdy = xcel_req_rdy;
-
-  // Xcel resp -> SPI recv (pad to 38 bits)
-  assign spi_recv_msg = { 5'b0, xcel_resp };
-  assign spi_recv_val = xcel_resp_val;
-  assign xcel_resp_rdy = spi_recv_rdy;
+  spi_Minion
+  #(
+    .BIT_WIDTH (38),
+    .N_SAMPLES (4)
+  )
 ```
 
-The SPI `send_msg` (38 bits) maps directly to `xcel_req_t` which is
-`{type_(1), addr(5), data(32)}`. The `xcel_resp_t` (33 bits) is
-zero-padded to 38 bits for the SPI `recv_msg`.
+The SPI minion will produce a 38-bit message which is exactly the correct
+amount for an accelerator request message (i.e., 1 bit for type, 5 bits
+for the accelerator register specifier, 32 bits for data). An accelerator
+response message is only 33 bits (i.e., 1 bit for type, 32 bits for data)
+so you will need to zero extend the accelerator response message when
+connecting it to the SPI minion.
 
-### 2.5. PyMTL Wrapper
+!!! warning "Show a TA your top-level implementation!"
 
-Take a look at the PyMTL wrapper for the chip module:
+    Once you have finished, show a TA your top-level implementation to
+    get feedback before continuing.
+
+### 3.3. Chip Testing
+
+Once you have finished implementing the chip top-level module, we of
+course need to test it. Take a look at the PyMTL wrapper for the chip
+module:
 
 ```bash
 % cd ${HOME}/ece6745/lab9/sim/lab5_xcel
@@ -311,22 +334,14 @@ from pymtl3.passes.backends.verilog import *
 
 class GcdXcelChip( VerilogPlaceholder, Component ):
   def construct( s ):
-    s.cs              = InPort (1)
-    s.sclk            = InPort (1)
-    s.mosi            = InPort (1)
-    s.miso            = OutPort(1)
-    s.minion_parity   = OutPort(1)
-    s.adapter_parity  = OutPort(1)
-    s.clk_out         = OutPort(1)
+    s.cs      = InPort (1)
+    s.sclk    = InPort (1)
+    s.mosi    = InPort (1)
+    s.miso    = OutPort(1)
+    s.mparity = OutPort(1)
+    s.aparity = OutPort(1)
+    s.clk_out = OutPort(1)
 ```
-
-This is a thin `VerilogPlaceholder` wrapper that tells PyMTL to import
-the Verilog module for simulation. The port list must match the Verilog
-module interface exactly (excluding `clk` and `reset` which PyMTL
-handles automatically). You will create a similar `.py` wrapper for your
-own chip module.
-
-### 2.6. Test Harness and SPI Master
 
 Take a look at the chip-level test harness:
 
@@ -341,6 +356,12 @@ The test harness structure is:
   StreamSourceFL    SpiMasterFL      GcdXcelChip      SpiMasterFL    StreamSinkFL
   (XcelReqMsg) --> (bit-bang SPI) --> (SPI wires) --> (SPI wires) --> (XcelRespMsg)
 ```
+
+The key idea is to reuse the same tests you used to test your accelerator
+in isolation to test the chip. We simply need to put the accelerator
+request/response messages for each test in the source and sinks and then
+the `SpiMasterFL` will take care of converting these messages into SPI
+transactions.
 
 ```python
 class TestHarness( Component ):
@@ -367,73 +388,13 @@ class TestHarness( Component ):
 
 The `SpiMasterFL` (in `sim/spi/SpiMasterFL.py`) is a functional-level
 model that bit-bangs the SPI protocol: it takes xcel request messages,
-serializes them into SPI transactions, and deserializes the SPI
-responses back into xcel response messages.
-
-To understand what the test sends over SPI, look at the `xgcd` helper
-function defined in `GcdXcelFL_test.py`:
-
-```python
-def xgcd( a, b, result ):
-  return [
-    xreq( 'wr', 0, a ), xresp( 'wr', 0 ),
-    xreq( 'wr', 1, b ), xresp( 'wr', 0 ),
-    xreq( 'rd', 2, 0 ), xresp( 'rd', result ),
-  ]
-```
-
-Each GCD computation is a sequence of three xcel transactions:
-
- 1. Write `a` to xcel register 0
- 2. Write `b` to xcel register 1
- 3. Read the GCD result from xcel register 2
-
-The `xreq`/`xresp` helpers create the appropriate `XcelReqMsg` and
-`XcelRespMsg` objects. The messages are interleaved as
-request/response pairs: `msgs[::2]` extracts all requests (sent by the
-source) and `msgs[1::2]` extracts all expected responses (checked by the
-sink).
-
-The test case table in `GcdXcelFL_test.py` defines 15 test cases:
-
-```python
-test_case_table = mk_test_case_table([
-  (                  "msgs                 src_delay sink_delay"),
-  [ "basic",          basic_msgs,          0,        0,         ],
-  [ "zeros",          zeros_msgs,          0,        0,         ],
-  [ "equal",          equal_msgs,          0,        0,         ],
-  [ "divides",        divides_msgs,        0,        0,         ],
-  [ "common_factors", common_factors_msgs, 0,        0,         ],
-  [ "coprime",        coprime_msgs,        0,        0,         ],
-  [ "powers_of_two",  powers_of_two_msgs,  0,        0,         ],
-  [ "larger_numbers", larger_numbers_msgs, 0,        0,         ],
-  [ "swap_ordering",  swap_ordering_msgs,  0,        0,         ],
-  [ "fibonacci",      fibonacci_msgs,      0,        0,         ],
-  [ "sub_stress",     sub_stress_msgs,     0,        0,         ],
-  [ "random_0x0",     random_msgs,         0,        0,         ],
-  [ "random_5x0",     random_msgs,         5,        0,         ],
-  [ "random_0x5",     random_msgs,         0,        5,         ],
-  [ "random_3x9",     random_msgs,         3,        9,         ],
-])
-```
-
-Each test case specifies the message list plus source and sink delays
-(to test backpressure). The `random_*` variants use the same random
-messages but with different delay patterns.
-
-The key insight is that `GcdXcelChip_test.py` _imports_ this same
-`test_case_table`:
-
-```python
-from lab5_xcel.test.GcdXcelFL_test import test_case_table
-```
-
-This means the exact same logical tests work at both the functional
-level (direct xcel interface) and the chip level (over SPI). The only
-difference is the test harness: the chip test interposes the
-`SpiMasterFL` between the source/sink and the design under test. This
-is an important design pattern -- you should reuse your existing FL
-test cases when creating your own chip-level tests.
+serializes them into SPI transactions, and deserializes the SPI responses
+back into xcel response messages. Again the exact same logical tests work
+at both the functional level (direct xcel interface) and the chip level
+(over SPI). The only difference is the test harness: the chip test
+interposes the `SpiMasterFL` between the source/sink and the design under
+test. This is an important design pattern -- you should reuse your
+existing FL test cases when creating your own chip-level tests.
 
 The chip test also supports the `--dump-xmsgs` flag, which generates
 transaction log files recording each xcel message sent/received over
@@ -443,7 +404,15 @@ fabricated silicon, we can replay these transaction logs through a
 real SPI master to verify that the physical chip produces the correct
 responses.
 
-### 2.7. Simulator
+Let's go ahead and run all of the tests on the RTL model of the complete
+chip.
+
+```bash
+% cd ${HOME}/ece6745/lab9/sim/build
+% pytest ../lab5_xcel/test/GcdXcelChip_test.py
+```
+
+### 3.4. Simulator
 
 Take a look at the simulator script:
 
@@ -471,13 +440,13 @@ The key flags for the ASIC flow are:
  - `--dump-vtb`: Generates Verilog test benches for VCS simulation
  - `--dump-xmsgs`: Generates SPI transaction logs for future chip testing
 
-3. Chip Flow Overview
+4. Chip Flow Overview
 --------------------------------------------------------------------------
 
 Now that we understand the chip-level RTL design, let's look at the
 chip ASIC flow that will take this design all the way to layout.
 
-### 3.1. Step Templates
+### 4.1. Step Templates
 
 The chip flow step templates are located in the `asic/steps/chip`
 directory:
@@ -518,7 +487,7 @@ Several existing steps are also modified to handle I/O cells:
  - `12-mentor-calibre-lvs`: Uses `iocells.sp` and `lvs-devices.sp` for
    I/O cell SPICE models
 
-### 3.2. Design YAML
+### 4.2. Design YAML
 
 Take a look at the design YAML file for the chip-level GCD accelerator:
 
@@ -550,7 +519,7 @@ dump_vcd     : true
 
 pymtl_rtlsim: |
   pytest ../../../sim/lab5_xcel/test/GcdXcelChip_test.py \
-    --test-verilog --dump-vtb --dump-xmsgs | tee -a run.log
+    --test-verilog --dump-vtb | tee -a run.log
   ...
 
 tests:
@@ -565,16 +534,20 @@ evals:
 ```
 
 The design YAML specifies all 14 chip flow steps (note the `chip/`
-prefix). The design name is `GcdXcelChip_noparam` and the clock period
-is 4.5ns. Note the clock period is slower than the 3.0ns used in the
-block flow because I/O cell delays add overhead.
+prefix). The design name is `GcdXcelChip_noparam` and the clock period is
+4.5ns. Note the clock period is slower than the 3.0ns used in the block
+flow because I/O cell delays add overhead. When doing a rigorous
+comparative analysis with the processor we will use the block flow and
+set our clock contraint equal to what the processor can run out. However,
+for the chip flow you are free to use whatever frequency you like as long
+as you can close timing.
 
 The `pymtl_rtlsim` section runs both the pytest test suite and the
 simulator with three input patterns (random, small, zeros). The `tests`
 list and `evals` list name all 15 tests and 3 evaluations that will be
 run through subsequent simulation steps.
 
-### 3.3. Padring Configuration
+### 4.3. Padring Configuration
 
 Take a look at the padring configuration file:
 
@@ -651,16 +624,14 @@ be the final padring we use for the tapeouts, but it provides a reasonable
 organization for the purposes of this lab and early trials for your own
 accelerators.
 
-4. Generating the Flow and Padring
+5. Running the Chip Flow
 --------------------------------------------------------------------------
-
-### 4.1. Running pyhflow
 
 Let's generate the chip flow scripts:
 
 ```bash
-% mkdir -p ${HOME}/ece6745/lab9/asic/build-gcd
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
+% mkdir -p ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
 % pyhflow ../designs/lab9-gcd-xcel-chip.yml
 ```
 
@@ -669,7 +640,7 @@ into the build directory and applies Jinja2 template substitution. For
 example, let's see how the synthesis script was filled in:
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
 % code 03-synopsys-dc-synth/run.tcl
 ```
 
@@ -684,12 +655,12 @@ elaborate GcdXcelChip_noparam
 create_clock [get_ports clk] -name ideal_clock1 -period 4.5
 ```
 
-### 4.2. Padring Generation (Step 00)
+### 5.1. Padring Generation
 
 Let's run the padring generation step:
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
 % ./00-padring-gen/run
 ```
 
@@ -701,238 +672,49 @@ generates two output files:
  - `padring_gen.tcl`: A Tcl script that places bond pads at computed
    positions and adds route blockages in the I/O cell regions
 
+Take a look at these files.
+
+```bash
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
+% code ./00-padring-gen/padring_gen.io
+% code ./00-padring-gen/padring_gen.tcl
+```
+
 These files are consumed later during the place-and-route step.
 
-5. RTL Simulation
---------------------------------------------------------------------------
+### 5.2. Chip Front-End Flow
 
-### 5.1. PyMTL 2-State RTL Simulation (Step 01)
-
-Run the PyMTL RTL simulation:
+We are
+now ready to run steps 1-4. Run each step one at a time looking for
+errors.
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
 % ./01-pymtl-rtlsim/run
-```
-
-This step runs the chip-level test suite with `--test-verilog --dump-vtb
---dump-xmsgs` to:
-
- 1. Verify the design passes all 15 functional tests
- 2. Generate pickled Verilog (`GcdXcelChip_noparam__pickled.v`) for synthesis
- 3. Generate Verilog test benches (`.v`) for VCS simulation
- 4. Generate transaction log files (`.xmsgs`) for debugging
-
-Check the output to make sure all tests pass. The step also runs the
-three evaluation simulations (random, small, zeros).
-
-### 5.2. VCS 4-State RTL Simulation (Step 02)
-
-Run the VCS 4-state RTL simulation:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./02-synopsys-vcs-rtlsim/run
-```
-
-The 4-state simulation catches X-propagation issues that the 2-state
-PyMTL simulation cannot detect. Check the output to make sure all 18
-simulations (15 tests + 3 evals) pass with no X warnings.
-
-6. Synthesis
---------------------------------------------------------------------------
-
-### 6.1. Synopsys DC Synthesis (Step 03)
-
-Run synthesis:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./03-synopsys-dc-synth/run
-```
-
-Take a look at the synthesis script:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% code 03-synopsys-dc-synth/run.tcl
-```
-
-The key difference from the block flow is that the `target_library` now
-includes `iocells.db` in addition to `stdcells.db`:
-
-```tcl
-set_app_var target_library [list \
-  "$env(TSMC_180NM)/stdcells.db" \
-  "$env(TSMC_180NM)/iocells.db" \
-]
-```
-
-Another difference is the dual operating conditions. The I/O cells and
-core cells operate in different voltage domains and have different
-timing characteristics, so we apply separate operating conditions:
-
-```tcl
-set_operating_conditions \
-  -library tph018nv3_sltc \
-  -object_list [get_cells "v/*io/*io"] \
-  NCCOM
-set_operating_conditions \
-  -library tcb018gbwp7ttc \
-  NCCOM
-```
-
-The first command sets the operating conditions for I/O cells (matched
-by the pattern `v/*io/*io`), and the second sets the default operating
-conditions for all core cells.
-
-Carefully look at the output from synthesis. Look for the output after
-`Running PRESTO HDLC` for any warnings to ensure that all of your
-Verilog RTL is indeed synthesizable. Then check the timing and area
-reports:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% cat 03-synopsys-dc-synth/timing.rpt
-% cat 03-synopsys-dc-synth/area.rpt
-% cat 03-synopsys-dc-synth/resources.rpt
-```
-
-Verify that the timing report shows positive setup slack.
-
-### 6.2. Fast-Functional Gate-Level Simulation (Step 04)
-
-Run the fast-functional gate-level simulation:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./04-synopsys-vcs-ffglsim/run
 ```
 
-This step verifies that the synthesized gate-level netlist is
-functionally correct using zero-delay simulation. Check that all 18
-tests pass.
+### 5.3. Chip Back-End Flow
 
-7. Place and Route
---------------------------------------------------------------------------
-
-### 7.1. Cadence Innovus PNR (Step 05)
-
-Run place and route:
+For the place-and-route step we will be using the GUI to be able to see
+the results.
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% ./05-cadence-innovus-pnr/run
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip/05-cadence-innovus-pnr
+% innovus
+innovus> set interactive 1
+innovus> source run.tcl
 ```
 
-Take a look at the PNR script:
+When using interactive pause mode, the `run.tcl` script will run one
+stage at a time and then pause. You can inspect the results and type `go`
+when you are ready to move on to the next stage. Once you have finished
+check the timing and area reports:
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% code 05-cadence-innovus-pnr/run.tcl
-```
-
-There are several key differences from the block flow.
-
-**Initialization.** The LEF files now include I/O cells and bond pads:
-
-```tcl
-set lef_files [list \
-  "$env(TSMC_180NM)/apr-tech.tlef" \
-  "$env(TSMC_180NM)/stdcells.lef" \
-  "$env(TSMC_180NM)/iocells.lef" \
-  "$env(TSMC_180NM)/bondpads.lef" \
-]
-```
-
-And the design uses an I/O assignment file generated by the padring
-step:
-
-```tcl
-set init_io_file   "../00-padring-gen/padring_gen.io"
-```
-
-**Floorplanning.** Instead of the block flow's automatic aspect-ratio
-floorplan (`floorPlan -r 1.0 0.70 ...`), the chip flow uses fixed
-coordinates that account for the padring:
-
-```tcl
-floorPlan -noSnapToGrid -b 15 15 935 935 15 15 935 935 175 175 775 775
-```
-
-The `-b` option specifies the chip boundary (15 to 935um, leaving 15um
-for the seal ring on each side) and the core area (175 to 775um, leaving
-room for the I/O cells between the chip boundary and the core).
-
-**I/O Cell Placement.** The padring generation Tcl script is sourced to
-place bond pads at the computed positions:
-
-```tcl
-source ../00-padring-gen/padring_gen.tcl
-```
-
-This is unique to the chip flow -- the block flow has no I/O cell
-placement.
-
-**Power Routing.** The chip flow uses separate power rings for VDD and
-VSS on different metal layers to allow for direct routing to the I/O cells:
-
-```tcl
-# Route a power ring on M5 for VDD
-addRing \
-  -nets VDD -width 11.5 -spacing 9.6 -offset 12.8 \
-  -layer [list top 5 bottom 5 left 5 right 5] ...
-
-# Route a power ring on M6 for VSS
-addRing \
-  -nets VSS -width 11.5 -spacing 9.6 -offset 33.9 \
-  -layer [list top 6 bottom 6 left 6 right 6] ...
-```
-
-The block flow uses a single combined ring. The chip flow also includes
-special `sroute` commands to connect the power rings to the I/O cell
-pad pin geometries:
-
-```tcl
-sroute \
-  -allowJogging 1 \
-  -connect padPin \
-  -allowLayerChange 1 \
-  -nets {VDD VSS} \
-  -padPinPortConnect { allPort allGeom } \
-  -padPinTarget { ring }
-```
-
-**Outputs.** The chip flow generates two gate-level netlists:
-`post-pnr.v` (standard) and `post-pnr-lvs.v` (physical netlist
-excluding filler and pad cells, used for LVS). It also adds `add_gui_text`
-commands for LVS pin recognition. The GDS merge includes `iocells.gds`
-and `bondpads.gds` in addition to `stdcells.gds`.
-
-### 7.2. Setup Timing
-
-Take a look at the timing setup file:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% code 05-cadence-innovus-pnr/setup-timing.tcl
-```
-
-The key difference from the block flow is that `iocells.lib` is included
-in the library set:
-
-```tcl
-create_library_set -name libs_typical \
-    -timing [list "$env(TSMC_180NM)/stdcells.lib" \
-                 "$env(TSMC_180NM)/iocells.lib"]
-```
-
-### 7.3. Examining Reports
-
-Check the timing and area reports:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
 % cat 05-cadence-innovus-pnr/timing-setup.rpt
 % cat 05-cadence-innovus-pnr/timing-hold.rpt
 % cat 05-cadence-innovus-pnr/area.rpt
@@ -945,7 +727,7 @@ to make sure there are no errors.
 Take a closer look at the hierarchical area report:
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
 % cat 05-cadence-innovus-pnr/area.rpt
 ```
 
@@ -991,317 +773,23 @@ through the chip flow, you should look at this area breakdown to
 understand how much area your accelerator adds compared to the I/O and
 SPI overhead.
 
-8. Static Timing Analysis
---------------------------------------------------------------------------
-
-### 8.1. Synopsys PT STA (Step 06)
-
-Run the PrimeTime static timing analysis:
+We can now complete the remaining steps of the chip flow using the run
+scripts.
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip
 % ./06-synopsys-pt-sta/run
-```
-
-Take a look at the STA script:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% code 06-synopsys-pt-sta/run.tcl
-```
-
-As with synthesis, the `target_library` includes `iocells.db`. The
-script reads the post-PNR netlist, SPEF parasitics, and SDC constraints,
-then reports setup and hold timing.
-
-Check the timing reports:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% cat 06-synopsys-pt-sta/timing-setup.rpt
-% cat 06-synopsys-pt-sta/timing-hold.rpt
-```
-
-PrimeTime is the golden signoff tool for timing analysis. Compare these
-results to the Innovus timing reports. If PrimeTime reports negative
-slack but Innovus showed positive slack, **this is not valid** -- you
-must go back and modify your design (e.g., increase the clock period) to
-fix this.
-
-9. Back-Annotated Simulation and Power
---------------------------------------------------------------------------
-
-### 9.1. Back-Annotated Gate-Level Simulation (Step 07)
-
-Run the back-annotated simulation:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./07-synopsys-vcs-baglsim/run
-```
-
-This step uses the SDF timing file from PNR for cycle-accurate
-simulation with real gate delays. It also calculates the clock insertion
-source latency from the post-PNR SDC file using the
-`calc-clk-ins-src-lat` helper script. For the evaluation simulations, it
-generates SAIF (Switching Activity Interchange Format) files that record
-switching activity for power analysis.
-
-Check that all 18 simulations pass.
-
-### 9.2. Synopsys PT Power Analysis (Step 08)
-
-Run the power analysis:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./08-synopsys-pt-pwr/run
-```
-
-The power analysis script reads the SAIF switching activity from the
-back-annotated simulations and computes dynamic power. As with other
-steps, the `target_library` includes `iocells.db` so that I/O cell
-power is accounted for.
-
-Check the power summary for each evaluation:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% ls 08-synopsys-pt-pwr/*summary*
-% ls 08-synopsys-pt-pwr/*detailed*
-```
-
-The summary reports show total power (internal + switching + leakage)
-and the detailed reports break it down by module hierarchy.
-
-10. Seal Ring and Fill
---------------------------------------------------------------------------
-
-These are new steps unique to the chip flow that prepare the design for
-manufacturing.
-
-### 10.1. Seal Ring Generation (Step 09)
-
-Run the seal ring generation:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./09-mentor-calibre-seal/run
-```
-
-A _seal ring_ is a guard structure of metal and via stacks that runs
-around the entire perimeter of the die. During wafer dicing (cutting
-individual chips from the wafer), micro-cracks can form at the die
-edges. The seal ring prevents these cracks from propagating into the
-active circuit area, protecting the chip's functionality.
-
-The step runs two Tcl scripts using `calibredrv`:
-
- 1. `run-gen-sealring.tcl`: Generates a seal ring GDS by placing corner
-    cells at the four corners (rotated 0/90/180/270 degrees) and edge
-    cells along all four sides from the TSMC seal ring library. It also
-    creates a die area polygon on layer 62/0 that defines the chip
-    boundary for DRC.
-
- 2. `run-merge-sealring.tcl`: Merges the post-PNR GDS with the seal
-    ring GDS, creating `post-sealed.gds`.
-
-### 10.2. Metal, Poly, and Via Fill (Step 10)
-
-Run the fill generation:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./10-mentor-calibre-fill/run
-```
-
-During CMP (chemical-mechanical polishing), regions with low metal
-density get over-polished, causing thickness variations that can affect
-timing and yield. _Fill_ inserts dummy metal, poly, and via patterns to
-equalize density across the chip. The fill patterns are electrically
-inert -- they don't connect to any signals.
-
-The step generates three types of fill using Calibre DRC rule files:
-
-```bash
-calibre -drc -hier -64 -turbo -hyper run-via-fill.rule    # generates vfill.gds
-calibre -drc -hier -64 -turbo -hyper run-poly-fill.rule   # generates pfill.gds
-calibre -drc -hier -64 -turbo -hyper run-metal-fill.rule  # generates mfill.gds
-```
-
-Each rule file specifies the sealed GDS as input and includes the
-appropriate PDK fill rule deck. After generating the fill, the
-`run-merge-fill.tcl` script merges all three fill GDS files with the
-sealed design to create the final `post-filled.gds`. This is the GDS
-that goes to DRC and LVS verification.
-
-11. Design Rule Checking
---------------------------------------------------------------------------
-
-### 11.1. Calibre DRC (Step 11)
-
-Run the DRC checks:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./11-mentor-calibre-drc/run
-```
-
-The key difference from the block flow is that the chip flow runs _four_
-types of DRC checks instead of two:
-
- - `main-drc`: Standard design rule checks (spacing, width, enclosure,
-   overlap, minimum area, etc.)
- - `antenna-drc`: Checks for antenna violations where long metal wires
-   connected to transistor gates accumulate charge during fabrication
- - `wirebond-drc`: Checks rules specific to wirebond pad geometry and
-   spacing (new in chip flow)
- - `metal-fuse-drc`: Checks rules for metal fuse structures used in
-   chip identification or repair (new in chip flow)
-
-You can also run individual DRC types:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% ./11-mentor-calibre-drc/run main
-% ./11-mentor-calibre-drc/run antenna
-% ./11-mentor-calibre-drc/run wirebond
-% ./11-mentor-calibre-drc/run metal-fuse
-```
-
-The `print-summary` script at the end shows the violation count for each
-DRC type. All four types should show zero violations.
-
-### 11.2. Interactive DRC Debugging
-
-If there are DRC violations, you can use the interactive Calibre DRV
-viewer to visualize them. You must specify which DRC type to debug:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd/11-mentor-calibre-drc
-% ./run-interactive main
-```
-
-The usage is `./run-interactive {main|antenna|wirebond|metal-fuse}`.
-This launches the Calibre Results Viewing Environment with the
-post-filled GDS layout and the DRC results for the specified check type.
-You can click on individual violations to see their location in the
-layout. If you have DRC violations, you likely need to change your clock
-period constraint; placement and routing can produce different results
-depending on its value.
-
-12. Layout vs. Schematic
---------------------------------------------------------------------------
-
-### 12.1. Calibre LVS (Step 12)
-
-Run the LVS check:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./12-mentor-calibre-lvs/run
-```
-
-Take a look at the LVS run script:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
-% code 12-mentor-calibre-lvs/run
-```
-
-The key differences from the block flow are:
-
- 1. The Verilog-to-SPICE conversion (`v2lvs`) uses three SPICE
-    libraries instead of one:
-
-    ```bash
-    v2lvs \
-      -v ../05-cadence-innovus-pnr/post-pnr-lvs.v \
-      -o post-pnr.sp \
-      -lsr ${TSMC_180NM}/stdcells.sp \
-      -lsr ${TSMC_180NM}/iocells.sp \
-      -lsr ${TSMC_180NM}/lvs-devices.sp \
-      ...
-    ```
-
-    The block flow only uses `stdcells.sp`. The chip flow adds
-    `iocells.sp` (I/O cell SPICE models) and `lvs-devices.sp`
-    (additional device models needed for I/O cells).
-
- 2. The input netlist is `post-pnr-lvs.v` (not `post-pnr.v`). This
-    physical netlist excludes filler cells, pad cells, and tap cells
-    that would cause LVS mismatches.
-
- 3. The LVS runs on `post-filled.gds` (the final GDS with seal ring
-    and fill), and uses `lvs.hcell` to identify hierarchical cells
-    that should be treated as black boxes.
-
-The `print-summary` script checks for a CORRECT result. If LVS fails,
-common causes include missing power connections and unmatched I/O cells.
-
-### 12.2. Interactive LVS Debugging
-
-If LVS fails, you can use the interactive viewer to debug mismatches:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd/12-mentor-calibre-lvs
-% ./run-interactive
-```
-
-13. Results Summary
---------------------------------------------------------------------------
-
-### 13.1. Summarize Results (Step 13)
-
-Run the results summary:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd
 % ./13-summarize-results/run
 ```
 
-The summary script aggregates metrics from all previous steps:
-
-```
- timestamp            = 2026-03-20 03:54:04
- design_name          = GcdXcelChip_noparam
- clock_period         = 4.0
- pymtl-rtlsim         = 1/1 passed
- vcs-rtlsim           = 18/18 passed
- synth_setup_slack    = 0.0099 ns
- synth_num_stdcells   = 1195
- synth_area           = 74507.847 um^2
- ffglsim              = 18/18 passed
- pnr_setup_slack      = 0.0074 ns
- pnr_hold_slack       = 0.0388 ns
- pnr_num_stdcells     = 1255
- pnr_area             = 77282.579 um^2
- sta_setup_slack      = 0.0600 ns
- sta_hold_slack       = 0.0194 ns
- baglsim              = 18/18 passed
- main-drc             = no violations found
- antenna-drc          = no violations found
- wirebond-drc         = no violations found
- metal-fuse-drc       = no violations found
- lvs                  = no violations found
-
- GcdXcelChip_noparam_gcd-xcel-sim-rtl-chip-zeros
-  - exec_time = 74708 cycles
-  - power     = 15.9000 mW
-  - energy    = 4751.4288 nJ
-
- GcdXcelChip_noparam_gcd-xcel-sim-rtl-chip-small
-  - exec_time = 74708 cycles
-  - power     = 16.0000 mW
-  - energy    = 4781.3120 nJ
-
- GcdXcelChip_noparam_gcd-xcel-sim-rtl-chip-random
-  - exec_time = 76036 cycles
-  - power     = 15.9000 mW
-  - energy    = 4835.8896 nJ
-```
-
-For the results to be valid, the following must all be true:
+Take a close look at the results summary. For a chip to be eligible for
+tapeout, the following must all be true:
 
  - All PyMTL 2-state RTL simulations pass
  - All four-state RTL simulations pass
@@ -1319,35 +807,12 @@ timing after place-and-route then these are still valid results. If
 PrimeTime STA passes timing but Innovus fails timing, **this is not
 valid -- you must go back and modify your design to fix this.**
 
-14. Interactive Debugging and Visualization
---------------------------------------------------------------------------
-
-### 14.1. Viewing the Chip Layout
-
-You can use Klayout to view the chip layout at various stages:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd/05-cadence-innovus-pnr
-% klayout -l $TSMC_180NM/klayout.lyp post-pnr.gds
-```
-
-You should see the core logic in the center surrounded by I/O cells
-around the perimeter. You can use _Display > Full Hierarchy_ to show
-all layout detail including standard cell internals.
-
-To see the final layout with seal ring and fill:
-
-```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd/10-mentor-calibre-fill
-% klayout -l $TSMC_180NM/klayout.lyp post-filled.gds
-```
-
-### 14.2. Interactive Innovus
+### 5.4. Viewing the Chip Layout
 
 You can load the design in Cadence Innovus for interactive debugging:
 
 ```bash
-% cd ${HOME}/ece6745/lab9/asic/build-gcd/05-cadence-innovus-pnr
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip/05-cadence-innovus-pnr
 % innovus
 innovus> source post-pnr.enc
 ```
@@ -1357,87 +822,21 @@ design hierarchy. Right click on a module and choose _Highlight_ to
 color different modules. You can use _Timing > Debug Timing_ to
 visualize the critical path on the layout.
 
-15. To Do On Your Own
---------------------------------------------------------------------------
-
-Now that you understand the chip-level flow, you need to create a
-chip-level wrapper for your own Project 2 accelerator and push it
-through the chip flow. Your accelerator already has a working xcel
-req/resp val/rdy interface; you just need to wrap it with I/O pads, a
-reset synchronizer, and an SPI minion.
-
-**Step 1: Create your chip top module.** Create a file called
-`<YourXcel>Chip.v` in your accelerator's directory, following the same
-pattern as `GcdXcelChip.v`:
-
- - Instantiate `InputIO` pads for `clk` (with `is_clk=1`), `reset`,
-   `cs`, `sclk`, and `mosi`
- - Instantiate `OutputIO` pads for `miso`, `minion_parity`,
-   `adapter_parity`, and `clk_out` (with `is_clk=1`)
- - Add the two-flop reset synchronizer
- - Instantiate the SPI minion with `BIT_WIDTH=38` and `N_SAMPLES=4`
- - Wire the SPI `send_msg` directly to your accelerator's xcel request
- - Wire your accelerator's xcel response (zero-padded to 38 bits) to
-   the SPI `recv_msg`
- - Instantiate your accelerator using the synchronized clock and reset
-
-**Step 2: Create the PyMTL wrapper.** Create `<YourXcel>Chip.py`
-following `GcdXcelChip.py`:
-
-```python
-from pymtl3 import *
-from pymtl3.passes.backends.verilog import *
-
-class YourXcelChip( VerilogPlaceholder, Component ):
-  def construct( s ):
-    s.cs              = InPort (1)
-    s.sclk            = InPort (1)
-    s.mosi            = InPort (1)
-    s.miso            = OutPort(1)
-    s.minion_parity   = OutPort(1)
-    s.adapter_parity  = OutPort(1)
-    s.clk_out         = OutPort(1)
-```
-
-**Step 3: Create the test harness.** Create `<YourXcel>Chip_test.py`
-following `GcdXcelChip_test.py`. Reuse the `test_case_table` from your
-FL tests and wire the `StreamSourceFL -> SpiMasterFL -> Chip ->
-SpiMasterFL -> StreamSinkFL` test harness.
-
-**Step 4: Add `--impl rtl-chip` to your simulator.** Update your
-simulator script to support the `rtl-chip` implementation that uses your
-chip wrapper and the `ChipTestHarness`.
-
-**Step 5: Create a design YAML.** Create a design YAML file following
-`lab9-gcd-xcel-chip.yml`. Set the `design_name` to your chip module
-name (e.g., `YourXcelChip_noparam`), choose an appropriate
-`clock_period`, and list your tests and evals. Use the `chip/` step
-list.
-
-**Step 6: Run the chip flow.** Generate and run the flow:
+You can use Klayout to view the chip layout at various stages:
 
 ```bash
-% mkdir -p ${HOME}/ece6745/lab9/asic/build-your-xcel
-% cd ${HOME}/ece6745/lab9/asic/build-your-xcel
-% pyhflow ../designs/your-xcel-chip.yml
-% ./00-padring-gen/run
-% ./01-pymtl-rtlsim/run
-% ./02-synopsys-vcs-rtlsim/run
-% ./03-synopsys-dc-synth/run
-% ./04-synopsys-vcs-ffglsim/run
-% ./05-cadence-innovus-pnr/run
-% ./06-synopsys-pt-sta/run
-% ./07-synopsys-vcs-baglsim/run
-% ./08-synopsys-pt-pwr/run
-% ./09-mentor-calibre-seal/run
-% ./10-mentor-calibre-fill/run
-% ./11-mentor-calibre-drc/run
-% ./12-mentor-calibre-lvs/run
-% ./13-summarize-results/run
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip/05-cadence-innovus-pnr
+% klayout -l ${TSMC_180NM}/klayout.lyp post-pnr.gds
 ```
 
-Run the steps one at a time to make sure there are no errors. Verify
-that all checks in the summary pass. If your design does not meet
-timing, try increasing the clock period. If you have DRC or LVS
-violations, use the interactive debugging scripts to diagnose the issue.
+You should see the core logic in the center surrounded by I/O cells
+around the perimeter. You can use _Display > Full Hierarchy_ to show all
+layout detail including standard cell internals.
+
+To see the final layout with seal ring and fill:
+
+```bash
+% cd ${HOME}/ece6745/lab9/asic/build-gcd-xcel-chip/10-mentor-calibre-fill
+% klayout -l ${TSMC_180NM}/klayout.lyp post-filled.gds
+```
 

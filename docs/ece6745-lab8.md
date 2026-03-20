@@ -51,7 +51,7 @@ in the previous labs. Notice that the ASIC tools all require various
 views from the standard-cell library. Using the SRAM generator will
 involve adding an initial step to generate the necessary SRAM views.
 
-![](T08-full-flow.ong)
+![](img/T08-full-flow.png)
 
 Extensive documentation is provided by Synopsys, Cadence, and Siemens for
 these ASIC tools. We have organized this documentation and made it
