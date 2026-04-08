@@ -342,12 +342,10 @@ online visualization tool.
 
   - Tapeout Results
 
-    + Include screenshot of chip plot from Innovus. You must hide the
-      routing. You must highlight the register file in red and the rest
-      of the processor in yellow. You must highlight the accelerator in
-      other colors ... at least highlight the entire processor in cyan
-      but you can use more colors if you want to show different parts.
-      Obviously do not reuse yellow or red.
+    + Include screenshot of chip plot from Innovus for youra accelerator
+      in isolation. You must hide the routing. You must highlight
+      different parts of your accelerator in different colors as
+      discussed in lab.
 
     + Include screenshot of final layout using Klayout. It must show the
       pad ring. This should show all layers. You use the standard layer
