@@ -1,5 +1,5 @@
 
-ECE 6745 Project 2: Accelerator Tape-Out<br>Accelerator RTL Design
+ECE 6745 Project 2: Accelerator Tape-Out<br>ASIC Evaluation
 ==========================================================================
 
 In this project, students will leverage what they learned in the first
@@ -123,19 +123,23 @@ the following directories.
             └── 10-mentor-calibre-lvs
 ```
 
-1. Accelerator RTL Model & Testing
+1. ASIC Evaluation
 --------------------------------------------------------------------------
 
-Finish your accelerator RTL as described in the previous part. Use the
-automated ASIC block flow to push your accelerator through the commercial flow
-to: (1) ensure your design is fully synthesizable; and (2) ensure your
-design will fit on the tapeout. The following steps show how to use the
-block flow.
+You should use the automated ASIC block flow to push through three
+designs:
+
+ - Accelerator in isolation (`proj2.yml`)
+ - Processor running baseline software (`proj2-px-null.yml`)
+ - Processor with accelerator running accelerator software (`proj2-px-xcel.yml`)
+
+We have provided you design YAML files for each of these designs. You can
+use the automated ASIC block flow like this:
 
 ```bash
-% mkdir -p $HOME/ece6745/project2-groupXX/asic/build-proj2
-% cd $HOME/ece6745/project2-groupXX/asic/build-proj2
-% pyhflow ../designs/proj2.yml
+% mkdir -p $TOPDIR/asic/build-design
+% cd $TOPDIR/app/build-design
+% pyhflow ../designs/design.yml
 % ./01-pymtl-rtlsim/run
 % ./02-synopsys-vcs-rtlsim/run
 % ./03-synopsys-dc-synth/run
@@ -149,24 +153,97 @@ block flow.
 % ./11-summarize-results/run
 ```
 
+where `design` is either `proj2`, `proj2-px-null`, or `proj2-px-xcel`.
 Make sure each step works without errors before moving on to the next
-step. Each group's chip will be 950x950um but not all of this area is
-available for your accelerator. There is a sealring around the outside of
-the chip which uses 15um. The I/O pads used to connect your chip to the
-package will be arranged in a ring around the outside of the chip. These
-I/O pads are about 100um deep, and we will need another 60um of space for
-the power rings. So students will only have approximately 600x600um =
-360kum^2 of core area. However, we will also need to add a SPI minion and
-debug unit which takes up about 32kum^2 of standard cell area. Assuming a
-50% density this requires approximately 60kum^2 of core area leaving a
-total of 300kum^2 of core area for the accelreator. The summarize results
-step will show both the PNR standard cell area (i.e., the area of just
-the standard cells) and the PNR core area (i.e., the area of the standard
-cells and filler cells). The PNR core area needs to be less than 300kum^2
-and the density needs to be less than 70% to improve the chances of your
-accelerator fitting on the tapeout.
+step. Note that you will need to update the `proj2.yml` file to run your
+tests and the `proj2-xcel-sim` appropriately. You must have
+`proj2-xcel-sim` working since this enables you to evaluate your
+accelerator in isolation. You may also need to update `proj2-px-null.yml`
+and `proj2-px-xcel.yml` if you have included additional C test and
+evaluation programs.
 
-2. Project Submission
+As mentioned in previous parts you need to ensure your accelerator in
+isolation is approximately less than 300kum^2. You need to make sure all
+three designs meet timing with a 10ns clock cycle constraint and pass all
+checks.
+
+2. Evaluation Document
+--------------------------------------------------------------------------
+
+Prepare a short document with your preliminary project 2 evaluation and
+submit it on Canvas. Your document should be similar to the following PDF
+example which is based on the GCD accelerator.
+
+ - [ASIC Evaluation Document for GCD Accelerator](img/ece6745-proj2d.pdf)
+
+Include your project title, group number, and group members at the top of
+the first page.
+
+**Section 1: Evaluation**
+
+Use 10-point times or palantino font, single-spaced, with 1" margins.
+Include 1-2 pages of text discussing your current evaluation results.
+
+Start with a discussion of your accelerator block-level results. Do not
+just mention the total area, cycle time, and power. Be sure to dive into
+the results to discuss the detailed area break-down, where the critical
+path goes, and the detailed power break-down.
+
+Then do a comparative analysis of your processor baseline design vs
+processor+accelerator alternative design. Be sure to discuss area and
+cycle time before discussing the total execution time in ns and the
+energy for your evaluation program. Do not just discuss the results but
+dive into what these results mean and why each design achieves those
+results. Why does one design have more area? Why does one design have
+better performance?
+
+**Section 2: Accelerator Block-Level Results**
+
+- Format this section on one page exactly as shown in the PDF example.
+
+- Include screenshot of chip plot from Innovus. You must hide the
+  routing. You must highlight different parts of your accelerator in
+  different colors as discussed in lab.
+
+- Include screenshot of final layout using Klayout. This should show all
+  layers. You use the standard layer property file.
+
+- Include the summarize results. You need some kind of actual evaluation
+  so you will need to modify proj2-xcel-sim to run an evaluation of your
+  accelerator in isolation.
+
+**Section 3: Processor Baseline Design Results**
+
+- Format this section on one page exactly as shown in the PDF example.
+
+- Include screenshot of chip plot from Innovus. You must hide the
+  routing. You must highlight the register file in red and the rest of
+  the processor in yellow.
+
+- Include screenshot of final layout using Klayout. This should show all
+  layers. You use the standard layer property file.
+
+- Include the summarize results. You must include the results for your
+  evaluation microbenchmark.
+
+**Section 4: Processor+Accelerator Alternative Design Results**
+
+- Format this section on one page exactly as shown in the PDF example.
+
+- Include screenshot of chip plot from Innovus. You must hide the
+  routing. You must highlight the register file in red and the rest of
+  the processor in yellow. You must highlight the accelerator in other
+  colors ... at least highlight the entire processor in cyan but you can
+  use more colors if you want to show different parts. Obviously do not
+  reuse yellow or red.
+
+- Include screenshot of final layout using Klayout. This should show all
+  layers. You use the standard layer property file.
+
+- Include the summarize results. You must include the results for your
+  evaluation microbenchmark.
+
+3. Project Code Submission
 --------------------------------------------------------------------------
 
 To submit your code you simply push your code to GitHub. You can push
@@ -177,7 +254,10 @@ GitHub. Be sure to verify your code is passing all of your simulations on
 `ecelinux`. Your submission will be assessed for code quality and
 functionalty. You should be continuing to improve your testing strategy.
 
-Here is how we will be testing your final code submission for part C.
+**Make sure the main branch of the code on GitHub can be used to
+reproduce the results in your evaluation document as follows.**
+
+Here is how we will be testing your final code submission for part D.
 First, we will clone your repo and create an environment variable for the
 top of your repo.
 
@@ -189,77 +269,41 @@ top of your repo.
 % TOPDIR=$PWD
 ```
 
-Then, we will run your tests for your baseline software both natively,
-cross-compiled running on the ISA simulator, and cross-compiled running
-on the processor+cache RTL model.
+Then, we will push your accelerator through the flow in isolation.
 
-```
-% mkdir -p $TOPDIR/app/build-native
-% cd $TOPDIR/app/build-native
-% ../configure
-% make proj2-baseline-test
-% ./proj2-baseline-test
-
-% mkdir -p $TOPDIR/app/build
-% cd $TOPDIR/app/build
-% ../configure --host=riscv64-unknown-elf
-% make proj2-baseline-test
-% ../../sim/pmx/pmx-sim ./proj2-baseline-test
-
-% mkdir -p $TOPDIR/app/build
-% cd $TOPDIR/app/build
-% ../configure --host=riscv64-unknown-elf
-% make proj2-baseline-test
-% ../../sim/pmx/pmx-sim --proc-impl rtl --cache-impl rtl ./proj2-baseline-test
+```bash
+% mkdir -p $TOPDIR/asic/build-proj2-px-null
+% cd $TOPDIR/app/build-proj2-px-null
+% pyhflow ../designs/proj2-px-null
+% ./run-flow
 ```
 
-Then, we will run your tests for your accelerator FL and RTL models.
+Finally, we will push your processor running the baseline software
+through the flow.
 
-```
-% mkdir -p $TOPDIR/sim/build
-% cd $TOPDIR/sim/build
-% pytest ../proj2/test/Proj2XcelFL_test.py
-% pytest ../proj2/test/Proj2Xcel_test.py
-```
-
-Then, we will run your tests for your accelerator software both natively,
-cross-compiled running on the ISA simulator, and cross-compiled running
-on the processor+cache+xcel RTL model.
-
-```
-% mkdir -p $TOPDIR/app/build-native
-% cd $TOPDIR/app/build-native
-% ../configure
-% make proj2-xcel-test
-% ./proj2-xcel-test
-
-% mkdir -p $TOPDIR/app/build
-% cd $TOPDIR/app/build
-% ../configure --host=riscv64-unknown-elf
-% make proj2-xcel-test
-% ../../sim/pmx/pmx-sim --xcel-impl proj2-fl ./proj2-xcel-test
-
-% mkdir -p $TOPDIR/app/build
-% cd $TOPDIR/app/build
-% ../configure --host=riscv64-unknown-elf
-% make proj2-xcel-test
-% ../../sim/pmx/pmx-sim --proc-impl rtl --cache-impl rtl \
-    --xcel-impl proj2-rtl ./proj2-xcel-test
+```bash
+% mkdir -p $TOPDIR/asic/build-proj2-px-null
+% cd $TOPDIR/app/build-proj2-px-null
+% pyhflow ../designs/proj2-px-null
+% ./run-flow
 ```
 
-Note that if your tests take a while to run you will need to modify the
-GitHub Actions workflow YAML file to increase the timeout and/or increase
-the `--max-cycles` command line option to `pmx-sim`.
+Finally, we will push your processor with accelerator through the flow
+running the accelerator software.
+
+```bash
+% mkdir -p $TOPDIR/asic/build-proj2-px-xcel
+% cd $TOPDIR/app/build-proj2-px-xcel
+% pyhflow ../designs/proj2-px-xcel
+% ./run-flow
+```
 
 !!! warning "You do not need to finalize your accelerator!"
 
-    Students must submit an initial version of their accelerator but they
-    will almost certainly continue to improve their accelerator as they
-    push towards tape-out. The key is to get a _very simple initial
-    version_ of their accelerator ready for submission. It is ok if this
-    _very simple initial version_ of the accelerator is not optimized, or
-    if the _very simple initial version_ of the accelerator does not
-    support all of the desired functionality. Start small; start simple;
-    then you can continue to incrementally add complexity as you push
-    towards tape-out.
+    Students must submit a preliminary evaluation of their accelerator
+    but they will almost certainly continue to improve their accelerator
+    as they push towards tape-out. The key is to get a preliminary
+    version version of their accelerator ready and through the rigorous
+    comparative evaluation process. Studetns can continue to
+    incrementally add complexity as they push towards tape-out.
 
