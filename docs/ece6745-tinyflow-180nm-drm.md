@@ -5,7 +5,7 @@ Adapted from  MOSIS Scalable CMOS (SCMOS) Revision 8.0 (Technology: SCN6M DEEP) 
 
 Authors: Vayun Tiwari
 
-Last updated: April 25th, 2026
+Last updated: April 26th, 2026
 
 nwell
 --------------------------------------------------------------------------
