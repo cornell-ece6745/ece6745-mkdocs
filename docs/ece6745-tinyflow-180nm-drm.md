@@ -7,6 +7,8 @@ Authors: Vayun Tiwari
 
 Last updated: April 26th, 2026
 
+Note: New/changed rules have been bolded
+
 nwell
 --------------------------------------------------------------------------
 
