@@ -5,7 +5,7 @@ Adapted from  MOSIS Scalable CMOS (SCMOS) Revision 8.0 (Technology: SCN6M DEEP) 
 
 Authors: Vayun Tiwari
 
-Last updated: January 27th, 2026
+Last updated: April 25th, 2026
 
 nwell
 --------------------------------------------------------------------------
@@ -23,10 +23,10 @@ active
 | Rule     | Description                                                                | $\lambda$ |
 |----------|----------------------------------------------------------------------------|-----------|
 | 2.1      | Minimum width                                                              | 3         |
-| 2.2      | Minimum spacing                                                            | 3         |
+| **2.2**  | **Minimum spacing**                                                        | **4**     |
 | 2.3      | Source/drain active to well edge                                           | 6         |
 | 2.4      | Substrate/well contact active to well edge                                 | 3         |
-| 2.5      | Minimum spacing between non-abutting active of different implant           | 4         |
+| **2.5**  | **Minimum spacing to edge of different implant**                           | **4**     |
 
 ![Active](img/0-klayout-drm-active.png)
 
@@ -40,9 +40,12 @@ poly
 | 3.2a     | Minimum spacing over active                                                | 4         |
 | 3.3      | Minimum gate extension of active                                           | 3         |
 | 3.4      | Minimum active extension of poly                                           | 4         |
-| 3.5      | Minimum field poly to active                                               | 1         |
+| **3.5**  | **Minimum field poly to active**                                           | **2**     |
+| **3.6**  | **Minimum field poly to tap active**                                       | **2**     |
 
-![Poly](img/0-klayout-drm-poly.png)
+![Poly](img/0-klayout-drm-poly1.png)
+
+![Poly](img/0-klayout-drm-poly2.png)
 
 pselect & nselect
 --------------------------------------------------------------------------
@@ -65,6 +68,7 @@ contact to poly
 | 5.2      | Minimum poly overlap                                                       | 2         |
 | 5.3      | Minimum contact spacing                                                    | 4         |
 | 5.4      | Minimum spacing to gate of transistor                                      | 2         |
+| 5.5      | Contact must be above poly or active (not pictured)                        | -         |
 
 ![Contact to poly](img/0-klayout-drm-contact-to-poly.png)
 
@@ -77,6 +81,7 @@ contact to active
 | 6.2      | Minimum active overlap                                                     | 2         |
 | 6.3      | Minimum contact spacing                                                    | 4         |
 | 6.4      | Minimum spacing to gate of transistor                                      | 2         |
+| 6.5      | Contact must be above active or poly (not pictured)                        | -         |
 
 ![Contact to active](img/0-klayout-drm-contact-to-active.png)
 
