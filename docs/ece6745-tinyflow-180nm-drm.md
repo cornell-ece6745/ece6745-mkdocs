@@ -68,7 +68,7 @@ contact to poly
 | 5.2      | Minimum poly overlap                                                       | 2         |
 | 5.3      | Minimum contact spacing                                                    | 4         |
 | 5.4      | Minimum spacing to gate of transistor                                      | 2         |
-| 5.5      | Contact must be above poly or active (not pictured)                        | -         |
+| **5.5**  | **Contact must be above poly or active (not pictured)**                    | **-**     |
 
 ![Contact to poly](img/0-klayout-drm-contact-to-poly.png)
 
@@ -81,7 +81,7 @@ contact to active
 | 6.2      | Minimum active overlap                                                     | 2         |
 | 6.3      | Minimum contact spacing                                                    | 4         |
 | 6.4      | Minimum spacing to gate of transistor                                      | 2         |
-| 6.5      | Contact must be above active or poly (not pictured)                        | -         |
+| **6.5**  | **Contact must be above active or poly (not pictured)**                    | **-**     |
 
 ![Contact to active](img/0-klayout-drm-contact-to-active.png)
 
