@@ -127,4 +127,5 @@ nav:
 
   - 'Chip Testing':
     - 'Lab 1: FPGA Emulation': ece6950-lab1.md
+    - 'Lab 2: Power Routing': ece6950-lab2.md
 
