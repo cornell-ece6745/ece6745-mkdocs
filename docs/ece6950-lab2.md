@@ -36,14 +36,13 @@ NetID password.
     accidently connect I/O VDD to core VDD you can damage your chip. So
     please carefully double and triple check your power routing.
 
-1. Power Routing
+1. Power Rail Routing
 --------------------------------------------------------------------------
 
-You will first route the I/O VDD, core VDD, and ground rails before
-connecting these rails to the correct pins on the chip breakout board.
-You will also add a simple power LED.
+You will first connect the I/O VDD, core VDD, and ground rails to the
+chip tester board and then connect the various horizontal rails together.
 
-### 1.1. Power Rails
+### 1.1. Wire
 
 We will be using the horizontal rails for the I/O VDD, core VDD, and
 ground nets. The following picture shows which rails should be used for
@@ -69,7 +68,51 @@ vertical white wire to connect together the two core VDD rails, and
 finally add vertical black wires to connect together the six ground
 rails. **Be sure your jumper wires are neat and tidy!**
 
-### 1.2. Chip Power
+### 1.2. Continuity Test
+
+Now that we have finished our power rail routing, it is time to test it
+out. We will use a handheld multimeter for continuity testing to make
+sure all of the rails are connected together correctly. We will be using
+banana cables and two kinds of multimeter probes.
+
+![](img/chip-test-multimeter-probes-annotated.png)
+
+The multimeter pin probes can be used to probe different points on the
+breadboard, while multimeter mini-grabber probes are good when you want
+to clip a probe to a test point on the breadboard.
+
+Continuity testing checks if two points on the breadboard are
+electrically connected. Turn on your handheld multimeter and set it to
+measure continuity as shown below.
+
+![](img/chip-test-multimeter1.jpg){ width="85%" }
+
+You will need to press the yellow select button until you see the symbol
+for continuity testing (i.e., the curved lines indicating sound waves) on
+the display. When measuring continuity, the handheld multimeter will beep
+when there is a short circuit between the two probe points. You should
+use the multimeter pin probes for continuity testing. Insert the black
+probe into the COM port on the multimeter and the red probe into the
+right most port on the multimeter (with the continuity symbol).
+
+Insert the red multimeter pin probe into one of the I/O VDD rails. Then
+insert the black probe into all of the other rails and ensure the
+multimeter only beeps when inserted into an I/O VDD rail.
+
+Insert the red multimeter pin probe into one of the core VDD rails. Then
+insert the black probe into all of the other rails and ensure the
+multimeter only beeps when inserted into an core VDD rail. Insert the red
+multimeter pin probe into one of the ground rails. Then insert the black
+probe into all of the other rails and ensure the multimeter only beeps
+when inserted into a ground rail.
+
+2. Chip Power Routing
+--------------------------------------------------------------------------
+
+You will now connect the I/O VDD, core VDD, and ground pins on the
+breakout board to the corresponding I/O V, core VDD, and ground rails.
+
+### 2.1. Wire
 
 Recall that the Project 2 tape-outs used the following pin out.
 
@@ -78,7 +121,7 @@ Recall that the Project 2 tape-outs used the following pin out.
 The pin numbers are shown on the pin out. Our chip has the following
 pins:
 
- - 5 I/O VDD
+ - 6 I/O VDD
  - 6 core VDD
  - 8 ground
  - poc (power on control)
@@ -93,83 +136,31 @@ breadboard:
 
  - <https://docs.google.com/spreadsheets/d/1irGwTmz_Gov8T04UIn0MePlh0Gbsh5WtniO7Nd8ia5Y>
 
-You now need to carefully route the pins corresponding to I/O VDD (use
-red wire), core VDD (use white wire), and ground (use black wire) to the
-appropriate rail. **You also need to connect the POC pin to the I/O VDD
-rail!** The POC pin connects to the "power-on-control" I/O cell in the
-pad ring of your chip. This cell handles the situation when I/O VDD is
-greater than zero, but core VDD is not yet valid. It will safely prevent
-short circuit current.
+You want to focus on the _Breakout Board Pin_ and the _Die Pin Name_
+columns. You now need to carefully route the pins corresponding to I/O
+VDD (use red wire), core VDD (use white wire), and ground (use black
+wire) to the appropriate rail. **You also need to connect the POC pin to
+the I/O VDD rail!** The POC pin connects to the "power-on-control" I/O
+cell in the pad ring of your chip. This cell handles the situation when
+I/O VDD is greater than zero, but core VDD is not yet valid. It will
+safely prevent short circuit current.
 
-### 1.3. Power LED
+### 2.2. Continuity Test
 
-Finally, go ahead and add a red power LED. You should connect the LED to
-the I/O VDD rail and then place a 1KOhm resistor in series to ground.
-Trim the leads of your LED and resistor so they sit closer to the
-breadboard to ensure a neat and tidy breadboard chip tester.
+We will start with continuity testing again.
 
-!!! warning "You must double and triple check your power routing!"
+Insert the red probe into the I/O VDD rail and insert the black probe
+into the breadboard column for every I/O VDD pin to ensure the I/O VDD
+net is routed correctly. **Be sure to verify the POC pin is connected to
+the I/O VDD net!**
 
-    Now is a good time to double and triple check your power routing with
-    your partner. Double and triple check that you have correctly routed
-    the rails together. Double and triple check that you are connecting
-    I/O VDD, core VDD, and ground to the correct pins. If you accidently
-    connect I/O VDD to core VDD you can damage your chip. So please
-    carefully double and triple check your power routing.
+Insert the red probe into the core VDD rail and insert the black probe
+into the breadboard column for every core VDD pin to ensure the core VDD
+net is routed correctly.
 
-2. Testing
---------------------------------------------------------------------------
-
-Now that we have finished our power routing, it is time to test it out.
-We will first use a multimeter for continuity testing to make sure all of
-the rails are connected together correctly, before using the multimeter
-to measure the voltage drop at the breakout board. Finally, we will
-experiment with adjusting both the I/O and core voltage using the chip
-tester board.
-
-We will be using a handheld multimeter with banana cables and two kinds
-of multimeter probes.
-
-![](img/chip-test-multimeter-probes-annotated.png)
-
-The multimeter pin probes can be used to probe different points on the
-breadboard, while multimeter mini-grabber probes are good when you want
-to clip a probe to a test point on the breadboard.
-
-### 2.1. Continuity
-
-Continuity testing checks if two points on the breadboard are
-electrically connected. Turn on your handheld multimeter and set it to
-measure continuity as shown below.
-
-![](img/chip-test-multimeter1.jpg){ width="85%" }
-
-You will need to press the yellow select button until you see the symbol
-for continuity testing (i.e., the curved lines indicating sound waves) on
-the display. When measuring continuity, the handheld multimeter will beep
-when there is a short circuit between the two probe points. You should
-use the multimeter pin probes for continuity testing. Insert the black
-probe into the COM port and the red probe into the right most port with
-the continuity symbol.
-
-Insert the red multimeter pin probe into one of the I/O VDD rails. Then
-insert the black probe into all of the other rails and ensure the
-multimeter only beeps when inserted into an I/O VDD rail. Also insert the
-black probe into the breadboard column for every I/O VDD pin to ensure
-the I/O VDD net is routed correctly. **Be sure to verify the POC pin is
-connected to the I/O VDD net!**
-
-Insert the red multimeter pin probe into one of the core VDD rails. Then
-insert the black probe into all of the other rails and ensure the
-multimeter only beeps when inserted into an core VDD rail. Also insert
-the black probe into the breadboard column for every core VDD pin to
-ensure the core VDD net is routed correctly.
-
-Insert the red multimeter pin probe into one of the ground rails. Then
-insert the black probe into all of the other rails and ensure the
-multimeter only beeps when inserted into a ground rail. Also insert the
-black probe into the breadboard column for every ground pin to ensure the
-ground net is routed correctly.
+Insert the red probe into the ground rail and insert the black probe into
+the breadboard column for every ground pin to ensure the ground net is
+routed correctly.
 
 ### 2.2. Voltage Drop
 
@@ -210,7 +201,7 @@ Then change the I/O voltage using the following steps:
  - Press the _Enter_ button
 
 Confirm that the chip tester board displays 3.1V and that the multimeter
-is measuring roughly 3.1V. Now repeat this test with a voltage of 3.5V.
+is measuring roughly 3.1V.
 
 Insert the probes into the breadboard to measure core VDD at the breakout
 board. Then change the core voltage using the following steps:
@@ -221,4 +212,23 @@ board. Then change the core voltage using the following steps:
 
 Confirm that the chip tester board displays 1.6V and that the multimeter
 is measuring roughly 1.6V. Now repeat this test with a voltage of 2.0V.
+
+3. Power LED
+--------------------------------------------------------------------------
+Finally, go ahead and add a red power LED. You should connect the LED to
+the I/O VDD rail and then place a 1KOhm resistor in series to ground.
+Trim the leads of your LED and resistor so they sit closer to the
+breadboard to ensure a neat and tidy breadboard chip tester. Verify that
+the power LED turns on when you power the chip (with the _Chip_ button on
+the chip tester board) and turns off when you stop powering the chip
+(with the _Chip_ button on the chip tester board).
+
+!!! warning "You must double and triple check your power routing!"
+
+    Now is a good time to double and triple check your power routing with
+    your partner. Double and triple check that you have correctly routed
+    the rails together. Double and triple check that you are connecting
+    I/O VDD, core VDD, and ground to the correct pins. If you accidently
+    connect I/O VDD to core VDD you can damage your chip. So please
+    carefully double and triple check your power routing.
 
