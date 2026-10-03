@@ -1,0 +1,2003 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Christopher Batten">
+      
+      
+      
+        <link rel="prev" href="../ece6950-lab1/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Lab 2: Power Routing - ECE 6745 Complex Digital ASIC Design</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lab-2-power-routing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ECE 6745 Complex Digital ASIC Design" class="md-header__button md-logo" aria-label="ECE 6745 Complex Digital ASIC Design" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ECE 6745 Complex Digital ASIC Design
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Lab 2: Power Routing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cornell-ece6745/ece6745-mkdocs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cornell-ece6745/ece6745-mkdocs
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-tut00-remote-access/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-lab1/" class="md-tabs__link">
+          
+  
+  
+  Labs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-project1a/" class="md-tabs__link">
+          
+  
+  
+  Projects
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-tinyflow-180nm-drm/" class="md-tabs__link">
+          
+  
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../ece6950-lab1/" class="md-tabs__link">
+          
+  
+  
+  Chip Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ECE 6745 Complex Digital ASIC Design" class="md-nav__button md-logo" aria-label="ECE 6745 Complex Digital ASIC Design" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ECE 6745 Complex Digital ASIC Design
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cornell-ece6745/ece6745-mkdocs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cornell-ece6745/ece6745-mkdocs
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tut00-remote-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial 0: ECE Linux Server Remote Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tut01-linux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial 1: Linux Development Environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tut02-git/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial 2: Git Distributed Version Control System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Labs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Labs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1: Full-Custom Inverter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2: Standard-Cell Inverter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3: Tiny Front-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4: Tiny Back-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 5: TinyRV2 Accelerators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 6: Front-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 7: Back-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 8: Block Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 9: Chip Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Projects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project 1: TinyFlow Tape-Out
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project 1: TinyFlow Tape-Out
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project1a/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part A: TinyFlow Standard Cells
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project1b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part B: TinyFlow Front End
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project1c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part C: TinyFlow Back End
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project 2: Xcel Tape-Out
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project 2: Xcel Tape-Out
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2a/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part A: Software & Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part B: Xcel RTL Milestone
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part C: Xcel RTL Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2d/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part D: ASIC Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2e/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part E: Tape-Out and Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Misc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Misc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tinyflow-180nm-drm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tinyflow 180nm Design Rules Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2-ideas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project 2 Ideas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chip Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Chip Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6950-lab1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1: FPGA Emulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2: Power Routing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2: Power Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-power-rail-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Power Rail Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Power Rail Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-wire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. Wire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-continuity-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. Continuity Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-chip-power-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Chip Power Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Chip Power Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-wire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. Wire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-continuity-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Continuity Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-voltage-drop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Voltage Drop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-adjustable-voltage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3. Adjustable Voltage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-power-led" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Power LED
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-power-rail-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Power Rail Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Power Rail Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-wire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. Wire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-continuity-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. Continuity Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-chip-power-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Chip Power Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Chip Power Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-wire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. Wire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-continuity-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Continuity Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-voltage-drop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Voltage Drop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-adjustable-voltage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3. Adjustable Voltage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-power-led" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Power LED
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="lab-2-power-routing">Lab 2: Power Routing</h1>
+<p>In this lab, you will be routing the I/O VDD, core VDD, and ground nets
+on your breadboard. Recall that I/O VDD is the power supply for the
+input/output pads and is nominally 3.3V, and core VDD is the power supply
+for the core logic within your chip and is nominally 1.8V. Both the I/O
+VDD and core VDD share a common ground.</p>
+<p>To get started find a free workstation and log in with your NetID and
+NetID password.</p>
+<div class="admonition warning">
+<p class="admonition-title">Do not connect the USB-C cable to your breadboard chip tester yet!</p>
+<p>For now, do not even connect the USB-C cable to your breadboard chip
+tester yet. We want to be sure the board is not powered while you are
+doing your power routing.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Make your breadboard chip tester neat and tidy!!</p>
+<p>You will be incrementally developing your breadboard chip tester over
+the next nine weeks. <strong>Please spend time making your breadboard chip
+tester neat and tidy!</strong> This is not just cosmetic. A neat and tidy
+breadboard makes it easier to correctly wire up your board and easier
+to debug any issues. You will be cutting, stripping, and bending your
+own jumper wires. This will make your breadboard tidy and easier to
+debug. Watch this video to learn how to create these custom jumper
+wires:</p>
+<ul>
+<li><a href="https://vod.video.cornell.edu/media/t/1_iqeoungq">https://vod.video.cornell.edu/media/t/1_iqeoungq</a></li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">You must double and triple check your power routing!</p>
+<p>You must be very careful in how you do your power routing. If you
+accidently connect I/O VDD to core VDD you can damage your chip. So
+please carefully double and triple check your power routing.</p>
+</div>
+<h2 id="1-power-rail-routing">1. Power Rail Routing</h2>
+<p>You will first connect the I/O VDD, core VDD, and ground rails to the
+chip tester board and then connect the various horizontal rails together.</p>
+<h3 id="11-wire">1.1. Wire</h3>
+<p>We will be using the horizontal rails for the I/O VDD, core VDD, and
+ground nets. The following picture shows which rails should be used for
+which net.</p>
+<p><img alt="" src="../img/chip-test-lab2-power-routing.png" /></p>
+<p>You should use the following color scheme:</p>
+<ul>
+<li>I/O VDD: red</li>
+<li>Core VDD: white</li>
+<li>Ground: black</li>
+</ul>
+<p>Start by wiring from the green screw terminals on the chip tester board
+to the breadboard. You need to strip just enough wire to fit into the
+scre terminal, then use the small screwdriver included in your kit. Do
+not overtighten but also make sure there is a good connection.</p>
+<p>Then add some vertical power routing in the middle of your breadboard to
+connect together all of rails for the same net. So you will need to add
+vertical red wires to connect together the four I/O VDD rails, add a long
+vertical white wire to connect together the two core VDD rails, and
+finally add vertical black wires to connect together the six ground
+rails. <strong>Be sure your jumper wires are neat and tidy!</strong></p>
+<h3 id="12-continuity-test">1.2. Continuity Test</h3>
+<p>Now that we have finished our power rail routing, it is time to test it
+out. We will use a handheld multimeter for continuity testing to make
+sure all of the rails are connected together correctly. We will be using
+banana cables and two kinds of multimeter probes.</p>
+<p><img alt="" src="../img/chip-test-multimeter-probes-annotated.png" /></p>
+<p>The multimeter pin probes can be used to probe different points on the
+breadboard, while multimeter mini-grabber probes are good when you want
+to clip a probe to a test point on the breadboard.</p>
+<p>Continuity testing checks if two points on the breadboard are
+electrically connected. Turn on your handheld multimeter and set it to
+measure continuity as shown below.</p>
+<p><img alt="" src="../img/chip-test-multimeter1.jpg" width="85%" /></p>
+<p>You will need to press the yellow select button until you see the symbol
+for continuity testing (i.e., the curved lines indicating sound waves) on
+the display. When measuring continuity, the handheld multimeter will beep
+when there is a short circuit between the two probe points. You should
+use the multimeter pin probes for continuity testing. Insert the black
+probe into the COM port on the multimeter and the red probe into the
+right most port on the multimeter (with the continuity symbol).</p>
+<p>Insert the red multimeter pin probe into one of the I/O VDD rails. Then
+insert the black probe into all of the other rails and ensure the
+multimeter only beeps when inserted into an I/O VDD rail.</p>
+<p>Insert the red multimeter pin probe into one of the core VDD rails. Then
+insert the black probe into all of the other rails and ensure the
+multimeter only beeps when inserted into an core VDD rail. Insert the red
+multimeter pin probe into one of the ground rails. Then insert the black
+probe into all of the other rails and ensure the multimeter only beeps
+when inserted into a ground rail.</p>
+<h2 id="2-chip-power-routing">2. Chip Power Routing</h2>
+<p>You will now connect the I/O VDD, core VDD, and ground pins on the
+breakout board to the corresponding I/O V, core VDD, and ground rails.</p>
+<h3 id="21-wire">2.1. Wire</h3>
+<p>Recall that the Project 2 tape-outs used the following pin out.</p>
+<p><img alt="" src="../img/proj2-tapeout-pinout.png" /></p>
+<p>The pin numbers are shown on the pin out. Our chip has the following
+pins:</p>
+<ul>
+<li>6 I/O VDD</li>
+<li>6 core VDD</li>
+<li>8 ground</li>
+<li>poc (power on control)</li>
+<li>clk, clk_out</li>
+<li>reset</li>
+<li>cs, sclk, mosi, miso</li>
+<li>debug_mode, debug_out</li>
+<li>gp0, gp1</li>
+</ul>
+<p>The following spreadsheet maps the chip pin out to the pin numbers on the
+breadboard:</p>
+<ul>
+<li><a href="https://docs.google.com/spreadsheets/d/1irGwTmz_Gov8T04UIn0MePlh0Gbsh5WtniO7Nd8ia5Y">https://docs.google.com/spreadsheets/d/1irGwTmz_Gov8T04UIn0MePlh0Gbsh5WtniO7Nd8ia5Y</a></li>
+</ul>
+<p>You want to focus on the <em>Breakout Board Pin</em> and the <em>Die Pin Name</em>
+columns. You now need to carefully route the pins corresponding to I/O
+VDD (use red wire), core VDD (use white wire), and ground (use black
+wire) to the appropriate rail. <strong>You also need to connect the POC pin to
+the I/O VDD rail!</strong> The POC pin connects to the "power-on-control" I/O
+cell in the pad ring of your chip. This cell handles the situation when
+I/O VDD is greater than zero, but core VDD is not yet valid. It will
+safely prevent short circuit current.</p>
+<h3 id="22-continuity-test">2.2. Continuity Test</h3>
+<p>We will start with continuity testing again.</p>
+<p>Insert the red probe into the I/O VDD rail and insert the black probe
+into the breadboard column for every I/O VDD pin to ensure the I/O VDD
+net is routed correctly. <strong>Be sure to verify the POC pin is connected to
+the I/O VDD net!</strong></p>
+<p>Insert the red probe into the core VDD rail and insert the black probe
+into the breadboard column for every core VDD pin to ensure the core VDD
+net is routed correctly.</p>
+<p>Insert the red probe into the ground rail and insert the black probe into
+the breadboard column for every ground pin to ensure the ground net is
+routed correctly.</p>
+<h3 id="22-voltage-drop">2.2. Voltage Drop</h3>
+<p>You can now go ahead and use the UCB-C cable to power the chip tester
+board. The chip tester includes two adjustable voltage sources, an
+adjustable clock generator, and a frequency counter. The <em>Chip</em> button is
+used to control whether or not the voltage sources and clock are actually
+connected to the breadboard. By default they are disconnected. Go ahead
+and press the <em>Chip</em> button and you should see your red power LED turn
+on. If the LED does not turn on, try flipping it around since an LED only
+works in one specific orientation.</p>
+<p>Set your handheld multimeter to measure DC voltage as shown below.</p>
+<p><img alt="" src="../img/chip-test-multimeter2.jpg" width="85%" /></p>
+<p>We want to measure the I/O and core voltage close to the pins of the
+breakout board to ensure the voltage drop from the chip tester board to
+the breakout board is reasonable. We will continue to use the multimeter
+pin probes for testing the voltage drop.</p>
+<p>Go ahead and insert the probes into the breadboard as close as possible
+to the breakout board pins for I/O VDD and ground. Probe all I/O VDD pins
+and verify they are close to 3.3V.</p>
+<p>Go ahead and insert the probes into the breadboard as close as possible
+to the breakout board pins for core VDD and ground. Probe all I/O VDD
+pins and verify they are close to 1.8V.</p>
+<h3 id="23-adjustable-voltage">2.3. Adjustable Voltage</h3>
+<p>Now let's use the chip tester board to adjust the voltage sources. Insert
+the probes into the breadboard to measure I/O VDD at the breakout board.
+Then change the I/O voltage using the following steps:</p>
+<ul>
+<li>Press the <em>I/O V</em> button</li>
+<li>Use the numbers and <em>Dot</em> button to enter 3.1</li>
+<li>Press the <em>Enter</em> button</li>
+</ul>
+<p>Confirm that the chip tester board displays 3.1V and that the multimeter
+is measuring roughly 3.1V.</p>
+<p>Insert the probes into the breadboard to measure core VDD at the breakout
+board. Then change the core voltage using the following steps:</p>
+<ul>
+<li>Press the <em>Core V</em> button</li>
+<li>Use the numbers and <em>Dot</em> button to enter 1.6</li>
+<li>Press the <em>Enter</em> button</li>
+</ul>
+<p>Confirm that the chip tester board displays 1.6V and that the multimeter
+is measuring roughly 1.6V. Now repeat this test with a voltage of 2.0V.</p>
+<h2 id="3-power-led">3. Power LED</h2>
+<p>Finally, go ahead and add a red power LED. You should connect the LED to
+the I/O VDD rail and then place a 1KOhm resistor in series to ground.
+Trim the leads of your LED and resistor so they sit closer to the
+breadboard to ensure a neat and tidy breadboard chip tester. Verify that
+the power LED turns on when you power the chip (with the <em>Chip</em> button on
+the chip tester board) and turns off when you stop powering the chip
+(with the <em>Chip</em> button on the chip tester board).</p>
+<div class="admonition warning">
+<p class="admonition-title">You must double and triple check your power routing!</p>
+<p>Now is a good time to double and triple check your power routing with
+your partner. Double and triple check that you have correctly routed
+the rails together. Double and triple check that you are connecting
+I/O VDD, core VDD, and ground to the correct pins. If you accidently
+connect I/O VDD to core VDD you can damage your chip. So please
+carefully double and triple check your power routing.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 Christopher Batten
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../js/extras.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js"></script>
+      
+        <script src="../js/wavedrom_loader.js"></script>
+      
+    
+  </body>
+</html>
