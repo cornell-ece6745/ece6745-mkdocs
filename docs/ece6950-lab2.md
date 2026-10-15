@@ -134,7 +134,7 @@ pins:
 The following spreadsheet maps the chip pin out to the pin numbers on the
 breadboard:
 
- - <https://docs.google.com/spreadsheets/d/1irGwTmz_Gov8T04UIn0MePlh0Gbsh5WtniO7Nd8ia5Y>
+ - <https://docs.google.com/spreadsheets/d/1JGBZUVgK5AarjHfcBgxE4LslBjMIDSYFS-cuk6Rjvk4>
 
 You want to focus on the _Breakout Board Pin_ and the _Die Pin Name_
 columns. You now need to carefully route the pins corresponding to I/O
