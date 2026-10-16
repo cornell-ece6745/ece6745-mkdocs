@@ -303,7 +303,10 @@ connector. **Be gentle!** Connect the other end of the jumper wire to the
 clock input pin of the breakout board (i.e., pin 4). Connect the
 oscilloscope up the clock output pin of the breakout board (i.e., pin
 23). Connect the oscilloscopes ground alligator clip to a ground pin on
-the breakout board as close as possible to the clock output pin
+the breakout board as close as possible to the clock output pin. Here is
+roughly what it should look like:
+
+![](img/chip-test-lab3-hack.jpg)
 
 **Now double check everything!**
 

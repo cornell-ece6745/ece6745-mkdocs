@@ -8,9 +8,6 @@ input/output pads and is nominally 3.3V, and core VDD is the power supply
 for the core logic within your chip and is nominally 1.8V. Both the I/O
 VDD and core VDD share a common ground.
 
-To get started find a free workstation and log in with your NetID and
-NetID password.
-
 !!! warning "Do not connect the USB-C cable to your breadboard chip tester yet!"
 
     For now, do not even connect the USB-C cable to your breadboard chip
@@ -215,6 +212,7 @@ is measuring roughly 1.6V. Now repeat this test with a voltage of 2.0V.
 
 3. Power LED
 --------------------------------------------------------------------------
+
 Finally, go ahead and add a red power LED. You should connect the LED to
 the I/O VDD rail and then place a 1KOhm resistor in series to ground.
 Trim the leads of your LED and resistor so they sit closer to the
