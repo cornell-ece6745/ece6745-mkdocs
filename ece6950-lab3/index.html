@@ -1,0 +1,2242 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Christopher Batten">
+      
+      
+      
+        <link rel="prev" href="../ece6950-lab2/">
+      
+      
+        <link rel="next" href="../ece6950-lab4/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Lab 3: Clock Testing - ECE 6745 Complex Digital ASIC Design</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lab-3-clock-testing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ECE 6745 Complex Digital ASIC Design" class="md-header__button md-logo" aria-label="ECE 6745 Complex Digital ASIC Design" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ECE 6745 Complex Digital ASIC Design
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Lab 3: Clock Testing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cornell-ece6745/ece6745-mkdocs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cornell-ece6745/ece6745-mkdocs
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-tut00-remote-access/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-lab1/" class="md-tabs__link">
+          
+  
+  
+  Labs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-project1a/" class="md-tabs__link">
+          
+  
+  
+  Projects
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ece6745-tinyflow-180nm-drm/" class="md-tabs__link">
+          
+  
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../ece6950-lab1/" class="md-tabs__link">
+          
+  
+  
+  Chip Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ECE 6745 Complex Digital ASIC Design" class="md-nav__button md-logo" aria-label="ECE 6745 Complex Digital ASIC Design" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ECE 6745 Complex Digital ASIC Design
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cornell-ece6745/ece6745-mkdocs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cornell-ece6745/ece6745-mkdocs
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tut00-remote-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial 0: ECE Linux Server Remote Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tut01-linux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial 1: Linux Development Environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tut02-git/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial 2: Git Distributed Version Control System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Labs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Labs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1: Full-Custom Inverter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2: Standard-Cell Inverter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3: Tiny Front-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4: Tiny Back-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 5: TinyRV2 Accelerators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 6: Front-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 7: Back-End Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 8: Block Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-lab9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 9: Chip Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Projects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project 1: TinyFlow Tape-Out
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project 1: TinyFlow Tape-Out
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project1a/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part A: TinyFlow Standard Cells
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project1b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part B: TinyFlow Front End
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project1c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part C: TinyFlow Back End
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project 2: Xcel Tape-Out
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project 2: Xcel Tape-Out
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2a/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part A: Software & Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part B: Xcel RTL Milestone
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part C: Xcel RTL Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2d/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part D: ASIC Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2e/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part E: Tape-Out and Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Misc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Misc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-tinyflow-180nm-drm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tinyflow 180nm Design Rules Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6745-project2-ideas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project 2 Ideas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chip Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Chip Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6950-lab1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1: FPGA Emulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6950-lab2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2: Power Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3: Clock Testing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3: Clock Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-microscope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Microscope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Microscope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-bare-die" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. Bare Die
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-packaged-chip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. Packaged Chip
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-clock-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Clock Generator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-signal-io-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Signal I/O Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Signal I/O Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-wire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. Wire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-insert-chip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. Insert Chip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-continuity-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. Continuity Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-measure-resistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4. Measure Resistance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-clock-loopback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Clock Loopback
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Clock Loopback">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-clock-to-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. Clock to Scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-clock-to-frequency-counter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. Clock to Frequency Counter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ece6950-lab4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4: SPI Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-microscope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Microscope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Microscope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-bare-die" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. Bare Die
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-packaged-chip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. Packaged Chip
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-clock-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Clock Generator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-signal-io-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Signal I/O Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Signal I/O Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-wire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. Wire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-insert-chip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. Insert Chip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-continuity-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. Continuity Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-measure-resistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4. Measure Resistance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-clock-loopback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Clock Loopback
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Clock Loopback">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-clock-to-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. Clock to Scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-clock-to-frequency-counter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. Clock to Frequency Counter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="lab-3-clock-testing">Lab 3: Clock Testing</h1>
+<p>In this lab, you will inspect your chip under a microscope before
+inserting it into the breakout board and testing the clock loopback path
+through your chip. This is your first chance to see your chip and to
+verify that the most basic capability is working!</p>
+<h2 id="1-microscope">1. Microscope</h2>
+<p>We are now going to look at your chip under the microscope! For this lab,
+we will be using a relatively simple microscope. At the end of the
+semester, students will have a chacne to use a much more sophisticated
+microscope to be able to take a high quality photo of their chip. You
+should have two versions of your chip:</p>
+<ul>
+<li>
+<p><strong>Bare Die:</strong> This is the version of the chip that was sent from TSMC
+   to MUSE, and which MUSE then sent to QP Technologies. The bare die is
+   stored in a special box called a "GelPak". The bare die is just for
+   us to look at. We will not be actually testing the bare die.</p>
+</li>
+<li>
+<p><strong>Packaged Chip:</strong> This is the version of the chip that was sent from
+   QP Technologies to Cornell after the chip was wire bonded in a ceramic
+   pin grid array (CPGA) package. The packaged chip is stored in a
+   special box which protects it from electrostatic discharge (ESD). The
+   packaged chip is what we will be actually testing.</p>
+</li>
+</ul>
+<p><img alt="" src="../img/chip-test-lab3-chips.jpg" /></p>
+<div class="admonition warning">
+<p class="admonition-title">Be careful with your bare die and pacakged chip!</p>
+<p>Keep the bare die and packaged chips in their boxes and keep the
+boxes closed. Only open the boxes to look at the bare die and
+packaged chip under the microscope and when inserting the packaged
+chip into the breakout board. <strong>NEVER TOUCH THE BARE DIE. NEVER TOUCH
+THE PINS ON THE PACKAGED CHIP!</strong> We do not want to accidently cause
+an electrostatic discharge which might damage your chip.</p>
+</div>
+<h3 id="11-bare-die">1.1. Bare Die</h3>
+<p>Let's start by looking at the bare die under the microscope. The
+microscope has a 10x eyepiece and a 2x/4x magnification resulting in an
+overall zoom of 20x or 40x. You can adjust the zoom by rotating the blue
+objective. Start with the magnification set to 2x (i.e., 20x zoom).</p>
+<p>Turn on the microscope light using the power button on the back of the
+microscope. You can adjust the light intensity using the dial on the side
+of the microscope. Turn the light as bright as possible.</p>
+<p>Now carefully open the GelPak and place the opened box under the
+microscope. Look through the eyepieces. You can adjust the eyepieces to
+be closer together or further apart. Do not press your eyes to the
+eyepieces instead keep your eyes a 1-2 cm away from the eyepieces. You
+want to see two circles merge into one so you can get a good stereo view
+of your chip.</p>
+<p>Adjust the focus until the bare die is sharp. Then go ahead and rotate
+the blue object to 4x so you can better see the bare die. Look for the
+following features in each of the four corners:</p>
+<ul>
+<li>An arrow is pointing to pin 1</li>
+<li>The number 26 indicates the chip is from Spring 2026</li>
+<li>A three-digit project number</li>
+<li>Student initials</li>
+</ul>
+<p>Then look at the bare pads arranged around the outside of the chip. You
+should be about to count 32 bare pads. Finally look at the power routing
+on the top metal layer (i.e., metal 6).</p>
+<p>Once you have finished looking at the bare die go ahead and remove it
+from the microscope and close the GelPak.</p>
+<h3 id="12-packaged-chip">1.2. Packaged Chip</h3>
+<p>Now let's look at the packaged chip under the microscope. Adjust the zoom
+back a magnification of 2x (i.e., 20x zoom).</p>
+<p>Now carefully open the ESD box and place the opened box. <strong>DO NOT REMOVE
+THE PACKAGED CHIP! LEAVE IT IN THE OPENED ESD BOX!</strong> Look through the
+eyepieces. Adjust the focus until the packaged chip is sharp. Then go
+ahead and rotate the blue object to 4x so you can better see the packaged
+chip. We are used <em>glass lids</em> to cover the packaged chip so you can see
+your chip inside the package. Again look for the following features in
+each of the four corners:</p>
+<ul>
+<li>An arrow is pointing to pin 1</li>
+<li>The number 26 indicates the chip is from Spring 2026</li>
+<li>A three-digit project number</li>
+<li>Student initials</li>
+</ul>
+<p>Notice how the wire bonds connect the wire bond pins around the outside
+edge of the package to the bond pads on the actual die. You should be
+able to visually confirm that the packaged chip is bonded according to
+the bond diagram we sent to QP Technologies.</p>
+<p><img alt="" src="../img/chip-test-bond-diagram.png" /></p>
+<p>Once you have finished looking at the packaged chip go ahead and remove
+it from the microscope and close the ESD box. Turn off the microscope
+light and set it aside.</p>
+<h2 id="2-clock-generator">2. Clock Generator</h2>
+<p>Let's go ahead and test the clock generator on the chip tester board. Use
+an SMA-to-BNC cable to connect the clock out SMA connecter on the chip
+tester board to channel 1 of the oscilloscope. Turn on the oscilloscope
+and press <em>Default Setup</em>. Then press <em>1</em> to bring up the Channel 1
+settings menu. Press the button next to <em>Attenuation</em> and rotate the
+multipurpose knob to set the attenuation to 1x. Then press the
+multi-purpose knob to lock in this setting. Click the <em>Menu/Back</em> button
+to get the menu to go away.</p>
+<p>You can now go ahead and use the UCB-C cable to power the chip tester
+board. Change the clock frequency using the following steps:</p>
+<ul>
+<li>Press the <em>Clk</em> button</li>
+<li>Use the numbers and <em>Dot</em> button to enter 1</li>
+<li>Press the <em>Enter</em> button</li>
+</ul>
+<p>Confirm the chip tester board displays 1MHz. Now press the <em>Chip</em> button.
+You should see the clock on the oscilloscope. Press <em>Autoset</em> to have the
+oscilloscope automatically determine the best way to display the clock
+signal.</p>
+<p>Now let's use the scope's measure feature to automatically measure the
+frequency and period of the note square wave. Press the <em>Measure</em> button.
+Use the <em>Multipurpose</em> knob to highlight <em>Frequency</em>. Then press the
+<em>Multipurpose</em> and a little yellow square should appear next to
+<em>Frequency</em> indicating it is selected.</p>
+<p><img alt="" src="../img/chip-test-lab3-scope-measure.jpg" /></p>
+<p>Verify that the oscilloscope is showing a 1MHz clock signal. Now change
+the clock frequency to 10MHz, 20Mhz, 30Mhz, 40Mhz, 50Mhz, 100Mhz, 150Mhz,
+and 200Mhz. What do you see on the oscilloscope?</p>
+<p>The chip tester board includes a frequency counter which can measure the
+frequency of a clock connected to the clock in SMA connector. Turn off
+the chip tester board and disconnect the SMA-to-BNC cable. Use the 6"
+SMA-to-SMA cable to connect clock out to clock in on the chip tester
+board. Turn the chip tester board back on. Change the clock frequency to
+1MHz. Then press the <em>Chip</em> button and verify that both clk/out and
+clk/in shows 1Mhz. Now change the clock frequency to 10MHz, 20Mhz, 30Mhz,
+40Mhz, 50Mhz, 100Mhz, 150Mhz, and 200Mhz. Confirm the frequency counter
+indicates that the clock generator is correctly generating the entire
+range of frequencies.</p>
+<div class="admonition warning">
+<p class="admonition-title">Disconnect the USB-C cable!</p>
+<p>Now that we have finished testing the clock generator, remove the
+USB-C cable so we can be sure we do not accidently power the chip in
+the next section.</p>
+</div>
+<h2 id="3-signal-io-routing">3. Signal I/O Routing</h2>
+<p>In the previous lab, you completed the power routing including I/O VDD,
+core VDD, and ground. In order to do clock testing, we also need to
+connect all of the signal input pins to ground. We cannot leave them
+floating since that could cause issues with your chip. We will also be
+doing our final continuity testing and resistance measurements with the
+chip inserted into the breakout board.</p>
+<h3 id="31-wire">3.1. Wire</h3>
+<p>Recall that the Project 2 tape-outs used the following pin out.</p>
+<p><img alt="" src="../img/proj2-tapeout-pinout.png" /></p>
+<p>The pin numbers are shown on the pin out. Our chip has the following
+pins:</p>
+<ul>
+<li>6 I/O VDD (already routed!)</li>
+<li>6 core VDD (already routed!)</li>
+<li>8 ground (already routed!)</li>
+<li>poc (already routed!)</li>
+<li>clk, clk_out</li>
+<li>reset</li>
+<li>cs, sclk, mosi, miso</li>
+<li>debug_mode, debug_out</li>
+<li>gp0, gp1</li>
+</ul>
+<p>You need to connect the following signal input pins to ground for today's
+lab:</p>
+<ul>
+<li>reset</li>
+<li>cs, sclk, mosi</li>
+<li>debug_mode</li>
+<li>gp0, gp1</li>
+</ul>
+<p>Use green jumper wires to connect each of these input pins to ground. You
+do not need to make these jumper wires very flat. Make them bow a little
+bit to make them easier to remove for the next lab.</p>
+<p>The following spreadsheet maps the chip pin out to the pin numbers on the
+breadboard:</p>
+<ul>
+<li><a href="https://docs.google.com/spreadsheets/d/1JGBZUVgK5AarjHfcBgxE4LslBjMIDSYFS-cuk6Rjvk4">https://docs.google.com/spreadsheets/d/1JGBZUVgK5AarjHfcBgxE4LslBjMIDSYFS-cuk6Rjvk4</a></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">You must double and triple check all routing!</p>
+<p>You must be very careful in how you do your signal I/O routing. If
+you accidently connect I/O VDD or core VDD to an output pin you can
+damage your chip. So please carefully double and triple check your
+signal I/O routing.</p>
+</div>
+<h3 id="32-insert-chip">3.2. Insert Chip</h3>
+<p>The time has come to finally insert your chip into your breadboard chip
+tester! Before handling your packaged chip touch the metal part of the
+lab bench to ensure there will be no electrostatic discharge. Lift the
+arm next to the ZIF socket on the breakout board. Open the ESD box and
+very carefully remove the packaged chip. <strong>DO NOT TOUCH THE PINS!</strong> Then
+insert the chip into the ZIF socket. Do not force it. It should slip
+easily into the ZIF socket. Pin 1 on the package is indedicated with the
+small triangle. You must rotate the package so that pin 1 on the package
+lines up with the arrow on the breakbout board. Then gently lower the arm
+next to the ZIF socket which will lock your packaged chip into place. We
+will leave the packaged chip inserted into the breakout board for the
+remainder of the semester.</p>
+<p><img alt="" src="../img/chip-test-lab3-insert-chip.jpg" /></p>
+<div class="admonition warning">
+<p class="admonition-title">You must make sure your chip is inserted correctly!</p>
+<p>If your chip is rotated incorrectly then you might damage your chip
+when you turn on the power. Double check that pin 1 on the package
+lines up with the arrow on the breakout board.</p>
+</div>
+<h3 id="33-continuity-test">3.3. Continuity Test</h3>
+<p>Let's do one last continuity test. As in the last lab, we will be using
+banana cables with the multimeter pin probes.</p>
+<p><img alt="" src="../img/chip-test-multimeter-probes-annotated.png" /></p>
+<p>Turn on your handheld multimeter and set it to measure continuity as
+shown below.</p>
+<p><img alt="" src="../img/chip-test-multimeter1.jpg" width="85%" /></p>
+<p>You will need to press the yellow select button until you see the symbol
+for continuity testing (i.e., the curved lines indicating sound waves) on
+the display. Insert the black probe into the COM port on the multimeter
+and the red probe into the right most port on the multimeter (with the
+continuity symbol).</p>
+<p>Insert the red multimeter pin probe into one of the I/O VDD rails. Then
+insert the black probe into every pin next to the breakout board which is
+wired. Ensure the multimeter only beeps when inserted into a pin which is
+supposed to be connected to I/O VDD.</p>
+<p>Insert the red multimeter pin probe into one of the core VDD rails. Then
+insert the black probe into every pin next to the breakout board which is
+wired. Ensure the multimeter only beeps when inserted into a pin which is
+supposed to be connected to core VDD.</p>
+<p>Insert the red multimeter pin probe into one of the ground rails. Then
+insert the black probe into every pin next to the breakout board which is
+wired. Ensure the multimeter only beeps when inserted into a pin which is
+supposed to be connected to ground (this should include all of the signal
+input pins including reset, cs, sclk, MOSI, debug_mode, gp0, gp1).</p>
+<p>Double check that there is no beep when you probe ground and core VDD.
+Double check that there is no beep when you probe ground and I/O VDD.</p>
+<h3 id="34-measure-resistance">3.4. Measure Resistance</h3>
+<p>Since chip designers are paranoid, let's measure the resistance from VDD
+to ground through the chip. If there is some kind of short we would see a
+low resistance. Press the yellow select button until you see the Ohm
+symbol for resistance measurement.</p>
+<p>Insert the red multimeter pin probe near one of the I/O VDD pins of the
+breakout board and the black multimeter pin probe near one of the ground
+pins of the breakout board. Verify the resistance is more than 100 Kohm.
+This confirms there is no short between I/O VDD and ground.</p>
+<p>Insert the red multimeter pin probe near one of the core VDD pins of the
+breakout board and the black multimeter pin probe near one of the ground
+pins of the breakout board. Verify the resistance is more than 100 Kohm.
+This confirms there is no short between core VDD and ground.</p>
+<h2 id="4-clock-loopback">4. Clock Loopback</h2>
+<p>We are finally ready to do our very first test on our chip. We will send
+a clock into the chip and look at the clock output on the oscilloscope,
+and then measure the clock frequency using the frequency counter on the
+chip tester board.</p>
+<h3 id="41-clock-to-scope">4.1. Clock to Scope</h3>
+<p>Use one of the 6" SMA-to-SMA cables to connect the <em>clock output</em> from
+the chip tester board to the <em>clock input</em> on the chip breakout board.
+Make sure you do not accidently connect the clock generator to the <em>clock
+output</em> on the chip breakout board. The clock generator must connect to
+the <em>clock input</em> on the chip breakout board! Here is what it should look
+like:</p>
+<p><img alt="" src="../img/chip-test-lab3-clk-loopback.jpg" /></p>
+<p>Now use the SMA-to-BNC cable to connect the <em>clock output</em> on the chip
+breakout board to the oscilloscope. The oscilloscope should be setup the
+same as before; if not, go back to Section 2 to setup the oscilloscope.</p>
+<p>You can now go ahead and use the UCB-C cable to power the chip tester
+board. Change the clock frequency to 1MHz using the following steps:</p>
+<ul>
+<li>Press the <em>Clk</em> button</li>
+<li>Use the numbers and <em>Dot</em> button to enter 1</li>
+<li>Press the <em>Enter</em> button</li>
+<li>Press the <em>Chip</em> button</li>
+</ul>
+<p>If everything is working you should see a 1MHz clock on the scope. Change
+the clock frequency to 10MHz, 20Mhz, 30Mhz, 40Mhz, 50Mhz, 100Mhz, 150Mhz,
+and 200Mhz. What do you see on the oscilloscope?</p>
+<h3 id="42-clock-to-frequency-counter">4.2. Clock to Frequency Counter</h3>
+<p>Turn off the chip tester board so we can do some rewiring. Disconnect the
+SMA-to-BNC cable from the chip breakout board and use another 6"
+SMA-to-SMA cable to connect the <em>clock output</em> from the chip breakout
+board to the <em>clock input</em> on the chip tester board. As mentioned
+earlier, the <em>clock input</em> on the chip tester board connects to a
+frequency counter which is displayed on the chip tester board.</p>
+<p>You can now go ahead turn on the chip tester board. Change the clock
+frequency to 1MHz using the following steps:</p>
+<ul>
+<li>Press the <em>Clk</em> button</li>
+<li>Use the numbers and <em>Dot</em> button to enter 1</li>
+<li>Press the <em>Enter</em> button</li>
+<li>Press the <em>Chip</em> button</li>
+</ul>
+<p>Change the clock frequency to 10MHz, 20Mhz, 30Mhz, 40Mhz, 50Mhz, 100Mhz,
+150Mhz, and 200Mhz. Confirm the frequency counter indicates that the
+clock generator is correctly generating the entire range of frequencies.</p>
+<div class="admonition success">
+<p class="admonition-title">Huge Milestone!</p>
+<p>If the clock lookback test works then this means the most basic
+functionality of your chip is working! The I/O VDD, core VDD, and
+ground are all getting in to your chip correctly, and the clock
+signal is also able to get in and out of your chip correctly.
+Congratulations - we are making great progress!</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 Christopher Batten
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../js/extras.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js"></script>
+      
+        <script src="../js/wavedrom_loader.js"></script>
+      
+    
+  </body>
+</html>
