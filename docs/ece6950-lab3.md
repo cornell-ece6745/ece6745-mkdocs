@@ -267,57 +267,84 @@ input pins including reset, cs, sclk, MOSI, debug_mode, gp0, gp1).
 Double check that there is no beep when you probe ground and core VDD.
 Double check that there is no beep when you probe ground and I/O VDD.
 
-### 3.4. Measure Resitance
+### 3.4. Measure Resistance
 
 Since chip designers are paranoid, let's measure the resistance from VDD
 to ground through the chip. If there is some kind of short we would see a
 low resistance. Press the yellow select button until you see the Ohm
 symbol for resistance measurement.
 
-Insert the red multimeter pin probe near one of the I/O VDD pins of
-the breakout board and the black multimeter pin probe near one of the
-ground pins of the breakout board. Verify the resistance is in megaohms.
+Insert the red multimeter pin probe near one of the I/O VDD pins of the
+breakout board and the black multimeter pin probe near one of the ground
+pins of the breakout board. Verify the resistance is more than 100 Kohm.
+This confirms there is no short between I/O VDD and ground.
 
 Insert the red multimeter pin probe near one of the core VDD pins of the
 breakout board and the black multimeter pin probe near one of the ground
-pins of the breakout board. Verify the resistance is in megaohms.
+pins of the breakout board. Verify the resistance is more than 100 Kohm.
+This confirms there is no short between core VDD and ground.
 
 4. Clock Loopback
 --------------------------------------------------------------------------
 
 We are finally ready to do our very first test on our chip. We will send
-a clock into the chip and look at the clock output on the oscilloscope.
+a clock into the chip and look at the clock output on the oscilloscope,
+and then measure the clock frequency using the frequency counter on the
+chip tester board.
 
-!!! warning "Sketchy work around for today's lab!"
+### 4.1. Clock to Scope
 
-    As posted on Ed, there is an issue with the breakout boards. So for
-    today we are going to do something very sketch as a work around. Be
-    very careful and gentle with the work around! Next lab we should have
-    a better solution ready for students to use, and we can experiment
-    with higher frequency clock testing. We also do have one set of
-    cables that students can share to do higher frequency clock testing.
+Use one of the 6" SMA-to-SMA cables to connect the _clock output_ from
+the chip tester board to the _clock input_ on the chip breakout board.
+Make sure you do not accidently connect the clock generator to the _clock
+output_ on the chip breakout board. The clock generator must connect to
+the _clock input_ on the chip breakout board! Here is what it should look
+like:
 
-Cut a roughly 6" length of jumper wire and strip about 0.3" off each end.
-Then carefully insert the jumper into the middle of the clock out SMA
-connector. **Be gentle!** Connect the other end of the jumper wire to the
-clock input pin of the breakout board (i.e., pin 4). Connect the
-oscilloscope up the clock output pin of the breakout board (i.e., pin
-23). Connect the oscilloscopes ground alligator clip to a ground pin on
-the breakout board as close as possible to the clock output pin. Here is
-roughly what it should look like:
+![](img/chip-test-lab3-clk-loopback.jpg)
 
-![](img/chip-test-lab3-hack.jpg)
+Now use the SMA-to-BNC cable to connect the _clock output_ on the chip
+breakout board to the oscilloscope. The oscilloscope should be setup the
+same as before; if not, go back to Section 2 to setup the oscilloscope.
 
-**Now double check everything!**
+You can now go ahead and use the UCB-C cable to power the chip tester
+board. Change the clock frequency using the following steps:
 
-Once you are ready reconnect the USB-C cable to power the chip tester
-board. Turn on the chip tester board and set the clock output to 1MHz.
-**THIS IS VERY IMPORTANT! YOU MUST SET THE CLOCK OUTPUT TO 1MHZ ONLY!**
-Go ahead and press the _Chip_ button.
+ - Press the _Clk_ button
+ - Use the numbers and _Dot_ button to enter 1
+ - Press the _Enter_ button
+ - Press the _Chip_ button
 
-If everything is working you should see a 1MHz clock on the scope. This
-means the most basic functionality of your chip is working! The I/O VDD,
-core VDD, and ground are all getting into your chip correctly, and the
-clock signal is also able to get into your chip correctly.
-Congratulations - we are making great progress!
+If everything is working you should see a 1MHz clock on the scope. Change
+the clock frequency to 10MHz, 20Mhz, 30Mhz, 40Mhz, 50Mhz, 100Mhz, 150Mhz,
+and 200Mhz. What do you see on the oscilloscope?
+
+### 4.2. Clock to Frequency Counter
+
+Turn off the chip tester board so we can do some rewiring. Disconnect the
+SMA-to-BNC cable from the chip breakout board and use another 6"
+SMA-to-SMA cable to connect the _clock output_ from the chip breakout
+board to the _clock input_ on the chip tester board. As mentioned
+earlier, the _clock input_ on the chip tester board connects to a
+frequency counter which is displayed on the chip tester board.
+
+You can now go ahead turn on the chip tester board. Change the clock
+frequency using the following steps:
+
+ - Press the _Clk_ button
+ - Use the numbers and _Dot_ button to enter 1
+ - Press the _Enter_ button
+ - Press the _Chip_ button
+
+Change the clock frequency to 10MHz, 20Mhz, 30Mhz, 40Mhz, 50Mhz, 100Mhz,
+150Mhz, and 200Mhz. Confirm the frequency counter indicates that the
+clock generator is correctly generating the entire range of frequencies.
+
+!!! success "Huge Milestone!"
+
+    If the clock lookback test works then this means the most basic
+    functionality of your chip is working! The I/O VDD, core VDD, and
+    ground are all getting in to your chip correctly, and the clock
+    signal is also able to get in and out of your chip correctly.
+    Congratulations - we are making great progress!
 
