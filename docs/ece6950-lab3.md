@@ -183,7 +183,7 @@ pins:
  - debug_mode, debug_out
  - gp0, gp1
 
-You need to connect the followign signal input pins to ground for today's
+You need to connect the following signal input pins to ground for today's
 lab:
 
  - reset
@@ -308,7 +308,7 @@ breakout board to the oscilloscope. The oscilloscope should be setup the
 same as before; if not, go back to Section 2 to setup the oscilloscope.
 
 You can now go ahead and use the UCB-C cable to power the chip tester
-board. Change the clock frequency using the following steps:
+board. Change the clock frequency to 1MHz using the following steps:
 
  - Press the _Clk_ button
  - Use the numbers and _Dot_ button to enter 1
@@ -329,7 +329,7 @@ earlier, the _clock input_ on the chip tester board connects to a
 frequency counter which is displayed on the chip tester board.
 
 You can now go ahead turn on the chip tester board. Change the clock
-frequency using the following steps:
+frequency to 1MHz using the following steps:
 
  - Press the _Clk_ button
  - Use the numbers and _Dot_ button to enter 1

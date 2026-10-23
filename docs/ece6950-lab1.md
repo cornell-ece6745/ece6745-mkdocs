@@ -492,9 +492,16 @@ ahead and flip the debug mode switch.
 
 ### 4.1. Using REPL
 
-Start PowerShell by clicking the _Start_ menu then searching for _Windows
-PowerShell_. Then start Python and use the following commands to exchange
-SPI transactions with the FPGA.
+Let's setup the oscilloscope so we can look at the SPI transactions.
+
+ - Turn on the oscilloscope
+ - Press _Default Setup_
+ - Press _2_ to turn on Channel 2
+
+Now start PowerShell by clicking the _Start_ menu then searching for
+_Windows PowerShell_. Then start Python and use the following commands to
+exchange SPI transactions with the FPGA. You should see the oscilloscope
+flicker.
 
 ```bash
 % python
@@ -510,26 +517,19 @@ SPI transactions with the FPGA.
 
 Why are we using 0xe0_0000_0001? Recall that the top three bits in an SPI
 request correspond to the valid bit, the constant 1 bit, and the type
-field. So the first transaction writes acceleator register xr0 with the
+field. So the first transaction writes accelerator register xr0 with the
 value 1.
 
 Why are we using 0x80_0000_0000? Again that the top three bits in an SPI
 request correspond to the valid bit, the constant 1 bit, and the type
 field. So the second transaction is an invalid request; we are basically
-waiting for the accelerator response message.
+waiting for the response message.
 
 So the above sequence writes xr0 with the value 1, then writes xr0 with
 the value 0. This should toggle the debug out pin (i.e., the LED).
 
-Let's also look at the SPI transactions on the oscilloscope.
-
- - Turn on the oscilloscope
- - Press _Default Setup_
- - Press _2_ to turn on Channel 2
-
-Now use the Python REPL to exchange SPI transactions. You should see the
-oscilloscope flicker. Using the following steps to capture a waveform of
-the SPI packets on the oscilloscope.
+Using the following steps to capture a waveform of the SPI packets on the
+oscilloscope.
 
  - Rotate the _Horizontal Scale_ knob counter clockwise to 20ms
  - Continue to exchange SPI transactions (i.e., press up arrow key in
@@ -541,14 +541,14 @@ the SPI packets on the oscilloscope.
     to the left
  - Continue exchange SPI transactions and adjust the vertical/horizontal
      position
- - Rotate the _Trigger Level_ kbob clockwise until the trigger is about
+ - Rotate the _Trigger Level_ knob clockwise until the trigger is about
      1V higher than baseline voltage level
  - Press _Single_
  - Exchange an SPI transactions again to get a captured waveform
 
-### 4.2. Using xmsgs
+### 4.2. Using Python Script
 
-e have provided you with a Python program to make it easier to send
+We have provided you with a Python program to make it easier to send
 accelerator requests to the FPGA emulator and eventually your chip. In
 PowerShell on the workstation, change into the `xmsgs` subdirectory and
 then run the `ece6745-check-xmsgs` script.
