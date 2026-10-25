@@ -41,19 +41,19 @@ Here is a system-level diagram of the signal I/O routing for this lab:
 
 We will be using a USB-to-SPI adapter which enables us to communicate
 with your chip from the workstation. This is the same adapter we used in
-Lab 1 when worked on FPGA emulation.
+Lab 1 on FPGA emulation.
 
 Remove the USB-to-SPI adapter from your component box and find a good
-spot for it on your breadboard.
+spot for it on your breadboard. You will want to place it at the edge on
+the right-side of your breadboard so you can easily insert the USB-C
+cable.
 
 ![](img/chip-test-lab4-usb2spi.jpg)
 
-You will want to place it at the edge on the right-side of your
-breadboard so you can easily insert the USB-C cable. Then connect the
-ground pin of the USB-to-SPI adapter to the ground rail on your
-breadboard. **Do NOT connect the 3V pin on the USB-to-SPI adapter; only
-connect the ground pin!** You need to connect the SPI pins to the
-USB-to-SPI adapter as follows:
+Then connect the ground pin of the USB-to-SPI adapter to the ground rail
+on your breadboard. **Do NOT connect the 3V pin on the USB-to-SPI
+adapter; only connect the ground pin!** You need to connect the SPI pins
+to the USB-to-SPI adapter as follows:
 
  - SCLK connects to D0 on USB-to-SPI adapter
  - MOSI connects to D1 on USB-to-SPI adapter
@@ -103,6 +103,9 @@ port of the workstation; any other port will not work!** Then use the
 other USB-C cable to connect the chip tester board to the workstation.
 
 Let's setup the oscilloscope so we can look at the SPI transactions.
+Connect the two oscilloscope primary probe points to the SCLK and MOSI
+pins of the SPI interface. Be sure also to connect the ground probe
+points to ground.
 
  - Turn on the oscilloscope
  - Press _Default Setup_
