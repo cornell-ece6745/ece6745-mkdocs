@@ -254,10 +254,11 @@ Python script.
 % python ece6745-check-xmsgs --verbose --debug-mode 0xdeadbeef
 ```
 
-If this looks like it is working, then use 0xdeafbeef and change the
-clock frequency to 20Mhz, 30Mhz, 40Mhz, 50Mhz, 100Mhz, 150Mhz, and
-200Mhz. Confirm the frequency counter shows the correct frequency and
-that the SPI responses are correct.
+Verify that the debug output LED is toggling. If this looks like it is
+working, then use 0xdeafbeef and change the clock frequency to 20Mhz,
+30Mhz, 40Mhz, 50Mhz, 100Mhz, 150Mhz, and 200Mhz. Confirm the frequency
+counter shows the correct frequency and that the SPI responses are
+correct.
 
 !!! success "Huge Milestone!"
 
