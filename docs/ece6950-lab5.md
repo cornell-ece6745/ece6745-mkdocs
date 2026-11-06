@@ -234,6 +234,6 @@ pass and what region of the shmoo plot you might expect the chip to fail.
 !!! success "Huge Milestone!"
 
     Your chip is now fully functional at nominal frequency and voltage,
-    and you have also carefully evaluated its functionailty across a
+    and you have also carefully evaluated its functionality across a
     broad operating range. This is a huge accomplishment!
 

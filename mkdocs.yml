@@ -130,5 +130,6 @@ nav:
     - 'Lab 2: Power Routing': ece6950-lab2.md
     - 'Lab 3: Clock Testing': ece6950-lab3.md
     - 'Lab 4: SPI Testing': ece6950-lab4.md
-    - 'Lab 5: Accelerator Testing': ece6950-lab5.md
+    - 'Lab 5: Accelerator Chip Testing': ece6950-lab5.md
+    - 'Lab 6: Tiny Flow Chip Testing': ece6950-lab6.md
 
