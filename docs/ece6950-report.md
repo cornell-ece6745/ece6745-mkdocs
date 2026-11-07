@@ -4,12 +4,24 @@ Final Report
 
 Each group must submit a final report which documents your chip testing
 efforts throughout the semester. Please format your document with page
-numbers, single-spacing, 10-point font, 1" margins. Clearly mark each
-section with a numbered section header. All diagrams, tables, and figures
-should be numbered with a caption and be included in the main narrative
-of the text as opposed to placed at the end of the document. You must
-include the sections below. Please clearly number and label all sections.
-All reports must be submitted on Canvas in PDF format.
+numbers, single-spacing, 10-point font, 1" margins. You must use Times
+New Roman or Palatino font. Clearly mark each section with a numbered
+section header. All diagrams, tables, and figures should be numbered with
+a caption and be included in the main narrative of the text as opposed to
+placed at the end of the document. You must include the sections below.
+Please clearly number and label all sections. All reports must be
+submitted on Canvas in PDF format.
+
+The final report should four sections:
+
+ - Section 1: Introduction (one paragraph)
+ - Section 2: Tiny Flow Tape-Out (five paragraphs)
+ - Section 3: Accelerator Tape-Out (five paragraphs)
+ - Section 4: Conclusion (one paragraph)
+
+This handout tells you exactly what to focus on for each paragraph. You
+can make it a little longer if you like, or have more paragraphs if you
+like, but this handout explains the minimum expectations.
 
 ### Section 1: Introduction
 
